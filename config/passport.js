@@ -33,7 +33,7 @@ module.exports = function(passport){
 			if(err){
 				console.log(err);
 			}else if(connection && 'query' in connection){
-				connection.query("SELECT * from tblUser WHERE username=?",[username],function(err,user,fields){
+				connection.query("SELECT * from tblUser WHERE username=?",[username],function(err,users,fields){
 					if(users.length != 0){
 						console.log("Data is returned");
 						var db_username = users[0].username;
