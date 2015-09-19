@@ -47,6 +47,6 @@ app.use('/users', usersRoute);
 
 //-------------------------------------------------
 //Server
-http.listen(1337,function(){
-	console.log("Connected & Listen to port 1337");
+http.listen(process.env.PORT,function(){
+	console.log("Connected & Listen to port", process.env.PORT);
 });
