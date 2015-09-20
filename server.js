@@ -15,6 +15,7 @@ var loginRoute = require('./routes/login');
 var profileRoute = require('./routes/profile');
 var logoutRoute = require('./routes/logout');
 var registrationRoute = require('./routes/registration');
+var facebookloginRoute = require('./routes/facebooklogin');
 
 //-----------------------------------------------------------
 app.set('view engine', 'ejs');
@@ -33,13 +34,13 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 
-
 //-----------------------------------------------------------------
 //Re-Route URL Requests
 app.use('/login', loginRoute);
 app.use('/profile', profileRoute);
 app.use('/logout', logoutRoute);
 app.use('/registration', registrationRoute);
+app.use('/auth/facebook', facebookloginRoute);
 
 //Re-Routing URL requests to APIs
 app.use('/users', usersRoute);

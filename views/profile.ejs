@@ -7,7 +7,10 @@
 	<% if (!isAuthenticated){ %>
 		<a href="/login">Log in here</a>
 	<%} else{ %>
-		Hello, <%= user.userId %>, <%= user.username %>!, <%= user.email%>
+		Hello, <%= user.userId %>, 
+				<%= user.firstName %> <%= user.lastName %>
+				<%= user.username %>!, 
+				<%= user.emailAddr%>
 		<a href="/logout">Log out of here</a>
 	<% } %>
 </body>

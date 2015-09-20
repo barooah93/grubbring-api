@@ -8,7 +8,6 @@ var pool = require('../config/dbconnection.js').pool;
 
 //get all users
 app.get('/',function(req,res){
-	console.log("connection about to happen");
 	var data = {
 		"Users":""
 	};

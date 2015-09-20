@@ -44,6 +44,8 @@ app.post('/', function(req, res){
 				res.json(data);
 			}else{
 				data["Users"] = "User Added Successfully";
+				console.log(rows[0]);
+				console.log(rows);
 				emailTokenToUser(token,email,function(error){
 					if(error){
 						console.log(error);
