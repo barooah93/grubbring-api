@@ -37,15 +37,15 @@ app.use(passport.session());
 
 //-----------------------------------------------------------------
 //Re-Route URL Requests
-app.use('/login', loginRoute);
-app.use('/profile', profileRoute);
-app.use('/logout', logoutRoute);
-app.use('/registration', registrationRoute);
-app.use('/auth/facebook', facebookloginRoute);
+app.use('/api/login', loginRoute);
+app.use('/api/profile', profileRoute);
+app.use('/api/logout', logoutRoute);
+app.use('/api/registration', registrationRoute);
+app.use('/api/auth/facebook', facebookloginRoute);
 
 //Re-Routing URL requests to APIs
-app.use('/users', usersRoute);
-app.use('/ring', getRingsRoute);
+app.use('/api/users', usersRoute);
+app.use('/api/ring', getRingsRoute);
 
 
 //-------------------------------------------------

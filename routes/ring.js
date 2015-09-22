@@ -13,7 +13,6 @@ app.get('/', function(req,res){
         res.send("use an option like '?scope=all'");
     }
 });
-
 // POST: request to join the ring
 app.post('/join', function(req,res){
     res.send('post join api is working');
