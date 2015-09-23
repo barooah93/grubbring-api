@@ -1,5 +1,6 @@
 var express = require('express');
 var app = express.Router();
+var async = require('async');
 
 
 //put dbconnection.js into root directory and remove it from routes/
@@ -11,24 +12,33 @@ app.get('/',function(req,res){
 	var data = {
 		"Users":""
 	};
-	pool.getConnection(function(err,connection){
-		if(err){
-			console.log(err);
-		}else if(connection && 'query' in connection){
-			connection.query("SELECT * from tblUser",function(err, rows, fields){
-			if(rows.length != 0){
-				data["Users"] = rows;
-				res.json(data);
-			}else{
-				console(err);
-				data["Users"] = 'No users Found.';
-				res.json(data);
-			}
-		});
-		connection.release();
-		}
+	async.waterfall([
 		
-	});
+		function(callback){
+			pool.getConnection(function(err,connection){
+				if(err){
+					throw err;
+				}
+				if(connection && 'query' in connection){
+					callback(null,connection);
+				}
+			});
+		},
+		
+		function(connection, callback){
+			connection.query("SELECT * from tblUser",function(err,rows,fields){
+				if(err){
+					throw err;
+				}
+				if(rows.length != 0){
+					data["Users"] = rows;
+					res.json(data);
+				}
+			});
+			connection.release();
+		}
+	]);
+	
 });
 
 // //get user by id

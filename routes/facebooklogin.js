@@ -5,7 +5,7 @@ require('../config/passport.js')(passport);
 
 app.get('/', passport.authenticate('facebook', {scope: ['email']}));
 
-app.get('/callback', passport.authenticate('facebook', { successRedirect : '/profile',
-                                                         failureRedirect : '/login' }));
+app.get('/callback', passport.authenticate('facebook', { successRedirect : '/api/profile',
+                                                         failureRedirect : '/api/login' }));
 
 module.exports = app;

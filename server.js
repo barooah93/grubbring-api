@@ -41,7 +41,7 @@ app.use('/api/login', loginRoute);
 app.use('/api/profile', profileRoute);
 app.use('/api/logout', logoutRoute);
 app.use('/api/registration', registrationRoute);
-app.use('/api/auth/facebook', facebookloginRoute);
+app.use('/auth/facebook', facebookloginRoute);
 
 //Re-Routing URL requests to APIs
 app.use('/api/users', usersRoute);

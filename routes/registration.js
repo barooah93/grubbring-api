@@ -3,7 +3,8 @@ var app = express.Router();
 var crypto = require('crypto');
 var nodemailer = require('nodemailer');
 var pool = require('../config/dbconnection.js').pool;
-var encrypt = require('../config/passwordEncryption.js')
+var encrypt = require('../config/passwordEncryption.js');
+var async = require('async');
 
 //-------------------------------------------------------------------
 
@@ -58,6 +59,8 @@ app.post('/', function(req, res){
 		}
 			
 		});	
+	}else{
+		res.redirect('./api/registration');
 	}	
 });
 //---------------------------------------------------------
@@ -71,34 +74,46 @@ app.get('/confirmation',function(req,res){
 app.post('/confirmation',function(req,res){
 	var status = "active";
 	var token = req.body.token;
-
-	pool.getConnection(function(err,connection){
-		if(err){
-			console.log(err);
-		}else if(connection && 'query' in connection){
-			connection.query("UPDATE tblUser SET accountStatus=? WHERE confirmationToken=?",[status,token],function(err, rows, fields){
-			var data = {
-				"User":""
-			};
-			if(!!err){
-				console.log(err);
-				data["Users"] = "Registration is not confirmed";
-				res.json(data);
-			}else{
-				data["Users"] = "Registration is confirmed";
-				res.json(data);
-			}
-			});
-			connection.release();
-		}
+	var data = {
+			"User":""
+		};
+	
+	async.waterfall([
+		
+		function(callback){
+				pool.getConnection(function(err, connection) {
+				    if(err){
+				    	throw err;
+				    }
+				    if(connection && 'query' in connection){
+				    	callback(null,connection);
+				    }
+				});
+			},
 			
-	});	
+		function(connection,callback){
+				connection.query("UPDATE tblUser SET accountStatus=? WHERE confirmationToken=?",[status,token],function(err, rows, fields){
+					if(err){
+						data["Users"] = "Registration is not confirmed";
+			 			res.json(data);
+						throw err;
+					}
+					if(rows.length != 0){
+						data["Users"] = "Registration is confirmed";
+						res.json(data);	
+					}
+				});
+				connection.release();
+			}
+		
+	]);
 
 });
 //---------------------------------------------------------
 
 function emailTokenToUser(user_token, user_email){
-	var registrationConfirmationUrl = "http://localhost:1337/registration/confirmation";
+	//your app url instead of "https://grubbring-api-sshah0930-1.c9.io/"
+	var registrationConfirmationUrl = "https://grubbring-api-sshah0930-1.c9.io/api/registration/confirmation";
 
 	var transporter = nodemailer.createTransport({
         service: 'Gmail',
