@@ -60,7 +60,7 @@ app.post('/', function(req, res){
 			
 		});	
 	}else{
-		res.redirect('./registration');
+		res.redirect('./api/registration');
 	}	
 });
 //---------------------------------------------------------
@@ -112,7 +112,8 @@ app.post('/confirmation',function(req,res){
 //---------------------------------------------------------
 
 function emailTokenToUser(user_token, user_email){
-	var registrationConfirmationUrl = "http://localhost:1337/registration/confirmation";
+	//your app url instead of "https://grubbring-api-sshah0930-1.c9.io/"
+	var registrationConfirmationUrl = "https://grubbring-api-sshah0930-1.c9.io/api/registration/confirmation";
 
 	var transporter = nodemailer.createTransport({
         service: 'Gmail',
