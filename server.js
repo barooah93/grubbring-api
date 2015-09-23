@@ -1,5 +1,5 @@
 var app   = require('express')();
-var http = require('http').Server(app);
+//var http = require('http').Server(app);
 
 var bodyParser = require('body-parser');
 var cookieParser = require('cookie-parser');
@@ -50,6 +50,9 @@ app.use('/api/ring', getRingsRoute);
 
 //-------------------------------------------------
 //Server
-http.listen(process.env.PORT,function(){
-	console.log("Connected & Listen to port", process.env.PORT);
-});
+//http.listen(process.env.PORT, process.env.IP, function(){
+//	console.log("Connected & Listen to port", process.env.PORT);
+//});
+app.listen(process.env.PORT, process.env.IP, function() {
+	console.log("Connected & listening to port ", process.env.PORT);
+})
