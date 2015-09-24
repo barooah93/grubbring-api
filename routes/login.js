@@ -2,7 +2,6 @@ var express = require('express');
 var app = express.Router();
 
 var passport = require('passport');
-var passportLocal = require('passport-local');
 
 //binds node's passport library with our custom authentication written in passport.js
 require('../config/passport.js')(passport);
