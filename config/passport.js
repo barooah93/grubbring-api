@@ -4,6 +4,7 @@ var encrypt = require('./passwordEncryption');
 var pool = require('../config/dbconnection.js').pool;
 var configAuth = require('./auth');
 var async = require('async');
+var debug = require('debug')('grubbering:passport');
 
 module.exports = function(passport){
 
@@ -69,16 +70,19 @@ module.exports = function(passport){
 						var db_status = users[0].accountStatus;
 						
 						if(username === db_username && encrypt.validatePassword(password,db_password) && db_status === "active"){
-							console.log("User should be authorized");
+							debug('User should be authorized');
+							// console.log("User should be authorized");
 							done(null, users[0]);
 						}
 						else{
+							debug('Incorrect password And/Or account is not activated.');
 							console.log("Incorrect password And/Or account is not activated.");
 							done(err);
 						}
 					}else{
+						debug('This user does not exist.');
 						done(err);
-						console.log("This user does not exist.");
+						// console.log("This user does not exist.");
 					}
 				});
 				connection.release();

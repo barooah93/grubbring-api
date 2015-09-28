@@ -5,15 +5,18 @@ var nodemailer = require('nodemailer');
 var pool = require('../config/dbconnection.js').pool;
 var encrypt = require('../config/passwordEncryption.js');
 var async = require('async');
+var debug = require('debug')('grubbering:registration');
 
 //-------------------------------------------------------------------
 
 app.get('/', function(req,res){
+	debug(req.method + ' ' + req.url);
 	res.render('registration');
 });
 //---------------------------------------------------------
 
 app.post('/', function(req, res){
+	debug(req.method + ' ' + req.url);
 
 		var firstname = req.body.firstname;
 		var lastname = req.body.lastname;
@@ -96,11 +99,13 @@ app.post('/', function(req, res){
 
 
 app.get('/confirmation',function(req,res){
+	debug(req.method + ' ' + req.url);
 	res.render('registrationConfirmation');
 });
 //---------------------------------------------------------
 
 app.post('/confirmation',function(req,res){
+	debug(req.method + ' ' + req.url);
 	var status = "active";
 	var token = req.body.token;
 	var data = {
@@ -163,7 +168,8 @@ function emailTokenToUser(user_token, user_email){
     if(error){
         console.log(error);
     }else{
-        console.log('Message sent: ' + info.response);
+    	debug('Confirmation email sent: ' + info.response);
+        // console.log('Message sent: ' + info.response);
     };
 });
 }

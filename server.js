@@ -8,6 +8,7 @@ var expressSession = require('express-session');
 var passport = require('passport');
 var passportLocal = require('passport-local');
 
+var debug = require('debug')('grubbering');
 
 //Routes to specified APIs based on requested URLs
 var usersRoute = require('./routes/users');
@@ -54,5 +55,6 @@ app.use('/api/ring', getRingsRoute);
 //	console.log("Connected & Listen to port", process.env.PORT);
 //});
 app.listen(process.env.PORT, process.env.IP, function() {
+	debug('Connected & listening to port ' + process.env.PORT);
 	console.log("Connected & listening to port ", process.env.PORT);
 })
