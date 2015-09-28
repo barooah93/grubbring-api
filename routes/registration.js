@@ -30,35 +30,64 @@ app.post('/', function(req, res){
         var token = crypto.randomBytes(7).toString('hex');
 
     if(firstname && lastname && username && password && email){
+    	
+    	var data = {
+			"User":""
+		};
 
-    	pool.getConnection(function(err,connection){
-		if(err){
-			console.log(err);
-		}else if(connection && 'query' in connection){
-			connection.query("INSERT INTO tblUser (username, password, firstName, lastName, emailAddr, cellPhone, confirmationToken) VALUES (?,?,?,?,?,?,?)",[username,encryptedPassword,firstname,lastname,email,phonenumber,token],function(err, rows, fields){
-			var data = {
-				"User":""
-			};
-			if(!!err){
-				console.log(err);
-				data["Users"] = "Error Adding data";
-				res.json(data);
-			}else{
-				data["Users"] = "User Added Successfully";
-				console.log(rows[0]);
-				console.log(rows);
-				emailTokenToUser(token,email,function(error){
-					if(error){
-						console.log(error);
+		async.waterfall([
+			
+			function(callback){
+				pool.getConnection(function(err, connection) {
+				    if(err){
+				    	throw err;
+				    }
+				    if(connection && 'query' in connection){
+				    	callback(null,connection);
+				    }
+				});
+			},
+			
+			//check if this username or email already exists
+			function(connection,callback){
+				connection.query("SELECT * FROM tblUser WHERE username=? OR emailAddr=?",[username,email],function(err, rows, fields){
+					if(err){
+						
+					}
+					if(rows.length != 0){ //user already exists
+						data["User"] = "Username or Email Address is already used.";
+			 			res.json(data);
+			 			connection.release();
+					}
+					else{
+						callback(null,connection);
 					}
 				});
-				res.json(data);
-			}
-			});
-			connection.release();
-		}
+			},
 			
-		});	
+			function(connection,callback){
+				connection.query("INSERT INTO tblUser (username, password, firstName, lastName, emailAddr, cellPhone, confirmationToken) VALUES (?,?,?,?,?,?,?)",[username,encryptedPassword,firstname,lastname,email,phonenumber,token],function(err,rows,fields){
+					if(err){
+						data["Users"] = "Error Adding Data";
+						res.json(data);
+					}
+					else{
+						data["Users"] = "User Added Successfully";
+						console.log(rows[0]);
+						console.log(rows);
+						emailTokenToUser(token,email,function(error){
+							if(error){
+								console.log(error);
+							}
+						});
+						res.json(data);
+					}
+				});
+			connection.release();
+			}
+			
+		]);
+		
 	}else{
 		res.redirect('./api/registration');
 	}	
