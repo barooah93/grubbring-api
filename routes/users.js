@@ -1,7 +1,7 @@
 var express = require('express');
 var app = express.Router();
 var async = require('async');
-var debug = require('debug')('grubbering:users');
+var debug = require('debug')('grubbring:users');
 
 //put dbconnection.js into root directory and remove it from routes/
 //require(dbconnection from root directory)

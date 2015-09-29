@@ -8,7 +8,7 @@ var expressSession = require('express-session');
 var passport = require('passport');
 var passportLocal = require('passport-local');
 
-var debug = require('debug')('grubbering');
+var debug = require('debug')('grubbring');
 
 //Routes to specified APIs based on requested URLs
 var usersRoute = require('./routes/users');

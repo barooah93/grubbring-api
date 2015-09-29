@@ -4,7 +4,7 @@
   "description": "Grubbring application",
   "main": "server.js",
   "scripts": {
-    "debug": "DEBUG=grubbering* node server.js"
+    "debug": "DEBUG=grubbring* node server.js"
   },
   "dependencies": {
     "async": "^1.4.2",

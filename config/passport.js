@@ -4,7 +4,7 @@ var encrypt = require('./passwordEncryption');
 var pool = require('../config/dbconnection.js').pool;
 var configAuth = require('./auth');
 var async = require('async');
-var debug = require('debug')('grubbering:passport');
+var debug = require('debug')('grubbring:passport');
 
 module.exports = function(passport){
 

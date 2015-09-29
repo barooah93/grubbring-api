@@ -1,6 +1,6 @@
 var express = require('express');
 var app = express.Router();
-var debug = require('debug')('grubbering:logout');
+var debug = require('debug')('grubbring:logout');
 
 app.get('/', function(req, res){
 	debug(req.method + ' ' + req.url);

@@ -5,7 +5,7 @@ var nodemailer = require('nodemailer');
 var pool = require('../config/dbconnection.js').pool;
 var encrypt = require('../config/passwordEncryption.js');
 var async = require('async');
-var debug = require('debug')('grubbering:registration');
+var debug = require('debug')('grubbring:registration');
 
 //-------------------------------------------------------------------
 

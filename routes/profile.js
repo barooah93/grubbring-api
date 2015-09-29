@@ -1,6 +1,6 @@
 var express = require('express');
 var app = express.Router();
-var debug = require('debug')('grubbering:profile');
+var debug = require('debug')('grubbring:profile');
 
 app.get('/',function(req,res){
 	debug(req.method + ' ' + req.url);

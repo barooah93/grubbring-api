@@ -2,7 +2,7 @@ var express = require('express');
 var app = express.Router();
 
 var passport = require('passport');
-var debug = require('debug')('grubbering:login');
+var debug = require('debug')('grubbring:login');
 
 //binds node's passport library with our custom authentication written in passport.js
 require('../config/passport.js')(passport);
