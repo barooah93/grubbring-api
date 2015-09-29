@@ -8,6 +8,7 @@ var expressSession = require('express-session');
 var passport = require('passport');
 var passportLocal = require('passport-local');
 
+var debug = require('debug')('grubbering');
 
 //Routes to specified APIs based on requested URLs
 var usersRoute = require('./routes/users');
@@ -17,6 +18,7 @@ var logoutRoute = require('./routes/logout');
 var registrationRoute = require('./routes/registration');
 var facebookloginRoute = require('./routes/facebooklogin');
 var getRingsRoute = require('./routes/ring'); 
+var getDashboardRoute = require("./routes/dashboard");
 
 //-----------------------------------------------------------
 app.set('view engine', 'ejs');
@@ -46,6 +48,7 @@ app.use('/auth/facebook', facebookloginRoute);
 //Re-Routing URL requests to APIs
 app.use('/api/users', usersRoute);
 app.use('/api/ring', getRingsRoute);
+app.use('/api/dasboard', getDashboardRoute);
 
 
 //-------------------------------------------------
@@ -54,5 +57,6 @@ app.use('/api/ring', getRingsRoute);
 //	console.log("Connected & Listen to port", process.env.PORT);
 //});
 app.listen(process.env.PORT, process.env.IP, function() {
+	debug('Connected & listening to port ' + process.env.PORT);
 	console.log("Connected & listening to port ", process.env.PORT);
 })

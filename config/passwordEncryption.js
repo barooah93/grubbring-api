@@ -10,7 +10,6 @@ module.exports = {
 
 	},
 
-//password 2 is the password in database
 	validatePassword: function(loginPassword, realPassword){
 		return bcrypt.compareSync(loginPassword, realPassword);
 

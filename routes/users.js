@@ -1,7 +1,7 @@
 var express = require('express');
 var app = express.Router();
 var async = require('async');
-
+var debug = require('debug')('grubbering:users');
 
 //put dbconnection.js into root directory and remove it from routes/
 //require(dbconnection from root directory)
@@ -9,6 +9,7 @@ var pool = require('../config/dbconnection.js').pool;
 
 //get all users
 app.get('/',function(req,res){
+	debug(req.method + ' ' + req.url);
 	var data = {
 		"Users":""
 	};
