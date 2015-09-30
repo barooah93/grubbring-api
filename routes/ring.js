@@ -131,7 +131,7 @@ app.get('/search/:field/:key', function(req,res) {
     }
     else if(req.params.field == 'ringId'){
         query = "SELECT * FROM tblRing R " +
-        "WHERE R.ringId LIKE '" + req.params.key + "%' "+
+        "WHERE R.ringId = '" + req.params.key + "' "+
         "AND R.ringStatus=1;";
         res.send(query);
     }
