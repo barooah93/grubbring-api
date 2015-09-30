@@ -1,11 +1,8 @@
 var express = require('express');
 var app = express();
-var arraylist = require('arraylist');
 var pool = require('../config/dbconnection.js').pool;
 var user = null;
 var ringid = null;
-var currlist;
-var finallist;
 
 var myRingsActivity = {
 	ringName: "tbd",
@@ -58,7 +55,7 @@ app.get('/activity/current/:scope', function(req,res){
 			        for (var i = 0; i < rows.length; i++) {
     					ringid = rows[i].ringId;
     					//currlist.add(ringid);
-    					console.log("how many times do I display ringid", ringid);
+    					console.log("how many times do I display ringid", ringid); //FIX DUPLICATE ISSUE TOMORROW!!
 				
 				//now that we have the ringids in a list, we can start constructing our POC list view - ring name, grubbringer name, and grubbery (listed)
 				//as list gets bigger, will create an object class that contains the necessary data
