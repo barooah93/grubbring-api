@@ -1,6 +1,6 @@
 var express = require('express');
 var app = express();
-var arraylist = require('arraylist');
+//var arraylist = require('arraylist');
 var pool = require('../config/dbconnection.js').pool;
 var user = null;
 var ringid = null;
