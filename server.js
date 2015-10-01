@@ -18,7 +18,7 @@ var logoutRoute = require('./routes/logout');
 var registrationRoute = require('./routes/registration');
 var facebookloginRoute = require('./routes/facebooklogin');
 var getRingsRoute = require('./routes/ring'); 
-var getDashboardRoute = require("./routes/dashboard");
+//var getDashboardRoute = require("./routes/dashboard");
 
 //-----------------------------------------------------------
 app.set('view engine', 'ejs');
@@ -48,7 +48,7 @@ app.use('/auth/facebook', facebookloginRoute);
 //Re-Routing URL requests to APIs
 app.use('/api/users', usersRoute);
 app.use('/api/ring', getRingsRoute);
-app.use('/api/dasboard', getDashboardRoute);
+//app.use('/api/dashboard', getDashboardRoute);
 
 
 //-------------------------------------------------
