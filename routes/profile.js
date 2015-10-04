@@ -2,6 +2,7 @@ var express = require('express');
 var app = express.Router();
 var debug = require('debug')('grubbring:profile');
 var pool = require('../config/dbconnection.js').pool;
+var encrypt = require('../config/passwordEncryption.js');
 
 app.get('/',function(req,res){
 	debug(req.method + ' ' + req.url);
@@ -31,10 +32,10 @@ app.post('/updateEmail', function(req, res) {
 					} else {
 						debug('Updated email address');
 					}
-				})
+				});
 				connection.release();
 			}
-		})
+		});
 	}
 	res.redirect('back');
 });
@@ -59,12 +60,43 @@ app.post('/updateCellNumber', function(req, res) {
 					} else {
 						debug('Updated Cell number');
 					}
-				})
+				});
 				connection.release();
 			}
-		})
+		});
 	}
 	res.redirect('back');
 });
+
+app.post('/updatePassword', function(req, res) {
+	debug(req.method + ' ' + req.url);
+	
+	var oldPassword = req.body.oldPassword;
+	var newPassword = req.body.newPassword;
+	var confirmPassword = req.body.confirmPassword;
+	var oldHash = req.user.password;
+	var userId = req.user.userId;
+	
+	if (newPassword && oldPassword != newPassword && newPassword === confirmPassword && encrypt.validatePassword(oldPassword, oldHash)) {
+		pool.getConnection(function(err, connection) {
+			if (err) {
+				console.log(err);
+			} else {
+				var newHash = encrypt.generateHash(newPassword);
+				connection.query('UPDATE tblUser SET password=? WHERE userId=?', [newHash, userId], function(err, rows) {
+					if (err) {
+						console.log(err);
+					} else {
+						debug('Updated password');
+					}
+				});
+				connection.release();
+			}
+		});
+	} else {
+		debug('One of the conditions have failed.');
+	}
+	res.redirect('back');
+})
 
 module.exports = app;
