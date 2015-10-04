@@ -7,11 +7,21 @@
 	<% if (!isAuthenticated){ %>
 		<a href="/api/login">Log in here</a>
 	<%} else{ %>
-		Hello, <%= user.userId %>, 
-				<%= user.firstName %> <%= user.lastName %>
-				<%= user.username %>!, 
-				<%= user.emailAddr%>
-		<a href="/api/logout">Log out of here</a>
+		<div>
+			Hello, <%= user.userId %>, 
+					<%= user.firstName %> <%= user.lastName %>
+					<%= user.username %>!, 
+					<%= user.emailAddr%>
+			<a href="/api/logout">Log out of here</a>
+		</div>
+		
+		<div>
+			<form action='/api/profile/updateEmail' method='post'>
+				Current Email: <%=user.emailAddr%>
+				<input type='text' name='newEmail'>
+				<input type='submit' value='Update Email Address'>
+			</form>
+		</div>
 	<% } %>
 </body>
 </html>
