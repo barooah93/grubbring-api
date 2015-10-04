@@ -5,34 +5,40 @@ var nodemailer = require('nodemailer');
 var pool = require('../config/dbconnection.js').pool;
 var encrypt = require('../config/passwordEncryption.js');
 var async = require('async');
+var passport = require('passport');
+require('../config/passport.js')(passport);
 
 //-------------------------------------------------------------------
 
 app.get('/', function(req,res){
-	res.render('registration');
+	var data = {
+    		"status":"OK",
+			"message":"Present Registration Page"
+		};
+		
+	res.status(200);
+	res.json(data);
 });
 //---------------------------------------------------------
 
 app.post('/', function(req, res){
-
-		var firstname = req.body.firstname;
+	//successRedirect means user already exists 
+	var firstname = req.body.firstname;
 		var lastname = req.body.lastname;
 		var phonenumber = req.body.phonenumber;
 		if(phonenumber === undefined){
 			phonenumber = 0;
 		}
 		var username = req.body.username;
-
-        var password = req.body.password;
+		var password = req.body.password;
         var encryptedPassword = encrypt.generateHash(password);
 
         var email = req.body.email;
         var token = crypto.randomBytes(7).toString('hex');
 
-    if(firstname && lastname && username && password && email){
-    	
     	var data = {
-			"User":""
+    		"status":"",
+			"message":""
 		};
 
 		async.waterfall([
@@ -40,7 +46,10 @@ app.post('/', function(req, res){
 			function(callback){
 				pool.getConnection(function(err, connection) {
 				    if(err){
-				    	throw err;
+				    	data["status"] = "ERROR";
+				    	data["message"] = "Unable to connect to database";
+				    	res.status(500);
+				    	res.json(data);
 				    }
 				    if(connection && 'query' in connection){
 				    	callback(null,connection);
@@ -52,14 +61,20 @@ app.post('/', function(req, res){
 			function(connection,callback){
 				connection.query("SELECT * FROM tblUser WHERE username=? OR emailAddr=?",[username,email],function(err, rows, fields){
 					if(err){
-						
+						data["status"] = "Error";
+				    	data["message"] = "Unable to run SELECT query";
+						res.status(500);
+						res.json(data);
 					}
 					if(rows.length != 0){ //user already exists
-						data["User"] = "Username or Email Address is already used.";
-			 			res.json(data);
+						data["status"] = "OK";
+				    	data["message"] = "User already exists";
+						res.status(200);
+						res.json(data);
 			 			connection.release();
 					}
 					else{
+						console.log("user doesn't exist");
 						callback(null,connection);
 					}
 				});
@@ -68,18 +83,17 @@ app.post('/', function(req, res){
 			function(connection,callback){
 				connection.query("INSERT INTO tblUser (username, password, firstName, lastName, emailAddr, cellPhone, confirmationToken) VALUES (?,?,?,?,?,?,?)",[username,encryptedPassword,firstname,lastname,email,phonenumber,token],function(err,rows,fields){
 					if(err){
-						data["Users"] = "Error Adding Data";
-						res.json(data);
+						console.log("error inserting new user");
 					}
 					else{
-						data["Users"] = "User Added Successfully";
-						console.log(rows[0]);
-						console.log(rows);
+						data["status"] = "OK";
+						data["message"] = "New User Added";
 						emailTokenToUser(token,email,function(error){
 							if(error){
 								console.log(error);
 							}
 						});
+						res.status(201);
 						res.json(data);
 					}
 				});
@@ -87,24 +101,28 @@ app.post('/', function(req, res){
 			}
 			
 		]);
-		
-	}else{
-		res.redirect('./api/registration');
-	}	
 });
 //---------------------------------------------------------
 
 
 app.get('/confirmation',function(req,res){
-	res.render('registrationConfirmation');
+	var data = {
+    		"status":"OK",
+			"message":"Present Confirmation Page"
+		};
+		
+	res.status(200);
+	res.json(data);
 });
 //---------------------------------------------------------
 
 app.post('/confirmation',function(req,res){
 	var status = "active";
-	var token = req.body.token;
+	var confirmationToken = req.body.token;
+	console.log(confirmationToken);
 	var data = {
-			"User":""
+    		"status":"",
+			"message":""
 		};
 	
 	async.waterfall([
@@ -112,7 +130,10 @@ app.post('/confirmation',function(req,res){
 		function(callback){
 				pool.getConnection(function(err, connection) {
 				    if(err){
-				    	throw err;
+				    	data["status"] = "ERROR";
+				    	data["message"] = "Unable to connect to database";
+				    	res.status(500);
+				    	res.json(data);
 				    }
 				    if(connection && 'query' in connection){
 				    	callback(null,connection);
@@ -121,15 +142,18 @@ app.post('/confirmation',function(req,res){
 			},
 			
 		function(connection,callback){
-				connection.query("UPDATE tblUser SET accountStatus=? WHERE confirmationToken=?",[status,token],function(err, rows, fields){
+				connection.query("UPDATE tblUser SET accountStatus=? WHERE confirmationToken=?",[status,confirmationToken],function(err, rows, fields){
 					if(err){
-						data["Users"] = "Registration is not confirmed";
+						data["status"] = "ERROR";
+						data["message"] = "Error running update user status query";
+						res.status(500);
 			 			res.json(data);
-						throw err;
 					}
 					if(rows.length != 0){
-						data["Users"] = "Registration is confirmed";
-						res.json(data);	
+						data["status"] = "OK";
+						data["message"] = "Confirmation is complete. User can now login using credentials";
+						res.status(200);
+			 			res.json(data);
 					}
 				});
 				connection.release();
@@ -138,7 +162,6 @@ app.post('/confirmation',function(req,res){
 	]);
 
 });
-//---------------------------------------------------------
 
 function emailTokenToUser(user_token, user_email){
 	//your app url instead of "https://grubbring-api-sshah0930-1.c9.io/"
@@ -167,6 +190,5 @@ function emailTokenToUser(user_token, user_email){
     };
 });
 }
-
 
 module.exports = app;
