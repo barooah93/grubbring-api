@@ -12,11 +12,8 @@ require('../config/passport.js')(passport);
 
 
 app.get('/', function(req,res){
-<<<<<<< HEAD
 	console.log("User is entered into database and is returned to login page.");
-=======
 	debug(req.method + ' ' + req.url);
->>>>>>> d2a661e876b7af080d94af74257cf8712124cae8
 	res.render('login');
 });
 

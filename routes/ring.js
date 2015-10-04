@@ -2,11 +2,19 @@
 var express = require('express');
 var app = express();
 var pool = require('../config/dbconnection.js').pool;
+var gps = require('gps2zip');
 
 //-------------------------START-----------------------------------------------------
 // GET: pull all ring locations and details near the user
 //      if no rings found, send error code
 app.get('/', function(req,res){
+    // var userLat = req.body.latitude;
+    // var userLong = req.body.longitude;
+    var userLat = 40.926063899999995
+    var userLong = -74.1047229;
+    
+    var userZipCode = gps.gps2zip(userLat, userLong);
+    console.log(userZipCode);
     if(req.query.scope == "all"){
         var query = "SELECT * FROM tblRing;";   
         dbExecuteQuery(query, function(err, result){
