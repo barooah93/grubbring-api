@@ -22,6 +22,14 @@
 				<input type='submit' value='Update Email Address'>
 			</form>
 		</div>
+		
+		<div>
+			<form action='/api/profile/updateCellNumber' method='post'>
+				Current Cell: <%=user.cellPhone%>
+				<input type='number' name='newCell'>
+				<input type='submit' value='Update Cell'>
+			</form>
+		</div>
 	<% } %>
 </body>
 </html>

@@ -16,6 +16,7 @@ app.post('/updateEmail', function(req, res) {
 	
 	var currEmail = req.user.emailAddr;
 	var newEmail = req.body.newEmail;
+	var userId = req.user.userId;
 	
 	if (!newEmail || currEmail === newEmail) {
 		debug('Email field was empty or the same email address was entered');
@@ -24,7 +25,7 @@ app.post('/updateEmail', function(req, res) {
 			if (err) {
 				console.log(err);
 			} else {
-				connection.query('UPDATE tblUser SET emailAddr=? WHERE emailAddr=?', [newEmail, currEmail], function(err, rows) {
+				connection.query('UPDATE tblUser SET emailAddr=? WHERE userId=?', [newEmail, userId], function(err, rows) {
 					if (err) {
 						console.log(err);
 					} else {
@@ -36,6 +37,34 @@ app.post('/updateEmail', function(req, res) {
 		})
 	}
 	res.redirect('back');
-})
+});
+
+app.post('/updateCellNumber', function(req, res) {
+	debug(req.method + ' ' + req.url);
+	
+	var currCell = req.user.cellPhone;
+	var newCell = req.body.newCell;
+	var userId = req.user.userId;
+	
+	if (!newCell || currCell === newCell) {
+		debug('Cell number field was empty or the same number was entered');
+	} else {
+		pool.getConnection(function(err, connection) {
+			if (err) {
+				console.log(err);
+			} else {
+				connection.query('UPDATE tblUser SET cellPhone=? WHERE userId=?', [newCell, userId], function(err, rows) {
+					if (err) {
+						console.log(err);
+					} else {
+						debug('Updated Cell number');
+					}
+				})
+				connection.release();
+			}
+		})
+	}
+	res.redirect('back');
+});
 
 module.exports = app;
