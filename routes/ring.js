@@ -3,29 +3,101 @@ var express = require('express');
 var app = express();
 var pool = require('../config/dbconnection.js').pool;
 
-
-// GET: pull all ring locations and details.
+//-------------------------START-----------------------------------------------------
+// GET: pull all ring locations and details near the user
 //      if no rings found, send error code
 app.get('/', function(req,res){
     if(req.query.scope == "all"){
-        res.send("sending all rings in your area.");
+        var query = "SELECT * FROM tblRing;";   
+        dbExecuteQuery(query, function(err, result){
+            if(result.status != "error" && !err){
+                // overwrite description
+                result.description="Returned all rings";
+            }
+            res.send(result);
+        });
     }
     else{
-        res.send("use an option like '?scope=all'");
+        res.send("try using option ?scope=all");
     }
 });
-// POST: request to join the ring
-app.post('/join', function(req,res){
-    res.send('post join api is working');
-});
+//-------------------------END-------------------------------------------------------
 
+
+//-------------------------START-----------------------------------------------------
+// POST: request to join the ring
+// ex: https://grubbring-api-barooah93.c9.io/api/ring/join/234/429
+app.post('/join/:ringId/:userId', function(req,res){
+    
+    var ringId = req.params.ringId;
+    var userId = req.params.userId;
+    var userRole = 1; // 0 means leader, 1 means grubbling
+    var userStatus = 0; // user status for pending=0, approved=1, declined=2, and banned=3
+    var query = null;
+    
+    // TODO: need error checking and validation
+    
+    query = "INSERT INTO tblRingUser (ringId, userId, roleId, status) "+
+    "VALUES ("+ringId+", "+userId+", "+ userRole+", "+userStatus+");"
+        
+    dbExecuteQuery(query, function(err, result){
+        if(result.status != "error" && !err){
+            // overwrite description
+            result.description="Added userId " + userId + " with pending status to ringId " + ringId;
+        }
+        res.send(result);
+    });
+    
+});
+//-------------------------END-------------------------------------------------------
+
+
+//-------------------------START-----------------------------------------------------
+// GET: leader get notification if someone is trying join ring
+app.get('/notifyLeader/:userId', function(req,res){
+    var leaderId = req.params.userId;
+    var ringIds=[];
+    var query=null;
+    
+    //TODO: Validate userId
+          
+    // First get the ringids that are associated with this userId
+    query = "SELECT ringId FROM tblRingUser WHERE userId="+leaderId+" AND roleId=0 AND status=1;";
+    dbExecuteQuery(query,function(err, result){
+        if(result.status != "error" && !err){
+            
+            // push ring ids that this user owns to the ringIds array
+            for(var i=0; i<result.data.length; i++){
+                ringIds.push(result.data[i].ringId);
+            }
+            // Get any users that have pending status and are associated with the ring/s
+            getPendingUsersFromRingIds(ringIds, function(err,result){
+                res.send(result);
+            });
+
+        }
+        else{
+            res.send(result);
+        }
+    });
+        
+
+});
+//-------------------------END-------------------------------------------------------
+
+
+
+//-------------------------START-----------------------------------------------------
 // PUT: ring leader accepts or rejects user's request.
 //          service will also notify user of ring leader's decision
 app.put('/join', function(req,res){
     res.send('update api works');
 });
+//-------------------------END-------------------------------------------------------
 
-// GET: pull ring detail for a ring.
+
+//-------------------------START-----------------------------------------------------
+// GET: get ring details for searched ring
 /* Search fields:
     - ring name
     - ring ID
@@ -33,44 +105,162 @@ app.put('/join', function(req,res){
     - ring leader first name last name
 
 */
+// ex: https://grubbring-api-barooah93.c9.io/api/ring/search/leaderName/brandon-barooah
+// wildcard search
 app.get('/search/:field/:key', function(req,res) {
+    
     var query = null;
     
-    // check if searching for whole name (first and last)
-    if(req.params.field == 'name'){
-        // split by special character '-'
-        var name = req.params.key.split("-");
-        var fname = name[0];
-        var lname = name[1];
-        res.send('searching for ring by name with first name =  '+ fname + ' and last name = ' + lname); 
+    var description = "";
+    
+    // TODO: need error checking
+    
+    // ex: leaderName/brandon-barooah
+    if(req.params.field == 'leaderName'){
+        // if no dash found see if they're searching for first name or last name
+        if(req.params.key.indexOf('-') === -1)
+        {
+            query = "SELECT * FROM tblRing R "+
+            "INNER JOIN tblUser U "+
+            "ON R.createdBy=U.userId "+
+            "WHERE (U.firstName LIKE '"+req.params.key+"%' "+
+            "OR U.lastName LIKE '"+req.params.key+"%') " +
+            "AND R.ringStatus=1;"; 
+        
+        }
+        else{ // a full first or last name was given seperated by a '-'
+            var fullEntry = req.params.key.split('-');
+            var firstEntry = fullEntry[0];   // this should be a full first OR last name
+            var secondEntry = fullEntry[1]; // this CAN be partially filled out since it is wildcard search
+            
+            query = "SELECT * FROM tblRing R "+
+            "INNER JOIN tblUser U "+
+            "ON R.createdBy=U.userId "+
+            "WHERE "+
+            "(U.firstName='"+firstEntry+"' OR U.lastName='"+firstEntry+"') "+
+            "AND "+
+            "(U.firstName LIKE '"+secondEntry+"%' OR U.lastName LIKE '"+secondEntry+"%') " +
+            "AND "+
+            "R.ringStatus=1;";
+        }
+        
+        description = "Get ring details for ring leader's name: " + req.params.key + "*";
+       
     }
     else if(req.params.field == 'ringId'){
-        // set query to find rings by ringId
+        query = "SELECT * FROM tblRing R " +
+        "WHERE R.ringId = '" + req.params.key + "' "+
+        "AND R.ringStatus=1;";
+        description = "Get ring details for ringId: " + req.params.key;
     }
     else if(req.params.field == 'username'){
-        // set query to find rings 
+        query = "SELECT * FROM tblRing R, tblUser U " +
+        "WHERE R.createdBy = U.userId "+
+        "AND U.username LIKE '" + req.params.key + "%' "+
+        "AND R.ringStatus=1;";
+        description = "Get ring details for ring leader's username: " + req.params.key;
+    }
+    else if(req.params.field == 'ringName'){
+        query = "SELECT * FROM tblRing R " +
+        "WHERE R.name LIKE '" + req.params.key + "%' "+
+        "AND R.ringStatus=1;";
+        description = "Get ring details for ring name: " + req.params.key;
     }
     
-    query = "SELECT * FROM tblUser";
-    
     // connect to db and execute query
+    dbExecuteQuery(query, function(err, result){
+        if(result.status != "error" && !err){
+            if(result.data.length == 0){
+                // overwrite description
+                result.description="Could not match the search criteria with anything in our database.";
+            }
+            else{
+                result.description=description;
+            }
+        }
+        res.send(result);
+    });
+   
+});
+//-------------------------END-------------------------------------------------------
+
+
+//-----------------------Helper Functions--------------------------------------------
+
+// Function: Establish connection to database and execute the given query
+// Parameters: query - string containing sql query to be executed
+//             callback - function to return resultset when completed execution
+/* Returns object with format: {status:'', description:'', data:''}
+     Status - either 'error' or 'success'
+     Description - description of status
+     Data - the rows of the resultset (null if update, delete, etc) if success, detailed error otherwise
+*/ 
+var dbExecuteQuery = function(query, callback){
+    var resultObject;
     pool.getConnection(function(err,connection){
 		if(err){
 			console.log(err);
+			resultObject = {status:"error", description:"Cannot connect to database", data:err};
+			callback(err,resultObject);
 		}else if(connection && 'query' in connection){
 			connection.query(query,function(err, rows, fields){
 			    if(err){
 			        console.log(err);
+			        resultObject = {status:"error", description:"Cannot execute query", data:err};
+			        callback(err, resultObject);
 			    }
 			    else{
-			        console.log(rows[0]);
+			        resultObject = {status:"success", description:"Executed query", data:rows};
+			        callback(null, resultObject);
 			    }
 			});
 			connection.release();
 		}
 	});
-   
-});
+};
+
+
+// Function: returns pending status entries from tblRingUser associated with given ringIds
+// Parameters: ringIds - array containing ring ids
+//             callback - callback function contains the returned results.  Needed for asynchronous execution
+var getPendingUsersFromRingIds = function(ringIds, callback){
+    var query=null;
+    
+    // Check if there are any rings in the array
+    if(ringIds.length == 0){
+        callback(null,{status:"success", description:"There are no active rings that this user is a leader of.", data:null});
+    }
+    else{
+        // Now check if other userIds associated with those rings have a pending status
+        query="SELECT * FROM tblRingUser RU "+
+        "INNER JOIN tblUser U "+
+        "ON RU.userId=U.userId "+
+        "WHERE RU.status=0 AND (";
+        
+        // Concatenate sql statement if there is more than 1 ring to deal with
+        for(var i=0; i<ringIds.length; i++){
+            query+= "RU.ringId="+ringIds[i]+" OR ";
+        }
+        // eliminate the extra 'OR ' and finish the sql statment
+        query = query.substring(0,query.length - 4) + ");";
+        // connect to db and execute query
+        dbExecuteQuery(query,function(err, result){
+            if(result.status != "error" && !err){
+                if(result.data.length == 0){
+                    result.description = "There are no pending users.";
+                }
+                else{
+                    // overwrite description
+                    result.description = "Retrieved pending users for given rings.";
+                }
+                callback(null, result);
+            }
+            else{
+                callback(err, result);
+            }
+        });
+    }
+};
 
 
 module.exports = app;

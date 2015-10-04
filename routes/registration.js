@@ -5,12 +5,17 @@ var nodemailer = require('nodemailer');
 var pool = require('../config/dbconnection.js').pool;
 var encrypt = require('../config/passwordEncryption.js');
 var async = require('async');
+<<<<<<< HEAD
 var passport = require('passport');
 require('../config/passport.js')(passport);
+=======
+var debug = require('debug')('grubbring:registration');
+>>>>>>> d2a661e876b7af080d94af74257cf8712124cae8
 
 //-------------------------------------------------------------------
 
 app.get('/', function(req,res){
+<<<<<<< HEAD
 	var data = {
     		"status":"OK",
 			"message":"Present Registration Page"
@@ -18,12 +23,22 @@ app.get('/', function(req,res){
 		
 	res.status(200);
 	res.json(data);
+=======
+	debug(req.method + ' ' + req.url);
+	res.render('registration');
+>>>>>>> d2a661e876b7af080d94af74257cf8712124cae8
 });
 //---------------------------------------------------------
 
 app.post('/', function(req, res){
+<<<<<<< HEAD
 	//successRedirect means user already exists 
 	var firstname = req.body.firstname;
+=======
+	debug(req.method + ' ' + req.url);
+
+		var firstname = req.body.firstname;
+>>>>>>> d2a661e876b7af080d94af74257cf8712124cae8
 		var lastname = req.body.lastname;
 		var phonenumber = req.body.phonenumber;
 		if(phonenumber === undefined){
@@ -106,6 +121,7 @@ app.post('/', function(req, res){
 
 
 app.get('/confirmation',function(req,res){
+<<<<<<< HEAD
 	var data = {
     		"status":"OK",
 			"message":"Present Confirmation Page"
@@ -113,10 +129,15 @@ app.get('/confirmation',function(req,res){
 		
 	res.status(200);
 	res.json(data);
+=======
+	debug(req.method + ' ' + req.url);
+	res.render('registrationConfirmation');
+>>>>>>> d2a661e876b7af080d94af74257cf8712124cae8
 });
 //---------------------------------------------------------
 
 app.post('/confirmation',function(req,res){
+	debug(req.method + ' ' + req.url);
 	var status = "active";
 	var confirmationToken = req.body.token;
 	console.log(confirmationToken);
@@ -186,7 +207,8 @@ function emailTokenToUser(user_token, user_email){
     if(error){
         console.log(error);
     }else{
-        console.log('Message sent: ' + info.response);
+    	debug('Confirmation email sent: ' + info.response);
+        // console.log('Message sent: ' + info.response);
     };
 });
 }

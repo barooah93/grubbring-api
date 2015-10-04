@@ -7,11 +7,52 @@
 	<% if (!isAuthenticated){ %>
 		<a href="/api/login">Log in here</a>
 	<%} else{ %>
-		Hello, <%= user.userId %>, 
-				<%= user.firstName %> <%= user.lastName %>
-				<%= user.username %>!, 
-				<%= user.emailAddr%>
-		<a href="/api/logout">Log out of here</a>
+		<div>
+			Hello, <%= user.userId %>, 
+					<%= user.firstName %> <%= user.lastName %>
+					<%= user.username %>!, 
+					<%= user.emailAddr%>
+			<a href="/api/logout">Log out of here</a>
+		</div>
+		
+		<hr> 
+		
+		<div>
+			<form action='/api/profile/updateEmail' method='post'>
+				Current Email: <%=user.emailAddr%>
+				<input type='text' name='newEmail'>
+				<input type='submit' value='Update Email Address'>
+			</form>
+		</div>
+		
+		<hr>
+		
+		<div>
+			<form action='/api/profile/updateCellNumber' method='post'>
+				Current Cell: <%=user.cellPhone%>
+				<input type='number' name='newCell'>
+				<input type='submit' value='Update Cell'>
+			</form>
+		</div>
+		
+		<hr>
+		
+		<div>
+			<form action='/api/profile/updatePassword' method='post'>
+				<label> Old Password: 
+					<input type='password' name='oldPassword'>
+				</label>
+				<br>
+				<label> New Password:
+					<input type='password' name='newPassword'>
+				</label>
+				<br>
+				<label> Confirm New Password: 
+					<input type='password' name='confirmPassword'>
+				</label>
+				<input type='submit' value='Update Password'>
+			</form>
+		</div>
 	<% } %>
 </body>
 </html>
