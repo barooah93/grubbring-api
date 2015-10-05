@@ -3,20 +3,31 @@ var express = require('express');
 var app = express();
 var pool = require('../config/dbconnection.js').pool;
 var gps = require('gps2zip');
+var zipcodes = require('zipcodes');
+var debug = require('debug')('grubbring:ring');
 
 //-------------------------START-----------------------------------------------------
 // GET: pull all ring locations and details near the user
 //      if no rings found, send error code
 app.get('/', function(req,res){
+    /*
+    Latitude and Longitude of user comes from front end and passed in the body of this http GET request
+    For website - browser can get user's coordiates --> Example: http://www.w3schools.com/html/html5_geolocation.asp
+    For Android/IOS - use mobiles geolocation api to get user's coordinates and pass to this api
+    */
     // var userLat = req.body.latitude;
     // var userLong = req.body.longitude;
-    var userLat = 40.926063899999995
-    var userLong = -74.1047229;
+    var userLat = 40.926063899999995; //for testing 
+    var userLong = -74.1047229; //for testing
     
-    var userZipCode = gps.gps2zip(userLat, userLong);
-    console.log(userZipCode);
-    if(req.query.scope == "all"){
-        var query = "SELECT * FROM tblRing;";   
+    //get user zipcode based on lat and log
+    var userZipCode = gps.gps2zip(userLat, userLong).zip_code; // --> returns zipcode 07410 for Fair Lawn, NJ
+    //find zipcodes within a certain radius (1 mile) of user's zipcode
+    var zipcodesNearUser = zipcodes.radius(userZipCode, 1);
+    var queryParamZipcodeList = zipcodesNearUser.toString().split(',').join(" OR zipcode = ");
+
+    var query = "SELECT * FROM tblRing WHERE zipcode = "+queryParamZipcodeList+";";   
+        debug(query);
         dbExecuteQuery(query, function(err, result){
             if(result.status != "error" && !err){
                 // overwrite description
@@ -24,10 +35,21 @@ app.get('/', function(req,res){
             }
             res.send(result);
         });
-    }
-    else{
-        res.send("try using option ?scope=all");
-    }
+ 
+    // if(req.query.scope == "all"){
+    //     var query = "SELECT * FROM tblRing WHERE zipcode = "+queryParamZipcodeList+" ;";   
+    //     console.log(query);
+    //     dbExecuteQuery(query, function(err, result){
+    //         if(result.status != "error" && !err){
+    //             // overwrite description
+    //             result.description="Returned all rings";
+    //         }
+    //         res.send(result);
+    //     });
+    // }
+    // else{
+    //     res.send("try using option ?scope=all");
+    // }
 });
 //-------------------------END-------------------------------------------------------
 

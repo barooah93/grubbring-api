@@ -12,6 +12,7 @@ var debug = require('debug')('grubbring:registration');
 //-------------------------------------------------------------------
 
 app.get('/', function(req,res){
+	debug(req.method + ' ' + req.url);
 	var data = {
     		"status":"OK",
 			"message":"Present Registration Page"
@@ -19,14 +20,12 @@ app.get('/', function(req,res){
 		
 	res.status(200);
 	res.json(data);
-	debug(req.method + ' ' + req.url);
-	res.render('registration');
+
 });
 //---------------------------------------------------------
 
 app.post('/', function(req, res){
-	//successRedirect means user already exists 
-	var firstname = req.body.firstname;
+
 	debug(req.method + ' ' + req.url);
 
 		var firstname = req.body.firstname;
@@ -119,9 +118,7 @@ app.get('/confirmation',function(req,res){
 		
 	res.status(200);
 	res.json(data);
-
 	debug(req.method + ' ' + req.url);
-	res.render('registrationConfirmation');
 });
 //---------------------------------------------------------
 
@@ -129,7 +126,6 @@ app.post('/confirmation',function(req,res){
 	debug(req.method + ' ' + req.url);
 	var status = "active";
 	var confirmationToken = req.body.token;
-	console.log(confirmationToken);
 	var data = {
     		"status":"",
 			"message":""
