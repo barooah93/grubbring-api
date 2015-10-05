@@ -21,7 +21,10 @@ app.get('/', function(req,res){
 //subsequent requests will see the token, and automatically deserialize and make it available on req.user
 app.post('/', passport.authenticate('local-login'), function(req,res){
 	debug(req.method + ' ' + req.url);
-	res.redirect('./profile');
+	if(req.user != null){
+		res.status(200);
+		res.json(req.user);
+	}
 });
 
 module.exports = app;

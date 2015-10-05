@@ -3,9 +3,12 @@ var app = express.Router();
 var debug = require('debug')('grubbring:logout');
 
 app.get('/', function(req, res){
-	debug(req.method + ' ' + req.url);
+	var data = {
+    		"status":"OK",
+			"message":"User has been logged out"
+		};
 	req.logout(); //logout method added by passport, delete the user id inside sessions
-	res.redirect('/api/login');
+	res.json(data);
 });
 
 
