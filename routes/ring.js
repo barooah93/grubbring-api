@@ -120,8 +120,42 @@ app.get('/notifyLeader/:userId', function(req,res){
 //-------------------------START-----------------------------------------------------
 // PUT: ring leader accepts or rejects user's request.
 //          service will also notify user of ring leader's decision
-app.put('/join', function(req,res){
-    res.send('update api works');
+
+//assuming 1 = approved, 0 = banned, 2 = pending?
+app.put('/join/:userId/:ringId/:handleRequest', function(req,res){
+    var accepted = req.params.handleRequest; //boolean
+    var userId = req.params.userId;
+    var ringId = req.params.ringId;
+    var query = "";
+    var description = "";
+    
+    if(accepted == 1) {
+        query = "UPDATE tblRingUser R " +
+        "SET R.status = 1 " +
+        "WHERE R.userId = " + userId + " " +
+        "AND R.ringId = " + ringId + ";"
+        description = "Accepted userId " + userId + "'s request to join ring"
+    } else if (accepted == 0) {
+        query = "UPDATE tblRingUser R " + 
+        "SET R.status = 0 " +
+        "WHERE R.userId = " + userId + " " +
+        "AND R.ringId = " + ringId + ";"
+        description = "Rejected userId " + userId + "'s request to join ring"
+    } else {
+        return; //bad query - handle later
+    }
+    dbExecuteQuery(query, function(err, callback){
+         if(callback.status != "error" && !err){
+            if(callback.data.length == 0){
+                // overwrite description
+                callback.description="Could not match the search criteria with anything in our database.";
+            }
+            else{
+                callback.description=description;
+            }
+        }
+        res.send(callback);
+    });
 });
 //-------------------------END-------------------------------------------------------
 
