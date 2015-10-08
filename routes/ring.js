@@ -270,13 +270,13 @@ app.get('/search/:field/:key', function(req,res) {
             res.send(query);
         }
         
-
-        }
+            description = "Get ring details for ring leader's name: " + req.params.key + "*";
+    }
         
-        description = "Get ring details for ring leader's name: " + req.params.key + "*";
+      
 
        
-    }
+    
     else if(req.params.field == 'ringId'){
         query = "SELECT * FROM tblRing R " +
         "WHERE R.ringId = '" + req.params.key + "' "+
@@ -307,7 +307,6 @@ app.get('/search/:field/:key', function(req,res) {
     
     var query = "SELECT * FROM tblUser;";   
         description = "Get ring details for ring name: " + req.params.key;
-    }
     
 
     // connect to db and execute query
@@ -323,6 +322,7 @@ app.get('/search/:field/:key', function(req,res) {
         }
         res.send(result);
     });
+
    
 });
 //-------------------------END-------------------------------------------------------
@@ -361,8 +361,8 @@ var dbExecuteQuery = function(query, callback){
 		}
 	});
 
-   
-});
+  
+
 //-------------------------END-------------------------------------------------------
 
 };
