@@ -41,8 +41,8 @@ module.exports = function(passport){
 		]);
 
 	});
-	//----------------------------------------------------------------------------------
 
+//----------------------------------------------------------------------------------------
 	//log-in using local strategy (keep session once user logs in)
 	passport.use('local-login', new LocalStrategy(function(username, password, done){
 		
@@ -51,7 +51,7 @@ module.exports = function(passport){
 			function(callback){
 				pool.getConnection(function(err, connection) {
 				    if(err){
-				    	throw err;
+				    	done(err);
 				    }
 				    if(connection && 'query' in connection){
 				    	callback(null,connection);

@@ -6,7 +6,6 @@ var cookieParser = require('cookie-parser');
 var expressSession = require('express-session');
 
 var passport = require('passport');
-var passportLocal = require('passport-local');
 
 var debug = require('debug')('grubbring');
 
@@ -19,6 +18,8 @@ var registrationRoute = require('./routes/registration');
 var facebookloginRoute = require('./routes/facebooklogin');
 var getRingsRoute = require('./routes/ring'); 
 var getDashboardRoute = require("./routes/dashboard");
+
+//var connectAccountsRoute = require('./routes/connectAccounts');
 
 //-----------------------------------------------------------
 app.set('view engine', 'ejs');
@@ -44,6 +45,7 @@ app.use('/api/profile', profileRoute);
 app.use('/api/logout', logoutRoute);
 app.use('/api/registration', registrationRoute);
 app.use('/auth/facebook', facebookloginRoute);
+//app.use('/connect', connectAccountsRoute);
 
 //Re-Routing URL requests to APIs
 app.use('/api/users', usersRoute);
