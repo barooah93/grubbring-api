@@ -17,11 +17,12 @@ var grubid = null;
 
 
 //RETURNS: Ringname, Grubbringer name, grubbery, number of remaining opernings for orders, and time left to place an order. 
+//this gets the list of activities in a user's list of rings, whether user is a member or a grubbringer.
 app.get('/', function(req,res){
     
         //TODO: include current?scope=1
         //scope will = 1 only if user elects to view the optional "Current Activities I'm In" list
-		//this gets the list of activities in a user's list of rings, whether user is a member or a grubbringer.
+		
         
         	var q = null;
     		var q2 = null;
@@ -46,6 +47,7 @@ app.get('/', function(req,res){
 			              }
 			              else{
 			              	
+			              	//this is to get the info that we need for this method
 			              	var finalQuery = (q2, function(err, output){
 			              		//console.log("i'm here");
 			              		if (err){
@@ -101,7 +103,27 @@ app.get('/', function(req,res){
 	
 });
 
+//RETURNS: List of rings that the user is an owner of
 app.get('/myrings', function(req,res){
-	//basic method to retrieve all the user's rings
+	
+	var query = "SELECT tblRing.name FROM tblRing WHERE tblRing.createdBy = '"+user+"'";
+	
+	pool.getConnection(function(err,connection){
+			     if(err){
+			         console.log(err);
+			     }
+			     else if (connection && 'query' in connection){
+			     	
+			          connection.query(query,function(err, rows){
+			              if (err){
+			                  console.log(err);
+			              }
+			              else{
+			          			//res.send(rows[0].name);
+			              	
+			              }
+			          });
+			     }
+	});
 });
 module.exports = app;
