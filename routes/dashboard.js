@@ -2,12 +2,15 @@ var express = require('express');
 var app = express();
 var pool = require('../config/dbconnection.js').pool;
 var user = null;
+var loggedInUser = null;
 var orderid = null;
 var grubbringerName = null;
 var ringid = null; 
-var maxnumorders = null;
 var userid = null;
 var grubid = null;
+var async = require('async');
+var array = [];
+var debug = require('debug')('grubbring:dashboard');
 
 
 //GET functionality that will retrieve and display "current activity list" of rings if user is a part of at least one ring
@@ -22,90 +25,110 @@ app.get('/', function(req,res){
     
         //TODO: include current?scope=1
         //scope will = 1 only if user elects to view the optional "Current Activities I'm In" list
-		
-        
         	var q = null;
     		var q2 = null;
     
+    		if(req.isAuthenticated == true){
+    			loggedInUser = req.user.userId;
+    		}
+    		else{
+    			debug("There is no user on session");
+				var data = {
+    				"status":"UNAUTHORIZED",
+					"message":"Please login using correct username and password"
+			};
+				res.status(500);
+				res.json(data);
+    		}
+    
     		var user = 85; // this is ringUser - hardcoded for now, will grab as session later
     
-    		//first we need to grab all the orderIds for each that is associated with the user as well as the remaining number of orders for each orderid
-    		q ="SELECT tblOrder.orderId AS OrderID, tblOrder.ringId, tblOrder.grubberyId, tblOrder.bringerUserId, SUM(tblOrder.maxNumOrders - tblOrderUser.quantity) " +
+    
+    		async.waterfall ([
+    			function(callback){
+				pool.getConnection(function(err, connection) {
+				    if(err){
+				    	throw err;
+				    }
+				    if(connection && 'query' in connection){
+				    	callback(null,connection);
+				    }
+				});
+			},
+			
+			function(connection, callback){
+				
+				q ="SELECT tblOrder.orderId AS OrderID, tblOrder.ringId, tblOrder.grubberyId, tblOrder.bringerUserId, SUM(tblOrder.maxNumOrders - tblOrderUser.quantity) " +
 				"AS remainingOrders FROM tblOrder, tblRingUser, tblOrderUser WHERE tblRingUser.userId = '"+user+"' AND tblOrder.ringId = tblRingUser.ringId " +
 				"AND tblOrderUser.orderId = tblOrder.orderId GROUP BY tblOrder.orderId";
+				
+				connection.query(q, function(err, rows){
+					if (err){
+						console.log(err);
+					}
+					else{
+					for (var i = 0; i < rows.length; i++){
+						//maxnumorders = rows[i].remainingOrders;
+                        grubid = rows[i].grubberyId;
+                        ringid = rows[i].ringId;
+                        userid = rows[i].bringerUserId;
+                        var obj = {
+                        	//RemainingOrders: maxnumorders,
+                        	GrubID: grubid,
+                        	RingID: ringid,
+                        	UserID: userid
+                        }
+                        array.push(obj);
+                        
+				}
+					callback(null, connection);
+					}
+				});
+				
+				
+			},
+			
+			function(connection, callback){
+				
+				for (var i = 0; i < array.length; i++){
+					//maxnumorders = array[i].RemainingOrders;
+					ringid = array[i].RingID;
+					userid = array[i].UserID;
+					grubid = array[i].GrubID;
+					
+					//console.log("this is the remaining orders", maxnumorders);
+					
+				q2 = "SELECT tblRing.name AS ringName, tblGrubbery.name AS grubberyName, tblUser.username, SUM(tblOrder.maxNumOrders - tblOrderUser.quantity) AS RemainingOrders " +
+                "FROM tblRing JOIN tblOrder ON tblOrder.ringId = tblRing.ringId JOIN tblGrubbery ON tblOrder.grubberyId = tblGrubbery.grubberyId " +
+                "JOIN tblUser ON tblOrder.bringerUserId = tblUser.userId JOIN tblOrderUser ON tblOrder.orderId = tblOrderUser.orderId WHERE tblOrder.ringId ='"+ringid+"' AND tblOrder.grubberyId = '"+grubid+"' AND " +
+                "tblOrder.bringerUserId = '"+userid+"'";
+                
+                connection.query(q2,function(err, rows){
+			       //console.log(rows.length);        		
+                    if(err){
+                      console.log(err);
+                    }
+                   else{
+                   		console.log(rows[0].ringName+" "+rows[0].grubberyName+" "+rows[0].username+" "+rows[0].RemainingOrders);
+                   		
+                }
+                
+				});
+			
+               
+		}   
+				
+               //connection.release();
+			}
     		
-    		
-    		//connect to db and execute query
-			 pool.getConnection(function(err,connection){
-			     if(err){
-			         console.log(err);
-			     }
-			     else if (connection && 'query' in connection){
-			          connection.query(q,function(err, rows){
-			              if (err){
-			                  console.log(err);
-			              }
-			              else{
-			              	
-			              	//this is to get the info that we need for this method
-			              	var finalQuery = (q2, function(err, output){
-			              		//console.log("i'm here");
-			              		if (err){
-			              			console.log("err is ", err);
-			              		}
-			              		else{
-			              			q2 = "SELECT tblRing.name AS ringName, tblGrubbery.name AS grubberyName, tblUser.username " +
-                                      "FROM tblRing JOIN tblOrder ON tblOrder.ringId = tblRing.ringId JOIN tblGrubbery ON tblOrder.grubberyId = tblGrubbery.grubberyId " +
-                                      "JOIN tblUser ON tblOrder.bringerUserId = tblUser.userId WHERE tblOrder.ringId ='"+ringid+"' AND tblOrder.grubberyId = '"+grubid+"' AND " +
-                                      "tblOrder.bringerUserId = '"+userid+"'";
-                                      
-			                    	connection.query(q2,function(err, rows){
-			                    		
-                                    if(err){
-                                        console.log(err);
-                                    }
-                                    else{
-                                    	
-                                        for (var i = 0; i < rows.length; i++){
-                                        
-                                        	//console.log("what am i printing");
-                                            console.log(rows[i].ringName+" "+rows[i].grubberyName+" "+rows[i].username+" "+maxnumorders);
-                                           
-                                    }
-                                    
-                                 }
-                                   
-                                     
-			                    });
-			              		}
-			              	});
-			            
-			                  for (var i = 0; i < rows.length; i++){
-                                  maxnumorders = rows[i].remainingOrders;
-                                  grubid = rows[i].grubberyId;
-                                  ringid = rows[i].ringId;
-                                  userid = rows[i].bringerUserId;
-                                  //console.log(rows[i]);
-                                  console.log("we've now got the", maxnumorders);
-                                  
-                                  finalQuery(q2, grubid, ringid, userid, maxnumorders);
-                                  //finalQuery(grubid, ringid, userid, maxnumorders);
-                                  //now that we have a list of orderids associated with the rings associated with the user, we can return the ringName, grubbringerName and grubbery
-                              
-			                      
-			                    }
-			                  }  
-			 });
-			 connection.release();
-		}
-			     
-	});
+    	]);
 	
 });
 
 //RETURNS: List of rings that the user is an owner of
 app.get('/myrings', function(req,res){
 	
+	var user = 85;
 	var query = "SELECT tblRing.name FROM tblRing WHERE tblRing.createdBy = '"+user+"'";
 	
 	pool.getConnection(function(err,connection){
@@ -119,7 +142,7 @@ app.get('/myrings', function(req,res){
 			                  console.log(err);
 			              }
 			              else{
-			          			//res.send(rows[0].name);
+			          			res.json(rows[0]);
 			              	
 			              }
 			          });
