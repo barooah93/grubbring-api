@@ -10,7 +10,7 @@ module.exports = {
      Description - description of status
      Data - the rows of the resultset (null if update, delete, etc) if success, detailed error otherwise
 */
-    dbExecuteQuery: function(query, callback){ // TODO: parameterize the query
+    dbExecuteQuery: function(query, callback){
     var resultObject;
     pool.getConnection(function(err,connection){
 		if(err){
