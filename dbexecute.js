@@ -10,17 +10,17 @@ module.exports = {
      Description - description of status
      Data - the rows of the resultset (null if update, delete, etc) if success, detailed error otherwise
 */
-    dbExecuteQuery: function(query, callback){ // TODO: parameterize the query
+    dbExecuteQuery: function(query, callback){
     var resultObject;
     pool.getConnection(function(err,connection){
 		if(err){
-			debug.log(err); //TODO
+			debug(err);
 			resultObject = {status:"error", description:"Cannot connect to database", data:err};
 			callback(err,resultObject);
 		}else if(connection && 'query' in connection){
 			connection.query(query,function(err, rows, fields){
 			    if(err){
-			        debug.log(err);
+			        debug(err);
 			        resultObject = {status:"error", description:"Cannot execute query", data:err};
 			        callback(err, resultObject);
 			    }

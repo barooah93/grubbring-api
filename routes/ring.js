@@ -5,6 +5,7 @@ var gps = require('gps2zip');
 var zipcodes = require('zipcodes');
 var debug = require('debug')('grubbring:ring');
 var db = require('../dbexecute');
+var mysql = require('mysql');
 
 //-------------------------START-----------------------------------------------------
 
@@ -27,9 +28,11 @@ app.get('/', function(req,res){
     var zipcodesNearUser = zipcodes.radius(userZipCode, 1);
     var queryParamZipcodeList = zipcodesNearUser.toString().split(',').join(" OR zipcode = ");
 
-    var query = "SELECT * FROM tblRing WHERE zipcode = "+queryParamZipcodeList+";";   
-    debug(query);
-    db.dbExecuteQuery(query, function(err, result){
+    var sql = "SELECT * FROM tblRing WHERE zipcode = "+queryParamZipcodeList+";"; 
+    var inserts = ['rblRing','zipcode',queryParamZipcodeList];
+    sql = mysql.format(sql, inserts);
+    debug(sql);
+    db.dbExecuteQuery(sql, function(err, result){
         if(result.status != "error" && !err){
             // overwrite description
             result.description="Returned all rings";
@@ -49,15 +52,16 @@ app.post('/join/:ringId/:userId', function(req,res){
     var userRole = 1; // 0 means leader, 1 means grubbling
     var userStatus = 0; // user status for pending=0, approved=1, declined=2, and banned=3
     
-    var query = null;
+    var sql = null;
     // TODO: need error checking and validation
     
 
     // ring status for pending=0, approved=1, declined=2, and banned=3
-    query = "INSERT INTO tblRingUser (ringId, userId, roleId, status) "+
-    "VALUES ("+ringId+", "+userId+", "+ userRole+", "+userStatus+");"
+     sql = "INSERT INTO tblRingUser (ringId, userId, roleId, status) VALUES (?,?,?,?);"
+     var inserts = ['ringId', 'userId', 'roleId','status'];
+     sql = mysql.format(sql, inserts);
         
-    db.dbExecuteQuery(query, function(err, result){
+    db.dbExecuteQuery(sql, function(err, result){
         if(result.status != "error" && !err){
             // overwrite description
             result.description="Added userId " + userId + " with pending status to ringId " + ringId;
@@ -69,19 +73,63 @@ app.post('/join/:ringId/:userId', function(req,res){
 });
 //-------------------------END-------------------------------------------------------
 
+//-------------------------START-----------------------------------------------------
+// PUT: ring leader accepts or rejects user's request.
+//          service will also notify user of ring leader's decision
+
+//assuming pending = 0, approved = 1, declined = 2, banned = 3
+app.put('/join/:userId/:ringId/:handleRequest', function(req,res){
+    var pending = 0;
+    var approved = 1;
+    var declined = 2;
+    var banned = 3;
+    
+    var changeStatusTo = req.params.handleRequest; //boolean
+    var userId = req.params.userId;
+    var ringId = req.params.ringId;
+    var sql = "";
+    var description = "";
+    
+    if(changeStatusTo == pending || changeStatusTo == approved || changeStatusTo == declined || changeStatusTo == banned ) {
+        sql = "UPDATE tblRingUser R " +
+        "SET R.status = ? " + 
+        "WHERE R.userId = ? " +
+        "AND R.ringId = ?;"
+        var inserts = ['changeStatusTo', 'userId', 'ringId'];
+        description = "Changed userId " + userId + "in ringId " + ringId + " status to " + changeStatusTo;
+    } else {
+        res.send(sql);// TODO: handle error
+    }
+    db.dbExecuteQuery(sql, function(err, callback){
+         if(callback.status != "error" && !err){
+            if(callback.data.length == 0){
+                // overwrite description
+                callback.description="Could not match the search criteria with anything in our database.";
+            }
+            else{
+                callback.description=description;
+            }
+        }
+        res.send(callback);
+    });
+});
+//-------------------------END-------------------------------------------------------
+
 
 //-------------------------START-----------------------------------------------------
 // GET: leader get notification if someone is trying join ring
 app.get('/notifyLeader/:userId', function(req,res){
     var leaderId = req.params.userId;
     var ringIds=[];
-    var query=null;
+    var sql=null;
     
     //TODO: Validate userId
-          
+    
     // First get the ringids that are associated with this userId
-    query = "SELECT ringId FROM tblRingUser WHERE userId="+leaderId+" AND roleId=0 AND status=1;";
-    db.dbExecuteQuery(query,function(err, result){
+    sql = "SELECT ringId FROM tblRingUser WHERE userId=? AND roleId=0 AND status=1;"
+    var inserts = [leaderId];
+    sql = mysql.format(sql, inserts);
+    db.dbExecuteQuery(sql, function(err, result){
         if(result.status != "error" && !err){
             
             // push ring ids that this user owns to the ringIds array
@@ -104,50 +152,6 @@ app.get('/notifyLeader/:userId', function(req,res){
 //-------------------------END-------------------------------------------------------
 
 
-
-
-//-------------------------START-----------------------------------------------------
-// PUT: ring leader accepts or rejects user's request.
-//          service will also notify user of ring leader's decision
-
-//assuming 1 = approved, 0 = banned, 2 = pending?
-app.put('/join/:userId/:ringId/:handleRequest', function(req,res){
-    var accepted = req.params.handleRequest; //boolean
-    var userId = req.params.userId;
-    var ringId = req.params.ringId;
-    var query = "";
-    var description = "";
-    
-    if(accepted == 1) {
-        query = "UPDATE tblRingUser R " +
-        "SET R.status = 1 " +
-        "WHERE R.userId = " + userId + " " +
-        "AND R.ringId = " + ringId + ";"
-        description = "Accepted userId " + userId + "'s request to join ring"
-    } else if (accepted == 0) {
-        query = "UPDATE tblRingUser R " + 
-        "SET R.status = 0 " +
-        "WHERE R.userId = " + userId + " " +
-        "AND R.ringId = " + ringId + ";"
-        description = "Rejected userId " + userId + "'s request to join ring"
-    } else {
-        return; //bad query - handle later
-    }
-    db.dbExecuteQuery(query, function(err, callback){
-         if(callback.status != "error" && !err){
-            if(callback.data.length == 0){
-                // overwrite description
-                callback.description="Could not match the search criteria with anything in our database.";
-            }
-            else{
-                callback.description=description;
-            }
-        }
-        res.send(callback);
-    });
-});
-//-------------------------END-------------------------------------------------------
-
 //-------------------------START-----------------------------------------------------
 // GET: get ring details for searched ring
 /* Search fields:
@@ -162,7 +166,7 @@ app.put('/join/:userId/:ringId/:handleRequest', function(req,res){
 // TODO: take out field parameter
 app.get('/search/:field/:key', function(req,res) {
     
-    var query = null;
+    var sql = null;
     
 
     var description = "";
@@ -174,12 +178,14 @@ app.get('/search/:field/:key', function(req,res) {
         // if no dash found see if they're searching for first name or last name
         if(req.params.key.indexOf('-') === -1)
         {
-            query = "SELECT * FROM tblRing R "+
+            sql = "SELECT * FROM tblRing R "+
             "INNER JOIN tblUser U "+
             "ON R.createdBy=U.userId "+
-            "WHERE (U.firstName LIKE '"+req.params.key+"%' "+
-            "OR U.lastName LIKE '"+req.params.key+"%') " +
+            "WHERE (U.firstName LIKE ? "+
+            "OR U.lastName LIKE ?) " +
             "AND R.ringStatus=1;"; 
+            var inserts=[req.params.key+"%", req.params.key+"%"];
+            sql = mysql.format(sql,inserts);
         
         }
         else{ // a full first or last name was given seperated by a '-'
@@ -187,49 +193,55 @@ app.get('/search/:field/:key', function(req,res) {
             var firstEntry = fullEntry[0];   // this should be a full first OR last name
             var secondEntry = fullEntry[1]; // this CAN be partially filled out since it is wildcard search
             
-            query = "SELECT * FROM tblRing R "+
+            sql = "SELECT * FROM tblRing R "+
             "INNER JOIN tblUser U "+
             "ON R.createdBy=U.userId "+
             "WHERE "+
-            "(U.firstName='"+firstEntry+"' OR U.lastName='"+firstEntry+"') "+
+            "(U.firstName=? OR U.lastName=?) "+
             "AND "+
-            "(U.firstName LIKE '"+secondEntry+"%' OR U.lastName LIKE '"+secondEntry+"%') " +
+            "(U.firstName LIKE ? OR U.lastName LIKE ?) " +
             "AND "+
             "R.ringStatus=1;";
+            var inserts=[firstEntry,firstEntry,secondEntry+"%",secondEntry+"%"];
+            sql = mysql.format(sql,inserts);
 
         }
         
         description = "Get ring details for ring leader's name: " + req.params.key + "*";
     } 
     else if(req.params.field == 'ringId'){
-        query = "SELECT * FROM tblRing R " +
-        "WHERE R.ringId = '" + req.params.key + "' "+
+        sql = "SELECT * FROM tblRing R " +
+        "WHERE R.ringId = ? "+
         "AND R.ringStatus=1;";
-
+        var inserts=[req.params.key];
+        sql = mysql.format(sql,inserts);
+        
         description = "Get ring details for ringId: " + req.params.key;
 
     }
     else if(req.params.field == 'username'){
-        query = "SELECT * FROM tblRing R, tblUser U " +
+        sql = "SELECT * FROM tblRing R, tblUser U " +
         "WHERE R.createdBy = U.userId "+
-        "AND U.username LIKE '" + req.params.key + "%' "+
+        "AND U.username LIKE ? "+
         "AND R.ringStatus=1;";
-
+        var inserts=[req.params.key+"%"];
+        sql = mysql.format(sql,inserts);
+        
         description = "Get ring details for ring leader's username: " + req.params.key;
 
     }
     else if(req.params.field == 'ringName'){
-        query = "SELECT * FROM tblRing R " +
+        sql = "SELECT * FROM tblRing R " +
         "WHERE R.name LIKE '" + req.params.key + "%' "+
         "AND R.ringStatus=1;";
+        var inserts=[req.params.key+"%"];
+        sql = mysql.format(sql,inserts);
 
+        description = "Get ring details for ring name: " + req.params.key;
     }
      
-    description = "Get ring details for ring name: " + req.params.key;
-    
-
-    // connect to db and execute query
-    db.dbExecuteQuery(query, function(err, result){
+    // connect to db and execute sql
+    db.dbExecuteQuery(sql, function(err, result){
         if(result.status != "error" && !err){
             if(result.data.length == 0){
                 // overwrite description
@@ -253,7 +265,7 @@ app.get('/search/:field/:key', function(req,res) {
 // Parameters: ringIds - array containing ring ids
 //             callback - callback function contains the returned results.  Needed for asynchronous execution
 var getPendingUsersFromRingIds = function(ringIds, callback){
-    var query=null;
+    var sql=null;
     
     // Check if there are any rings in the array
     if(ringIds.length == 0){
@@ -261,19 +273,23 @@ var getPendingUsersFromRingIds = function(ringIds, callback){
     }
     else{
         // Now check if other userIds associated with those rings have a pending status
-        query="SELECT * FROM tblRingUser RU "+
+        sql="SELECT * FROM tblRingUser RU "+
         "INNER JOIN tblUser U "+
         "ON RU.userId=U.userId "+
         "WHERE RU.status=0 AND (";
         
+        var inserts =[];
+        
         // Concatenate sql statement if there is more than 1 ring to deal with
         for(var i=0; i<ringIds.length; i++){
-            query+= "RU.ringId="+ringIds[i]+" OR ";
+            sql+= "RU.ringId = ? OR ";
+            inserts = [ringIds[i]];
+            sql = mysql.format(sql,inserts);
         }
         // eliminate the extra 'OR ' and finish the sql statment
-        query = query.substring(0,query.length - 4) + ");";
-        // connect to db and execute query
-        db.dbExecuteQuery(query,function(err, result){
+        sql = sql.substring(0,sql.length - 4) + ");";
+        // connect to db and execute sql
+        db.dbExecuteQuery(sql,function(err, result){
             if(result.status != "error" && !err){
                 if(result.data.length == 0){
                     result.description = "There are no pending users.";
