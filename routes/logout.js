@@ -9,6 +9,7 @@ app.get('/', function(req, res){
 		};
 	req.logout(); //logout method added by passport, delete the user id inside sessions
 	res.json(data);
+	res.status(200);
 });
 
 
