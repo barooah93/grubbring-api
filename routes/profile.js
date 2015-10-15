@@ -6,30 +6,18 @@ var encrypt = require('../config/passwordEncryption.js');
 
 app.get('/',function(req,res){
 	if(req.isAuthenticated() == true){
-		var User = {
-			    "userId": req.user.userId,
-				"username": req.user.username,
-    			"firstName": req.user.firstName,
-				"lastName": req.user.lastName,
-    			"emailAddr": req.user.emailAddr,
-    			"cellPhone": req.user.cellPhone,
-    			"accountStatus": req.user.accountStatus,
-    			"userType": req.user.userType,
-    			"createdOn": req.user.createdOn,
-    			"lastLogin": req.user.lastLogin
-		};
+		debug("Profile response executed");
 		res.status(200);
-		res.json(User);
+		res.json(req.user);
 	}else{
 		debug("There is no user on session");
 		var data = {
     		"status":"UNAUTHORIZED",
 			"message":"Please login using correct username and password"
 		};
-		res.status(500);
+		res.status(401);
 		res.json(data);
 	}
-	
 	
 });
 

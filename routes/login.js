@@ -13,7 +13,6 @@ require('../config/passport.js')(passport);
 
 app.get('/', function(req,res){
 	debug(req.method + ' ' + req.url);
-	res.render('login');
 });
 
 //passport.authenticate will use local strategy to authenticate the user
@@ -22,6 +21,7 @@ app.get('/', function(req,res){
 app.post('/', passport.authenticate('local-login'), function(req,res){
 	debug(req.method + ' ' + req.url);
 	if(req.user != null){
+		console.log("Request Made and Authenticated");
 		res.status(200);
 		res.json(req.user);
 	}
