@@ -1,0 +1,21 @@
+{
+  "name": "grubbring",
+  "version": "0.0.0",
+  "description": "",
+  "main": "",
+  "moduleType": [],
+  "license": "",
+  "homepage": "",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular": "~1.4.7",
+    "angular-route": "~1.4.7"
+  }
+}

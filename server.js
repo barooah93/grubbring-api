@@ -1,4 +1,5 @@
-var app   = require('express')();
+var express = require('express');
+var app = express();
 //var http = require('http').Server(app);
 
 var bodyParser = require('body-parser');
@@ -23,6 +24,8 @@ var getDashboardRoute = require("./routes/dashboard");
 
 //-----------------------------------------------------------
 app.set('view engine', 'ejs');
+app.use(express.static(__dirname + '/public'));
+app.use('/bower_components', express.static(__dirname + '/bower_components'));
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -51,6 +54,10 @@ app.use('/auth/facebook', facebookloginRoute);
 app.use('/api/users', usersRoute);
 app.use('/api/ring', getRingsRoute);
 app.use('/api/dashboard', getDashboardRoute);
+
+app.use('/*', function(req, res) {
+   res.render('index');
+});
 
 
 //-------------------------------------------------

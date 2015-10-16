@@ -29,3 +29,6 @@ node_modules
 
 # IDE folder
 .idea/
+
+# Bower Components
+bower_components/
