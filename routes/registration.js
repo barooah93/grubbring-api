@@ -17,7 +17,7 @@ app.get('/', function(req,res){
     		"status":"OK",
 			"message":"Present Registration Page"
 		};
-		
+
 	res.status(200);
 	res.json(data);
 

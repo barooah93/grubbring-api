@@ -3,34 +3,12 @@ var app = express.Router();
 var debug = require('debug')('grubbring:profile');
 var pool = require('../config/dbconnection.js').pool;
 var encrypt = require('../config/passwordEncryption.js');
+var authenticate = require('../servicesAuthenticate')
 
 app.get('/',function(req,res){
-	if(req.isAuthenticated() == true){
-		var User = {
-			    "userId": req.user.userId,
-				"username": req.user.username,
-    			"firstName": req.user.firstName,
-				"lastName": req.user.lastName,
-    			"emailAddr": req.user.emailAddr,
-    			"cellPhone": req.user.cellPhone,
-    			"accountStatus": req.user.accountStatus,
-    			"userType": req.user.userType,
-    			"createdOn": req.user.createdOn,
-    			"lastLogin": req.user.lastLogin
-		};
-		res.status(200);
-		res.json(User);
-	}else{
-		debug("There is no user on session");
-		var data = {
-    		"status":"UNAUTHORIZED",
-			"message":"Please login using correct username and password"
-		};
-		res.status(500);
-		res.json(data);
-	}
-	
-	
+	authenticate.checkAuthentication(req,res,function(data){
+		res.json(req.user);
+	});
 });
 
 app.post('/updateEmail', function(req, res) {
