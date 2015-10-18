@@ -3,13 +3,17 @@ var app = express.Router();
 var debug = require('debug')('grubbring:profile');
 var pool = require('../config/dbconnection.js').pool;
 var encrypt = require('../config/passwordEncryption.js');
-var authenticate = require('../servicesAuthenticate')
+var authenticate = require('../servicesAuthenticate');
+var db = require('../dbexecute');
+var mysql = require('mysql');
 
 app.get('/',function(req,res){
 	authenticate.checkAuthentication(req,res,function(data){
+		
 		res.json(req.user);
 	});
 });
+
 
 app.post('/updateEmail', function(req, res) {
 	debug(req.method + ' ' + req.url);
