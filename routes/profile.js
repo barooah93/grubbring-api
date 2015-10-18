@@ -39,7 +39,6 @@ app.post('/updateEmail', function(req, res) {
 
             db.dbExecuteQuery(sql, res, function(result) {
                 result.description = 'Updated Email Address';
-                res.status(200);
                 res.json(result);
             });
         }
@@ -69,7 +68,6 @@ app.post('/updateCellNumber', function(req, res) {
 
             db.dbExecuteQuery(sql, res, function (result) {
                 result.description = 'Updated Cell phone number';
-                res.status(200);
                 res.json(result);
             })
 
@@ -96,7 +94,6 @@ app.post('/updatePassword', function(req, res) {
 
             db.dbExecuteQuery(sql, res, function (result) {
                 result.description = 'Updated password';
-                res.status(200);
                 res.json(result);
             });
         } else {
