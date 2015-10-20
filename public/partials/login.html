@@ -1,5 +1,12 @@
-
-<div>
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Welcome to Grubbring!</title>
+        <link rel="stylesheet" type="text/css" href="../css/style.css">
+    </head>
+<body>
+    <img class="logo" src="../images/grublogo.png"></img>
+<div class="login-form">
     <form ng-submit="submit()">
         <input type = "text" name="username" ng-model="username">
         <input type = "password" name="password" ng-model="password">
@@ -9,3 +16,5 @@
     <a href="/auth/facebook" ></span> Facebook Login</a>
     <p>Don't have an account? <a href="../partials/registration.html">Register now!</a></p>
 </div>
+</body>
+</html>
