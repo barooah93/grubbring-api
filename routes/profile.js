@@ -11,7 +11,6 @@ var mysql = require('mysql');
 
 app.get('/',function(req,res){
 	authenticate.checkAuthentication(req,res,function(data){
-		
 		res.json(req.user);
 	});
 });
@@ -105,6 +104,17 @@ app.post('/updatePassword', function(req, res) {
             })
         }
     })
+});
+
+app.get('/loginAttempts/:username',function(req, res) {
+   var username = req.params.username;
+   var sql = "SELECT loginAttempts,accountStatus FROM tblUser WHERE username=?;";
+   var inserts = [username];
+   sql = mysql.format(sql, inserts);
+   
+   db.dbExecuteQuery(sql, res, function(result) {
+       res.json(result.data[0]);
+   });
 });
 
 module.exports = app;

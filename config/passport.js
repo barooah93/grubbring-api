@@ -1,9 +1,8 @@
 var LocalStrategy = require('passport-local').Strategy;
 var FacebookStrategy = require('passport-facebook').Strategy;
 var encrypt = require('./passwordEncryption');
-var pool = require('../config/dbconnection.js').pool;
 var configAuth = require('./auth');
-var async = require('async');
+//var sendTokenEmail = require("../routes/registration");
 var debug = require('debug')('grubbring:passport');
 var db = require('../dbexecute');
 var mysql = require('mysql');
@@ -40,12 +39,48 @@ module.exports = function(passport){
 		    	var db_username = result.data[0].username;
 				var db_password = result.data[0].password;
 				var db_status = result.data[0].accountStatus;
+				var db_loginAttempts = result.data[0].loginAttempts;
+				var db_token = result.data[0].confirmationToken;
+				var db_email = result.data[0].emailAddr;
 				
 				if(username === db_username && encrypt.validatePassword(password,db_password) && db_status === "active"){
-					done(null, result.data[0]); //username exists, password is valid, and account is active
+						sql = "UPDATE tblUser SET loginAttempts=? WHERE username=?;";
+						inserts = [3,username];
+						sql = mysql.format(sql, inserts);
+						
+						db.dbExecuteQuery(sql, done, function(result) {
+						    done(null,result.data[0]);
+						});
+						
+						done(null, result.data[0]); 
 				}
 				else{
-					done(result.data[0]); //username exists but password is invalid OR account is inactive
+					db_loginAttempts--;
+					if(db_loginAttempts == 0){
+					//	registrationConfirmation.emailTokenToUser(db_token,db_email);
+						
+						sql = "UPDATE tblUser SET accountStatus=?, loginAttempts=? WHERE username=?;"
+						inserts = ["Blocked",db_loginAttempts,db_username];
+						sql=mysql.format(sql,inserts);
+						
+						db.dbExecuteQuery(sql,done,function(result) {
+						   done(result.data[0]);
+						});
+						
+						done(result.data[0]); 
+					}
+					else{
+						sql = "UPDATE tblUser SET loginAttempts=? WHERE username=?;";
+						inserts = [db_loginAttempts,username];
+						sql = mysql.format(sql, inserts);
+						
+						db.dbExecuteQuery(sql, done, function(result) {
+						    done(result.data[0]); //username exists but password is invalid OR account is inactive
+						});
+						
+						done(result.data[0]); 
+					}
+					
 				}
 				
 		    }else{

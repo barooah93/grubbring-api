@@ -46,7 +46,6 @@ app.post('/', function(req, res){
 		var inserts = [username,email];
 		sql = mysql.format(sql, inserts);
 		debug(sql);
-		
 		db.dbExecuteQuery(sql,res,function(result){
 			if(result.data.length > 0){
 				result.description = "This username/email has already been used for an account.";
@@ -57,7 +56,6 @@ app.post('/', function(req, res){
 				inserts = [username,encryptedPassword,firstname,lastname,email,phonenumber,token];
 				sql = mysql.format(sql, inserts);
 				debug(sql);
-				
 				db.dbExecuteQuery(sql,res,function(result){
 					emailTokenToUser(token,email);
 					result.description = "New user created.";
