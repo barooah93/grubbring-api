@@ -2,19 +2,19 @@ var express = require('express');
 var app = express.Router();
 var crypto = require('crypto');
 var nodemailer = require('nodemailer');
-var pool = require('../config/dbconnection.js').pool;
 var encrypt = require('../config/passwordEncryption.js');
-var async = require('async');
 var passport = require('passport');
 require('../config/passport.js')(passport);
 var debug = require('debug')('grubbring:registration');
+var db = require('../dbexecute');
+var mysql = require('mysql');
 
 //-------------------------------------------------------------------
 
 app.get('/', function(req,res){
 	debug(req.method + ' ' + req.url);
 	var data = {
-    		"status":"OK",
+    		"status":"success",
 			"message":"Present Registration Page"
 		};
 
@@ -40,72 +40,31 @@ app.post('/', function(req, res){
 
         var email = req.body.email;
         var token = crypto.randomBytes(7).toString('hex');
-
-    	var data = {
-    		"status":"",
-			"message":""
-		};
-
-		async.waterfall([
-			
-			function(callback){
-				pool.getConnection(function(err, connection) {
-				    if(err){
-				    	data["status"] = "ERROR";
-				    	data["message"] = "Unable to connect to database";
-				    	res.status(500);
-				    	res.json(data);
-				    }
-				    if(connection && 'query' in connection){
-				    	callback(null,connection);
-				    }
+		var sql = null;
+		
+		sql = "SELECT * FROM tblUser WHERE username=? OR emailAddr=?;";
+		var inserts = [username,email];
+		sql = mysql.format(sql, inserts);
+		debug(sql);
+		db.dbExecuteQuery(sql,res,function(result){
+			if(result.data.length > 0){
+				result.description = "This username/email has already been used for an account.";
+				res.status(200);
+				res.json(result);
+			}else{
+				sql = "INSERT INTO tblUser (username, password, firstName, lastName, emailAddr, cellPhone, confirmationToken) VALUES (?,?,?,?,?,?,?);";
+				inserts = [username,encryptedPassword,firstname,lastname,email,phonenumber,token];
+				sql = mysql.format(sql, inserts);
+				debug(sql);
+				db.dbExecuteQuery(sql,res,function(result){
+					emailTokenToUser(token,email);
+					result.description = "New user created.";
+					res.status(201);
+					res.json(result);	
 				});
-			},
-			
-			//check if this username or email already exists
-			function(connection,callback){
-				connection.query("SELECT * FROM tblUser WHERE username=? OR emailAddr=?",[username,email],function(err, rows, fields){
-					if(err){
-						data["status"] = "Error";
-				    	data["message"] = "Unable to run SELECT query";
-						res.status(500);
-						res.json(data);
-					}
-					if(rows.length != 0){ //user already exists
-						data["status"] = "OK";
-				    	data["message"] = "User already exists";
-						res.status(200);
-						res.json(data);
-			 			connection.release();
-					}
-					else{
-						console.log("user doesn't exist");
-						callback(null,connection);
-					}
-				});
-			},
-			
-			function(connection,callback){
-				connection.query("INSERT INTO tblUser (username, password, firstName, lastName, emailAddr, cellPhone, confirmationToken) VALUES (?,?,?,?,?,?,?)",[username,encryptedPassword,firstname,lastname,email,phonenumber,token],function(err,rows,fields){
-					if(err){
-						console.log("error inserting new user");
-					}
-					else{
-						data["status"] = "OK";
-						data["message"] = "New User Added";
-						emailTokenToUser(token,email,function(error){
-							if(error){
-								console.log(error);
-							}
-						});
-						res.status(201);
-						res.json(data);
-					}
-				});
-			connection.release();
 			}
-			
-		]);
+		});
+
 });
 //---------------------------------------------------------
 
@@ -125,47 +84,26 @@ app.get('/confirmation',function(req,res){
 app.post('/confirmation',function(req,res){
 	debug(req.method + ' ' + req.url);
 	var status = "active";
+	var username = req.body.username;
 	var confirmationToken = req.body.token;
-	var data = {
-    		"status":"",
-			"message":""
-		};
+
+	var sql = null;
+	sql = "UPDATE tblUser SET accountStatus=? WHERE confirmationToken=? AND username=?";
+	var inserts = [status,confirmationToken,username];
+	sql = mysql.format(sql, inserts);
 	
-	async.waterfall([
-		
-		function(callback){
-				pool.getConnection(function(err, connection) {
-				    if(err){
-				    	data["status"] = "ERROR";
-				    	data["message"] = "Unable to connect to database";
-				    	res.status(500);
-				    	res.json(data);
-				    }
-				    if(connection && 'query' in connection){
-				    	callback(null,connection);
-				    }
-				});
-			},
-			
-		function(connection,callback){
-				connection.query("UPDATE tblUser SET accountStatus=? WHERE confirmationToken=?",[status,confirmationToken],function(err, rows, fields){
-					if(err){
-						data["status"] = "ERROR";
-						data["message"] = "Error running update user status query";
-						res.status(500);
-			 			res.json(data);
-					}
-					if(rows.length != 0){
-						data["status"] = "OK";
-						data["message"] = "Confirmation is complete. User can now login using credentials";
-						res.status(200);
-			 			res.json(data);
-					}
-				});
-				connection.release();
-			}
-		
-	]);
+	db.dbExecuteQuery(sql,res,function(result) {
+		if(result.data.affectedRows == 1){
+			result.description = "Account has been confirmed.";
+		 	res.status(200);
+	    	res.json(result);
+		}else{
+			result.description = "Account could not be confirmed.";
+			res.status(200);
+			res.json(result);
+		}
+	    
+	});
 
 });
 

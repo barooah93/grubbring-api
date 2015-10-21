@@ -1,7 +1,7 @@
 /**
  * Created by Urvesh on 10/15/15.
  */
-
+/*global angular */
 var app = angular.module('grubbring', [
     'controllers',
     'ngRoute'
@@ -18,6 +18,10 @@ app.config(['$routeProvider', '$locationProvider', function($routeProvider, $loc
         .when('/profile', {
             templateUrl: 'partials/profile.html',
             controller: 'ProfileCtrl'
+        })
+        .when('/register', {
+            templateUrl: 'partials/register.html',
+            controller: 'RegistrationCtrl'
         })
         .otherwise({
             redirectTo: '/'
