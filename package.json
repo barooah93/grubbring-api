@@ -24,6 +24,9 @@
     "passport-facebook": "^2.0.0",
     "passport-http": "^0.3.0",
     "passport-local": "^1.0.0",
-    "zipcodes": "^1.1.1"
+    "zipcodes": "^1.1.1",
+    "moment": "^2.10.6",
+    "moment-timezone": "^0.4.1",
+    "dateformat": "^1.0.11"
   }
 }
