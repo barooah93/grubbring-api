@@ -140,19 +140,52 @@ app.get('/notifyLeader/:userId', function(req,res){
     - ring leader username
     - ring leader first name last name
 */
-// ex: https://grubbring-api-barooah93.c9.io/api/ring/search/leaderName/brandon-bar
+// ex: https://grubbring-api-barooah93.c9.io/api/ring/search/leaderName/my%20home%20ring
 // wildcard search
-// TODO: take out field parameter
-//app.get('/search/:field/:key', function(req,res) {
+// TODO: tokenize spaces/ url encoding. Use sql 'in'
 app.get('/search/:key', function(req,res) {
     
-    var sql = null;
+    var ringSql = null; // sql statement to find key in ringIds or ring names
+    var leaderSql = null; // sql statement to find key in leaderId or leader name
     
 
     var description = "";
     
-    var key = req.params.key;
+    var key = req.params.key; // is already url decoded
     
+    // execute first sql to see if key is a ringId or ring name (partial or full)
+    ringSql = "SELECT * FROM tblRing R "+
+        "WHERE (R.ringId=? "+
+            "OR R.name LIKE ?) "+
+        "AND R.ringStatus = 1;";
+    var inserts = [key, key+"%"];
+    ringSql = mysql.format(ringSql, inserts);
+    // connect to db and execute sql
+    db.dbExecuteQuery(ringSql,res, function(ringResult){
+        // execute second sql to see if key is leaderId or leader's name
+        leaderSql = "SELECT * FROM tblRing R "+
+        "INNER JOIN tblUser U "+
+        "ON R.createdBy=U.userId "+
+        "WHERE (U.username LIKE ? "+
+            "OR U.firstName LIKE ? "+
+            "OR U.lastName LIKE ?) "+
+        "AND R.ringStatus = 1;";
+        inserts = [key +"%", key+"%", key+"%"];
+        leaderSql = mysql.format(leaderSql, inserts);
+        // connect and execute
+        db.dbExecuteQuery(leaderSql,res, function(leaderResult){
+            if(leaderResult.data.length ==0 && ringResult.data.length == 0){
+                description = "Could not match the search criteria with anything in our database.";
+            }
+            else{
+                description = "Returned matching searches";
+            }
+            var data = {'status':'Success', 'description':description, 'data':{'rings':ringResult.data, 'leaders':leaderResult.data}};
+            res.send(data);
+        });
+    });
+ 
+/*   
     sql = "SELECT * FROM tblRing R "+
         "INNER JOIN tblUser U "+
         "ON R.createdBy=U.userId "+
@@ -163,7 +196,7 @@ app.get('/search/:key', function(req,res) {
             
     var inserts = [key + "%", key + "%", key + "%"];
     sql = mysql.format(sql,inserts);
-    
+*/    
     
     // TODO: need error checking
 /*  
@@ -235,7 +268,7 @@ app.get('/search/:key', function(req,res) {
     }
 
 */
-
+/*
     // connect to db and execute sql
     db.dbExecuteQuery(sql,res, function(result){
         if(result.data.length == 0){
@@ -244,7 +277,7 @@ app.get('/search/:key', function(req,res) {
         }
         res.send(result);
     });
-
+*/
    
 });
 //-------------------------END-------------------------------------------------------
