@@ -155,12 +155,33 @@ app.get('/search/:key', function(req,res) {
     authenticate.checkAuthentication(req, res, function (data) {
         var ringSql = null; // sql statement to find key in ringIds or ring names
         var leaderSql = null; // sql statement to find key in leaderId or leader name
-        
-    
         var description = "";
+        var key = mysql.escape(req.params.key); // is already url decoded
+        var tokenized = null;
+        var firstName = null;
+        var lastName = null;
         
-        var key = req.params.key; // is already url decoded
-        
+        if(key.indexOf(',') === -1) { //no comma - expect firstname lastname
+            tokenized = key.split(" ");
+            if(tokenized.length <= 1) {
+                firstName = tokenized[0];
+                lastName = firstName; //no last name
+            } else {
+                firstName = tokenized[0]
+                lastName = tokenized[1];
+            }
+        } else { // comma - expect lastname, firstname
+            key = key.replace(/\s+/g, ''); //remove whitespaces
+            tokenized = key.split(",");
+            if(tokenized.length <= 1) {
+                lastName = tokenized[0];
+                firstName = lastName; //no first name
+            } else {
+                lastName = tokenized[0]
+                firstName = tokenized[1];
+            }
+        }
+
         // execute first sql to see if key is a ringId or ring name (partial or full)
         ringSql = "SELECT * FROM tblRing R "+
             "WHERE (R.ringId=? "+
@@ -178,7 +199,7 @@ app.get('/search/:key', function(req,res) {
                 "OR U.firstName LIKE ? "+
                 "OR U.lastName LIKE ?) "+
             "AND R.ringStatus = 1;";
-            inserts = [key +"%", key+"%", key+"%"];
+            inserts = [key +"%", firstName+"%", lastName+"%"];
             leaderSql = mysql.format(leaderSql, inserts);
             // connect and execute
             db.dbExecuteQuery(leaderSql,res, function(leaderResult){
