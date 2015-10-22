@@ -2,15 +2,26 @@
  * Created by Urvesh on 10/15/15.
  */
 
-
+/* global angular */
 var app = angular.module('controllers', []);
 
 app.controller('MainCtrl', function($scope) {
 
 });
 
-app.controller('LoginCtrl', function($scope, $http, $window) {
+app.controller('LoginCtrl', function($scope, $http, $location) {
+            $(function(){
+                
+                $('img').delay(1000);
+                $('img').animate({'margin-top': '-125px'}, 800);
+                
+                 $('#login-form').hide().delay(1500);
+                 $('#login-form').fadeIn(1200);
+                
+            });
+            
     $scope.submit = function() {
+        
         $http({
             method: 'POST',
             url: '/api/login',
@@ -20,7 +31,7 @@ app.controller('LoginCtrl', function($scope, $http, $window) {
             }
         }).then(function(response) {
             console.log(response);
-            $window.alert('hello!'); //not working right now
+            $location.path('/dashboard');
         }, function(err) {
             console.log(err);
         })

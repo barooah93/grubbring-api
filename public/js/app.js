@@ -23,6 +23,10 @@ app.config(['$routeProvider', '$locationProvider', function($routeProvider, $loc
             templateUrl: 'partials/register.html',
             controller: 'RegistrationCtrl'
         })
+        .when('/dashboard', {
+            templateUrl: 'partials/dashboard.html',
+            controller: 'DashboardCtrl'
+        })
         .otherwise({
             redirectTo: '/'
         });
