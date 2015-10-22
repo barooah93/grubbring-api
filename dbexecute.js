@@ -1,5 +1,5 @@
 var pool = require('./config/dbconnection.js').pool;
-var debug = require('debug')('grubbring:dbexecute');
+var glog = require('./glog.js')('dbexecute');
 module.exports = {
 
 // Function: Establish connection to database and execute the given query
@@ -15,14 +15,14 @@ module.exports = {
     var resultObject;
     pool.getConnection(function(err,connection){
 		if(err){
-			debug(err);
+			glog.log(err);
 			resultObject = {status:"error", description:"Cannot connect to database", data:err};
 			res.send(resultObject);
 //			callback(err,resultObject);
 		}else if(connection && 'query' in connection){
 			connection.query(query,function(err, rows, fields){
 			    if(err){
-			        debug(err);
+			        glog.log(err);
 			        resultObject = {status:"error", description:"Cannot execute query", data:err};
 //			        callback(err, resultObject);
 			        res.send(resultObject);

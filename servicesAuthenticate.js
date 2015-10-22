@@ -7,7 +7,7 @@ module.exports = {
 	    }else{
 		    var data = {
     	    	"status":"UNAUTHORIZED",
-			    "message":"Please login using correct username and password"
+			    "description":"Please login using correct username and password"
 		    };
 		    response.status(401);
 		    response.json(data);

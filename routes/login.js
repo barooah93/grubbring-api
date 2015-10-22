@@ -1,11 +1,11 @@
 var express = require('express');
 var app = express.Router();
-
 var passport = require('passport');
 var glog = require('../glog.js')('login');
 
 //binds node's passport library with our custom authentication written in passport.js
 require('../config/passport.js')(passport);
+
 
 
 //------------------------------------------------------------------------
