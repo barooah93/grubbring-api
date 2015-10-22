@@ -1,5 +1,5 @@
 var pool = require('./config/dbconnection.js').pool;
-var glog = require('../glog.js')('dbexecute');
+var glog = require('./glog.js')('dbexecute');
 module.exports = {
 
 // Function: Establish connection to database and execute the given query
