@@ -11,6 +11,10 @@ var passport = require('passport');
 var debug = require('debug')('grubbring');
 
 //Routes to specified APIs based on requested URLs
+<<<<<<< HEAD
+//var usersRoute = require('./routes/users');
+=======
+>>>>>>> cc5141b30751d63d081ddb94f5f6e259fc3b125f
 var loginRoute = require('./routes/login');
 var profileRoute = require('./routes/profile');
 var logoutRoute = require('./routes/logout');
@@ -50,6 +54,7 @@ app.use('/auth/facebook', facebookloginRoute);
 //app.use('/connect', connectAccountsRoute);
 
 //Re-Routing URL requests to APIs
+
 app.use('/api/ring', getRingsRoute);
 app.use('/api/dashboard', getDashboardRoute);
 

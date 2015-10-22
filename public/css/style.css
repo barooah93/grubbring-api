@@ -3,7 +3,92 @@ body{
     background-color:  #1ebd98;
 }
 
-.logo{
-    margin: 120px 0 0 550px;
-   
+.logo{ /** logo on login page **/
+  position: fixed;
+  top: 50%;
+  left: 51%;
+  transform: translate(-50%, -50%);
+  
+  -webkit-filter: drop-shadow(2px 2px 2px #139C69);
+  filter: drop-shadow(2px 2px 2px #139C69); 
+}
+
+
+/** login form inputs **/
+.form-control {
+    color: #212121;
+}
+.btn-custom {
+    color: #fff;
+	background-color: #2A5247;
+}
+.btn-custom:hover,
+.btn-custom:focus {
+    color: #fff;
+}
+
+/*** login form container ***/
+.login-form {
+  position: fixed;
+  top: 68%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.login-form .form-group {
+    margin-bottom: 5px;
+}
+
+.login-form .btn.btn-custom {
+    font-size: 18px;
+    font-weight: 500;
+	margin-bottom: 20px;
+}
+
+.login-form p{
+    color: #FFFFFF;
+    font-family: Arial, sans-serif;
+    font-size: 18px;
+    text-align: center;
+}
+
+.login-form p a{
+    font-family: Arial, sans-serif;
+    font-size: 18px;
+    text-align: center;
+    color: #416155;
+}
+
+.login-form p a:hover{
+    text-decoration: none;
+    color: #53F5BA;
+}
+
+#username, #password{
+    padding-right: 80px;
+    font-size: 18px;
+    font-weight: 200;
+    height: 45px;
+}
+
+/** Login page footer styling **/
+
+.login-form-footer{
+    bottom: 0;
+    left: 10px;
+    position: fixed;
+}
+
+.login-form-footer p a{
+    display: inline-block;
+    font-family: Arial, sans-serif;
+    font-size: 17px;
+    color: #ffffff;
+    margin-right: 15px;
+    
+}
+
+.login-form-footer p a:hover{
+    text-decoration: none;
+    color: #416155;
 }
