@@ -10,7 +10,22 @@ app.controller('MainCtrl', function($scope) {
 });
 
 app.controller('LoginCtrl', function($scope, $http, $location) {
+            
             $(function(){
+                
+                $(document).ready(function() {
+	               $('#fullpage').fullpage({
+				        sectionsColor: ['#1ebd98', '#1BBC9B', '#7E8F7C', '#D42632'],
+				        navigation: true,
+				        navigationPosition: 'right',
+				        navigationTooltips: ['First page', 'Second page', 'Third and last page'],
+				        loopTop: true,
+				        loopBottom: true
+
+			    });
+
+                 });
+            
                 
                 $('img').delay(1000);
                 $('img').animate({'margin-top': '-125px'}, 800);

@@ -27,7 +27,7 @@ body{
     color: #fff;
 }
 
-/*** login form container ***/
+/*** login form container and fields ***/
 .login-form {
   position: fixed;
   top: 68%;
@@ -91,4 +91,31 @@ body{
 .login-form-footer p a:hover{
     text-decoration: none;
     color: #416155;
+}
+
+/*** styling for login slider pages ***/
+
+#section1 img, #section2 img, #section3 img{
+ left: 45%;
+ position: relative;
+}
+
+#section1 h1, #section2 h1, #section3 h1{
+    font-family: sans-serif, helvetica;
+    font-size: 4em;
+    text-align: center;
+}
+
+/*** styling for header on registration page ***/
+
+.reg-page-header{
+    background-color: #1ebd98;
+    height: 50%;
+    padding-bottom: 350px;
+}
+
+.reg-page-body{
+    background-color: #fff;
+    height: 50%;
+    padding-bottom: 280px;
 }
