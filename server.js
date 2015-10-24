@@ -12,11 +12,6 @@ var debug = require('debug')('grubbring');
 
 //Routes to specified APIs based on requested URLs
 
-<<<<<<< HEAD
-=======
-//var usersRoute = require('./routes/users');
-
->>>>>>> b385bf2edc668b0f566bdaaf3bee6d1133bbe60d
 var loginRoute = require('./routes/login');
 var profileRoute = require('./routes/profile');
 var logoutRoute = require('./routes/logout');
