@@ -13,18 +13,18 @@ app.controller('LoginCtrl', function($scope, $http, $location) {
             
             $(function(){
 
-                $(document).ready(function() {
-	               $('#fullpage').fullpage({
-				        sectionsColor: ['#1ebd98', '#1BBC9B', '#7E8F7C', '#D42632'],
-				        navigation: true,
-				        navigationPosition: 'right',
-				        navigationTooltips: ['First page', 'Second page', 'Third and last page'],
-				        loopTop: true,
-				        loopBottom: true
+    //             $(document).ready(function() {
+	   //            $('#fullpage').fullpage({
+				//         sectionsColor: ['#1ebd98', '#1BBC9B', '#7E8F7C', '#D42632'],
+				//         navigation: true,
+				//         navigationPosition: 'right',
+				//         navigationTooltips: ['First page', 'Second page', 'Third and last page'],
+				//         loopTop: true,
+				//         loopBottom: true
 
-			    });
+			 //   });
 
-                 });
+    //              });
 
 
                 $('img').delay(1000);
@@ -121,20 +121,27 @@ app.controller('ProfileCtrl', function($scope, $http, $location) {
 });
 
 app.controller('RegistrationCtrl', function($scope, $http){
-    $scope.submit = function() {
+    $scope.register = function() {
         $http({
             method: 'POST',
             url: '/api/registration',
             data: {
-                firstname: $scope.firstname,
-                lastname: $scope.lastname,
+                
                 username: $scope.username,
                 password: $scope.password,
+                firstname: $scope.firstname,
+                lastname: $scope.lastname,
                 email: $scope.email,
                 phonenumber: $scope.phonenumber
             }
         }).then(function(response) {
             console.log(response);
+            if (response.description == "This username/email has already been used for an account."){ //change to custom status code later?
+                //post modal message here
+            }
+            else{
+                
+            }
         }, function(err) {
             console.log(err);
         })

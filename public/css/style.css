@@ -47,13 +47,13 @@ body{
 
 .login-form p{
     color: #FFFFFF;
-    font-family: Arial, sans-serif;
+    font-family: sans-serif, helvetica;
     font-size: 18px;
     text-align: center;
 }
 
 .login-form p a{
-    font-family: Arial, sans-serif;
+    font-family: sans-serif, helvetica;
     font-size: 18px;
     text-align: center;
     color: #416155;
@@ -81,7 +81,7 @@ body{
 
 .login-form-footer p a{
     display: inline-block;
-    font-family: Arial, sans-serif;
+    font-family: sans-serif, helvetica;
     font-size: 17px;
     color: #ffffff;
     margin-right: 15px;
@@ -110,12 +110,65 @@ body{
 
 .reg-page-header{
     background-color: #1ebd98;
-    height: 50%;
-    padding-bottom: 350px;
 }
 
+.reg-page-header h2{
+    font-family: sans-serif, helvetica;
+    font-size: 4em;
+    color: #fff;
+    font-weight: 100;
+    text-align: center;
+    margin-top: 100px;
+}
+
+.reg-page-header h1{
+    font-family: sans-serif, helvetica;
+    font-size: 10em;
+    color: #fff;
+    font-weight: 100;
+    text-align: center;
+    margin-bottom: 100px;
+}
+
+/*** styling for registration form ***/
+
+.reg-page-form{
+     width: 400px; 
+     display: block; 
+     background: #fff; 
+     margin: 0 auto;
+     padding-bottom: 30px;
+}
+
+.reg-page-body p{
+    font-family: sans-serif, helvetica;
+    font-size: 17px;
+    color: #1ebd98;
+    font-weight: 100;
+}
 .reg-page-body{
     background-color: #fff;
-    height: 50%;
-    padding-bottom: 280px;
+}
+
+.reg-page-form .form-control{
+    color: #212121;
+    font-size: 16px;
+}
+
+.reg-page-form .form-group {
+    margin-bottom: 5px;
+}
+
+.reg-page-form .btn-custom {
+    color: #fff;
+	background-color: #1ebd98;
+}
+
+.reg-page-body h3{
+    font-family: sans-serif, helvetica;
+    font-size: 2em;
+    color: #1ebd98;
+    text-align: center;
+    padding-top: 30px;
+    font-weight: 100;
 }
