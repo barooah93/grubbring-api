@@ -3,7 +3,172 @@ body{
     background-color:  #1ebd98;
 }
 
-.logo{
-    margin: 120px 0 0 550px;
-   
+.logo{ /** logo on login page **/
+  position: fixed;
+  top: 50%;
+  left: 51%;
+  transform: translate(-50%, -50%);
+  
+  -webkit-filter: drop-shadow(2px 2px 2px #139C69);
+  filter: drop-shadow(2px 2px 2px #139C69); 
+}
+
+
+/** login form inputs **/
+.form-control {
+    color: #212121;
+}
+.btn-custom {
+    color: #fff;
+	background-color: #2A5247;
+}
+.btn-custom:hover,
+.btn-custom:focus {
+    color: #fff;
+}
+
+/*** login form container and fields ***/
+.login-form {
+  position: fixed;
+  top: 68%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.login-form .form-group {
+    margin-bottom: 5px;
+}
+
+.login-form .btn.btn-custom {
+    font-size: 18px;
+    font-weight: 500;
+	margin-bottom: 20px;
+}
+
+.login-form p{
+    color: #FFFFFF;
+    font-family: sans-serif, helvetica;
+    font-size: 18px;
+    text-align: center;
+}
+
+.login-form p a{
+    font-family: sans-serif, helvetica;
+    font-size: 18px;
+    text-align: center;
+    color: #416155;
+}
+
+.login-form p a:hover{
+    text-decoration: none;
+    color: #53F5BA;
+}
+
+#username, #password{
+    padding-right: 80px;
+    font-size: 18px;
+    font-weight: 200;
+    height: 45px;
+}
+
+/** Login page footer styling **/
+
+.login-form-footer{
+    bottom: 0;
+    left: 10px;
+    position: fixed;
+}
+
+.login-form-footer p a{
+    display: inline-block;
+    font-family: sans-serif, helvetica;
+    font-size: 17px;
+    color: #ffffff;
+    margin-right: 15px;
+    
+}
+
+.login-form-footer p a:hover{
+    text-decoration: none;
+    color: #416155;
+}
+
+/*** styling for login slider pages ***/
+
+#section1 img, #section2 img, #section3 img{
+ left: 45%;
+ position: relative;
+}
+
+#section1 h1, #section2 h1, #section3 h1{
+    font-family: sans-serif, helvetica;
+    font-size: 4em;
+    text-align: center;
+}
+
+/*** styling for header on registration page ***/
+
+.reg-page-header{
+    background-color: #1ebd98;
+}
+
+.reg-page-header h2{
+    font-family: sans-serif, helvetica;
+    font-size: 4em;
+    color: #fff;
+    font-weight: 100;
+    text-align: center;
+    margin-top: 100px;
+}
+
+.reg-page-header h1{
+    font-family: sans-serif, helvetica;
+    font-size: 10em;
+    color: #fff;
+    font-weight: 100;
+    text-align: center;
+    margin-bottom: 100px;
+}
+
+/*** styling for registration form ***/
+
+.reg-page-form{
+     width: 400px; 
+     display: block; 
+     background: #fff; 
+     margin: 0 auto;
+     padding-bottom: 30px;
+}
+
+.reg-page-body p{
+    font-family: sans-serif, helvetica;
+    font-size: 17px;
+    color: #1ebd98;
+    font-weight: 100;
+}
+.reg-page-body{
+    background-color: #fff;
+}
+
+.reg-page-form .form-control{
+    color: #212121;
+    font-size: 16px;
+}
+
+.reg-page-form .form-group {
+    margin-bottom: 5px;
+}
+
+.reg-page-form .btn-custom {
+    color: #fff;
+	background-color: #1ebd98;
+}
+
+.reg-page-body h3{
+    font-family: sans-serif, helvetica;
+    font-size: 2em;
+    color: #1ebd98;
+    text-align: center;
+    padding-top: 30px;
+    font-weight: 100;
 }

@@ -1,19 +1,37 @@
-<!DOCTYPE html>
-<html>
-<head>
-	<title>Registration Page</title>
-</head>
-<body>
-    <h2>Registration Page</h2>
-	<form ng-submit="submit()" >
-		<p>Phone Number: <input type = "number" name="phonenumber" placeholder="Enter phonenumber" ng-model="phonenumber"><br /></p>
-		<p>First Name: <input type = "text" name="firstname" placeholder="Enter firstname" ng-model="firstname"><br /></p>
-		<p>Last Name: <input type = "text" name="lastname" placeholder="Enter lastname" ng-model="lastname"><br /></p>
-		<p>Username: <input type = "text" name="username" placeholder="Enter username" ng-model="username"><br /></p>
-		<p>E-mail: <input type = "text" name="email" placeholder="Enter email" ng-model="email"><br /></p>
-		<p>Password: <input type = "password" name="password" placeholder="Enter password" ng-model="password"><br /></p>
-		<br />
-		<input type="submit" value="Registration">
+<div class="reg-page-header-shadow">
+<div class="reg-page-header">
+	<h2>Become a</h2>
+	<h1>Grublord!</h1>
+</div>
+</div>
+
+<div class="reg-page-body">
+    <h3>Fill in your information below to create an account and start connecting to Grubbrings!</h3>
+	<form ng-submit="register()" class="reg-page-form">
+		<div class="form-group">
+	    <p>Username: <input type = "text" name="username" placeholder="Username" ng-model="username" class="form-control"></p>
+	    </div>
+	    <div class="form-group">
+	    <p>Password: <input type = "password" name="password" placeholder="Password" ng-model="password" class="form-control"></p>
+	    </div>
+	    <div class="form-group">
+	    <p>First Name: <input type = "text" name="firstname" placeholder="First name" ng-model="firstname" class="form-control"></p>
+		</div>
+		<div class="form-group">
+		<p>Last Name: <input type = "text" name="lastname" placeholder="Last name" ng-model="lastname" class="form-control"></p>
+		</div>
+		<div class="form-group">
+		<p>E-mail: <input type = "text" name="email" placeholder="E-mail" ng-model="email" class="form-control"></p>
+		</div>
+		<div class="form-group">
+		<p>Phone Number: <input type = "number" name="phonenumber" placeholder="Phone number" ng-model="phonenumber" class="form-control"></p>
+		</div>	
+		<input type="submit" id="btn-login" class="btn btn-custom btn-lg btn-block" value="Registration">
 	</form>
-</body>
-</html>
+</div>
+
+<!--<div ng-controller='MyCtrl'>-->
+<!--    <modal-dialog show='modalShown' width='400px' height='60%'>-->
+<!--      <p>Modal Content Goes here<p>-->
+<!--    </modal-dialog>-->
+<!--  </div>-->

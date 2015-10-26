@@ -97,7 +97,6 @@ app.post('/updatePassword', function(req, res) {
             });
         } else {
             debug('One of the conditions have failed.');
-            res.status(204);
             res.json({
                 status: 'error',
                 description: 'At least one of the conditions for changing password is false'
