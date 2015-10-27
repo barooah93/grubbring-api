@@ -120,7 +120,7 @@ app.controller('ProfileCtrl', function($scope, $http, $location) {
 
 });
 
-app.controller('RegistrationCtrl', function($scope, $http){
+app.controller('RegistrationCtrl', function($scope, $http, $location){
     $scope.register = function() {
         $http({
             method: 'POST',
@@ -136,18 +136,46 @@ app.controller('RegistrationCtrl', function($scope, $http){
             }
         }).then(function(response) {
             console.log(response);
-            if (response.description == "This username/email has already been used for an account."){ //change to custom status code later?
-                //post modal message here
+            if (response.status == 200){
+                alert("There is a user already registered with that username/e-mail address!");
             }
             else{
-                
+                $location.path('/confirmation');
             }
+            
         }, function(err) {
             console.log(err);
         })
     }
 });
 
+
 app.controller('DashboardCtrl', function($scope){
+    
+});
+
+app.controller('ConfirmationCtrl', function($scope, $http){
+    $http({
+        method: 'GET',
+        url: '/api/registration/confirmation'
+    }).then(function (response) {
+        console.log(response);
+    }, function (err) {
+        console.log(err);
+});
+  
+  $http({
+            method: 'POST',
+            url: '/api/registration/confirmation',
+            data: {
+                confirmation: $scope.confirmation
+            }
+        }).then(function(response) {
+            console.log(response);
+        }, function(err) {
+            console.log(err);
+        })
+     
+    
     
 });

@@ -27,6 +27,10 @@ app.config(['$routeProvider', '$locationProvider', function($routeProvider, $loc
             templateUrl: 'partials/dashboard.html',
             controller: 'DashboardCtrl'
         })
+        .when('/confirmation', {
+            templateUrl: 'partials/confirmation.html',
+            controller: 'ConfirmationCtrl'
+        })
         .otherwise({
             redirectTo: '/'
         });

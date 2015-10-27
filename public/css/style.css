@@ -106,9 +106,13 @@ body{
     text-align: center;
 }
 
-/*** styling for header on registration page ***/
+/*** styling for header on registration and conformation page ***/
 
 .reg-page-header{
+    background-color: #1ebd98;
+}
+
+.conf-page-header{
     background-color: #1ebd98;
 }
 
@@ -130,6 +134,25 @@ body{
     margin-bottom: 100px;
 }
 
+.conf-page-header h2{
+    font-family: sans-serif, helvetica;
+    font-size: 4em;
+    color: #fff;
+    font-weight: 100;
+    margin-top: 100px;
+    padding-left: 25px;
+}
+
+.conf-page-header h1{
+    font-family: sans-serif, helvetica;
+    font-size: 9em;
+    color: #fff;
+    font-weight: 100;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+
 /*** styling for registration form ***/
 
 .reg-page-form{
@@ -149,6 +172,7 @@ body{
 .reg-page-body{
     background-color: #fff;
 }
+
 
 .reg-page-form .form-control{
     color: #212121;
@@ -170,5 +194,28 @@ body{
     color: #1ebd98;
     text-align: center;
     padding-top: 30px;
+    font-weight: 100;
+}
+
+/*** styling for confirmation page ***/
+
+.conf-page-body{
+    background-color: #fff;
+    padding-bottom: 80px;
+    padding-top: 30px;
+}
+
+.conf-page-body h3{
+     font-family: sans-serif, helvetica;
+    font-size: 2em;
+    color: #1ebd98;
+    font-weight: 100;
+    text-align: center;
+}
+
+.conf-page-body p{
+    font-family: sans-serif, helvetica;
+    font-size: 17px;
+    color: #1ebd98;
     font-weight: 100;
 }
