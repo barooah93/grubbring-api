@@ -49,6 +49,7 @@ app.controller('LoginCtrl', function($scope, $http, $location) {
             $location.path('/dashboard');
         }, function(err) {
             console.log(err);
+            alert('Login failed!');
         })
     }
 });
@@ -164,6 +165,8 @@ app.controller('ConfirmationCtrl', function($scope, $http){
         console.log(err);
 });
   
+$scope.submit = function() {
+  
   $http({
             method: 'POST',
             url: '/api/registration/confirmation',
@@ -172,10 +175,18 @@ app.controller('ConfirmationCtrl', function($scope, $http){
             }
         }).then(function(response) {
             console.log(response);
+            var str = response.description;
+            if (str == "Account has been confirmed." ){ //they're the same - replace with status code later. also reg.js needs to be fixed.
+                alert("you're confirmed! congrats");
+            } 
+            else{
+                alert("Account could not be confirmed");
+            }
+            
         }, function(err) {
             console.log(err);
         })
      
-    
+ } 
     
 });

@@ -87,6 +87,7 @@ app.post('/confirmation',function(req,res){
 	var username = req.body.username;
 	var confirmationToken = req.body.token;
 
+	console.log("this is a test "+confirmationToken+" "+username);
 	var sql = null;
 	sql = "UPDATE tblUser SET accountStatus=? WHERE confirmationToken=? AND username=?";
 	var inserts = [status,confirmationToken,username];
