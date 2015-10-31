@@ -16,7 +16,8 @@ app.get('/',function(req,res){
 });
 
 
-app.post('/updateEmail', function(req, res) {
+// Update email address
+app.put('/email', function(req, res) {
     authenticate.checkAuthentication(req, res, function (data) {
         debug(req.method + ' ' + req.url);
 
@@ -45,7 +46,8 @@ app.post('/updateEmail', function(req, res) {
 
 });
 
-app.post('/updateCellNumber', function(req, res) {
+// Update cell phone
+app.put('/cellphone', function(req, res) {
     authenticate.checkAuthentication(req, res, function (data) {
         debug(req.method + ' ' + req.url);
 
@@ -74,7 +76,8 @@ app.post('/updateCellNumber', function(req, res) {
     });
 });
 
-app.post('/updatePassword', function(req, res) {
+// Update password
+app.put('/password', function(req, res) {
     authenticate.checkAuthentication(req, res, function (data) {
         debug(req.method + ' ' + req.url);
 
