@@ -190,3 +190,13 @@ $scope.submit = function() {
  } 
     
 });
+
+app.controller('TemplateCtrl', function($scope){
+    
+    document.querySelector( "#nav-toggle" ).addEventListener( "click", function() {
+    this.classList.toggle( "active" );
+    });
+    
+    document.addEventListener("touchstart", function(){}, true);
+    
+});
