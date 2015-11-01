@@ -158,9 +158,15 @@ app.controller('RegistrationCtrl', function($scope, $http, $location){
 });
 
 
-app.controller('DashboardCtrl', function($scope){
-    
-});
+/***************steph********************/
+
+function DashboardCtrl () {
+  this.rings = [{name:'ring1', desc: 'im the best'}, {name: 'ring2', desc: 'this ring has everything', name: 'ring3', desc: 'howdy'}];
+}
+
+app.controller('DashboardCtrl', DashboardCtrl);
+
+/***********************************/
 
 app.controller('ConfirmationCtrl', function($scope, $http){
     $http({

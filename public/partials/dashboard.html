@@ -17,20 +17,20 @@
     </div>
 </nav>
 
-<!-- will add dynamic data in soon-->
-
-<div class="ringpanel-container">
-  <div class="panel-group">
+<!-- will add relevant dynamic data in soon; need to create unique ids for each panel to work independently-->
+<div class="ringpanel-container" ng-controller="DashboardCtrl as dash">
+  <div class="panel-group" ng-repeat="ring in dash.rings">
     <div class="panel panel-default">
       <div class="panel-heading">
         <h4 class="panel-title">
-          <a data-toggle="collapse" href="#ringpanel1">ringname</a>
+          <div data-toggle="collapse" data-target="#ring-desc">{{ ring.name }}</div>
           <p>Last Activity: just now</p>
         </h4>
       </div>
-      <div id="ringpanel1" class="panel-collapse collapse">
-        <div class="panel-body">ring description</div>
+      <div id="ring-desc" class="panel-collapse collapse">
+        <div class="panel-body">{{ ring.desc }}</div>
       </div>
     </div>
+    
   </div>
 </div>    
