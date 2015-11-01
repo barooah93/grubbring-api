@@ -1,7 +1,11 @@
-
+html{
+    height: 100%;
+}
 body{
     background-color:  #1ebd98;
+    background: linear-gradient(#23B08F, #1ebd98);
 }
+
 
 /** Navigation bar styling (with hamburger menu, logo, and search bar) **/
 
@@ -47,7 +51,7 @@ nav img{
 }
 
 .nav-search-bar{
-    padding-left: 50px; 
+    left: 8%; 
     position: fixed;
     top: 20px;
 }
@@ -60,15 +64,15 @@ nav img{
   border-radius: 20px;
   border: none;
   cursor: pointer;
-  background: #1ebd98;
+  background: #23B08F;
 }
 .search-box + label .search-icon {
-  color: black;
+  color: white;
 }
 .search-box:hover {
   color: white;
-  background: #c8c8c8;
-  box-shadow: 0 0 0 5px white;
+  background: #83E6CF;
+  box-shadow: 0 0 0 5px #18856B;
 }
 .search-box:hover + label .search-icon {
   color: white;
@@ -79,15 +83,15 @@ nav img{
   border: none;
   outline: none;
   box-shadow: none;
-  padding-left: 15px;
+  padding-left: 10px;
   cursor: text;
   width: 300px;
   border-radius: auto;
   background: white;
-  color: black;
+  color: #1ebd98;
 }
 .search-box:focus + label .search-icon {
-  color: black;
+  color: #1ebd98;
 }
 .search-box:not(:focus) {
   text-indent: -5000px;
@@ -100,11 +104,15 @@ nav img{
 
 .search-icon {
   position: relative;
-  left: -30px;
+  left: -36px;
+  top: 7px;
   color: white;
   cursor: pointer;
 }
 
+.glyphicon-search{
+    font-size: 25px;
+}
 
 /** logo on login page **/
 
