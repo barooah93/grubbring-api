@@ -161,7 +161,7 @@ app.controller('RegistrationCtrl', function($scope, $http, $location){
 /***************steph********************/
 
 function DashboardCtrl () {
-  this.rings = [{name:'ring1', desc: 'im the best'}, {name: 'ring2', desc: 'this ring has everything', name: 'ring3', desc: 'howdy'}];
+  this.rings = [{name:'ring1', desc:'hi',id:1},{name:'ring2', desc:'hello', id:2}];
 }
 
 app.controller('DashboardCtrl', DashboardCtrl);

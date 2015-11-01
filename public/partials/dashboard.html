@@ -1,21 +1,39 @@
+
 <div class="reg-page-header">
+<nav>
+    <div class="hamburger-menu-icon">
+    <a id="nav-toggle" href="#"><span></span></a>
+    </div>
+    <div class="nav-logo">
+        <a href="/dashboard"><img src="../images/grublogomini.png"></img></a>
+    </div>
+    <div class="nav-search-bar">
+        <form class="search-container" action="search()">
+          <input id="search-box" type="text" class="search-box" name="q" placeholder="search..." />
+          <label for="search-box"><span class="glyphicon glyphicon-search search-icon"></span></label>
+          <input type="submit" id="search-submit" />
+        </form>
+    </div>
+</nav>
 
+<!-- will add relevant dynamic data in soon-->
 
-<!-- will add relevant dynamic data in soon; need to create unique ids for each panel to work independently-->
 <div class="ringpanel-container" ng-controller="DashboardCtrl as dash">
   <div class="panel-group" ng-repeat="ring in dash.rings">
     <div class="panel panel-default">
       <div class="panel-heading">
         <h4 class="panel-title">
-          <div data-toggle="collapse" data-target="#ring-desc">{{ ring.name }}</div>
+          <div data-toggle="collapse" data-target="#ring-desc_{{$id}}">{{ ring.name }}</div> <!--_{{$id}} provides a unique id for each div -->
           <p>Last Activity: just now</p>
         </h4>
       </div>
-      <div id="ring-desc" class="panel-collapse collapse">
+      <div id="ring-desc_{{$id}}" class="panel-collapse collapse">
         <div class="panel-body">{{ ring.desc }}</div>
       </div>
     </div>
     
   </div>
-</div>    
+</div>  
+
 </div>
+
