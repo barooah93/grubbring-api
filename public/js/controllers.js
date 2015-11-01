@@ -160,8 +160,32 @@ app.controller('RegistrationCtrl', function($scope, $http, $location){
 
 /***************steph********************/
 
-function DashboardCtrl () {
-  this.rings = [{name:'ring1', desc:'hi',id:1},{name:'ring2', desc:'hello', id:2}];
+function DashboardCtrl ($http, $location) {
+  this.rings = [{name:'ring1', desc:'hi'},{name:'ring2', desc:'hello'}];
+  
+  /*
+  this.rings = function() {
+        $http({
+            method: 'GET',
+            url: '/api/myrings',
+            data: {
+                name: this.name,
+            }
+        }).then(function(response) {
+            console.log(response);
+            if (response.status == 200){
+                alert("Retrieved my rings");
+            }
+            else{
+                alert("Did not retrieve my rings");
+                $location.path('/dashboard');
+            }
+            
+        }, function(err) {
+            console.log(err);
+        })
+    }
+    */
 }
 
 app.controller('DashboardCtrl', DashboardCtrl);

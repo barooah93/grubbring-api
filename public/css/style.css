@@ -55,7 +55,6 @@ nav img{
     position: fixed;
     top: 20px;
 }
-
 .search-box {
   -webkit-transition: width 0.6s, border-radius 0.6s, background 0.6s, box-shadow 0.6s;
           transition: width 0.6s, border-radius 0.6s, background 0.6s, box-shadow 0.6s;
@@ -66,6 +65,14 @@ nav img{
   cursor: pointer;
   background: #23B08F;
 }
+
+.ringpanel-container {
+    position: relative;
+    padding-top: 75px;
+    padding-left: 40px;
+    padding-right: 40px;
+}
+
 .search-box + label .search-icon {
   color: white;
 }
