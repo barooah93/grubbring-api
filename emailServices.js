@@ -3,10 +3,7 @@ var debug = require('debug')('grubbring:emailServices');
 
 module.exports = {
     
-    emailTokenToUser: function(user_token, user_email){
-        //your app url instead of "https://grubbring-api-sshah0930-1.c9.io/"
-	    var registrationConfirmationUrl = "https://grubbring-api-sshah0930-1.c9.io/api/registration/confirmation";
-
+    emailTokenToUser: function(emailMessage, emailSubject, user_email){
 	    var transporter = nodemailer.createTransport({
             service: 'Gmail',
             auth: {
@@ -18,8 +15,8 @@ module.exports = {
         var mailOptions = {
         	from: '<grubbring@gmail.com>', // sender address
     	    to: '<'+user_email+'>', // list of receivers
-    	    subject: 'Registration Confirmation Email', // Subject line
-    	    text: "Enter Confirmation Code at : "+registrationConfirmationUrl+" Confirmation Code : " + user_token 
+    	    subject: emailSubject, // Subject line
+    	    text: emailMessage
     	};  
 
 	    transporter.sendMail(mailOptions, function(error, info){
