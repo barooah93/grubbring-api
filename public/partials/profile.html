@@ -1,48 +1,130 @@
-<div>
-    <div>
-        <p>userId: {{user.userId}}</p>
-        <p>first and last name: {{user.firstName}} {{user.lastName}}</p>
-        <p>username: {{user.username}}</p>
-        <p>email: {{user.emailAddr}}</p>
-        <a href='/logout'>Log out of here</a>
+<div class="col-sm-8 col-sm-push-2">
+    <h3 class="text-center">Profile Page</h3>
+
+    <div class="panel panel-green">
+        <div class="panel-heading">
+            <h3 class="panel-title">Personal Information</h3>
+        </div>
+        <div class="panel-body">
+            <div class="row">
+                <div class="col-sm-6">
+                    <p>Name: {{user.firstName}} {{user.lastName}}</p>
+                </div>
+                <div class="col-sm-6">
+                    <p>User ID: {{user.userId}}</p>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-6">
+                    <p>Email address: {{user.emailAddr}}</p>
+                </div>
+                <div class="col-sm-6">
+                    <p>Cell phone number: {{user.cellPhone}}</p>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div>
-        <form ng-submit="updateEmail()" class="form-inline">
-            <div class="form-group">
-                <label>New Email</label>
-                <input type="text" ng-model="newEmail" class="form-control" placeholder="example@grubbring.com">
-            </div>
-            <button type="submit" class="btn btn-default">Update Email Address</button>
-        </form>
+    <div class="panel panel-green">
+        <div class="panel-heading">
+            <h3 class="panel-title">Change email address</h3>
+        </div>
+        <div class="panel-body">
+            <form ng-submit="updateEmail()">
+                <div class="form-group">
+                    <label class="control-label">New email</label>
+                    <input type="email" ng-model="newEmail" class="form-control" placeholder="example@grubbring.com">
+                </div>
+                <button type="submit" class="btn btn-default">Update email address</button>
+            </form>
+        </div>
     </div>
 
-    <div>
-        <form ng-submit="updateCellNumber()" class="form-inline">
-            <div class="form-group">
-                <label>New cell number</label>
-                <input type="text" ng-model="newCell" class="form-control" placeholder="1234567890">
-            </div>
-            <button type="submit" class="btn btn-default">Update Cell Number</button>
+    <div class="panel panel-green">
+        <div class="panel-heading">
+            <h3 class="panel-title">Change cell phone number</h3>
+        </div>
+        <div class="panel-body">
+            <form ng-submit="updateCellNumber()">
+                <div class="form-group">
+                    <label>New cell phone number</label>
+                    <input type="text" ng-model="newCell" class="form-control" placeholder="2025550125">
+                </div>
+                <button type="submit" class="btn btn-default">Update cell phone number</button>
 
-        </form>
+            </form>
+        </div>
     </div>
 
-    <div>
-        <form ng-submit="updatePassword()" class="form-inline">
-            <div class="form-group">
-                <label>Old Password</label>
-                <input type="password" ng-model="oldPassword" class="form-control" placeholder="Password">
-            </div>
-            <div class="form-group">
-                <label>New Password</label>
-                <input type="password" ng-model="newPassword" class="form-control" placeholder="New Password">
-            </div>
-            <div class="form-group">
-                <label>Confirm New Password</label>
-                <input type="password" ng-model="confirmPassword" class="form-control" placeholder="Confirm Password">
-            </div>
-            <button type="submit" class="btn btn-default">Update Password</button>
-        </form>
+    <div class="panel panel-green">
+        <div class="panel-heading">
+            <h3 class="panel-title">Change password</h3>
+        </div>
+        <div class="panel-body">
+            <form ng-submit="updatePassword()">
+                <div class="form-group">
+                    <label>Old Password</label>
+                    <input type="password" ng-model="oldPassword" class="form-control" placeholder="Password">
+                </div>
+                <div class="form-group">
+                    <label>New password</label>
+                    <input type="password" ng-model="newPassword" class="form-control" placeholder="New password">
+                </div>
+                <div class="form-group">
+                    <label>Confirm new password</label>
+                    <input type="password" ng-model="confirmPassword" class="form-control" placeholder="Confirm new password">
+                </div>
+                <button type="submit" class="btn btn-default">Update password</button>
+            </form>
+        </div>
     </div>
+
+    <!--<div>-->
+        <!--<p>userId: {{user.userId}}</p>-->
+        <!--<p>first and last name: {{user.firstName}} {{user.lastName}}</p>-->
+        <!--<p>username: {{user.username}}</p>-->
+        <!--<p>email: {{user.emailAddr}}</p>-->
+        <!--<p>cell: {{user.cellPhone}}</p>-->
+        <!--<a href='/logout'>Log out of here</a>-->
+    <!--</div>-->
+
+    <!--<div>-->
+        <!--<form ng-submit="updateEmail()" class="form-inline">-->
+            <!--<div class="form-group">-->
+                <!--<label>New Email</label>-->
+                <!--<input type="text" ng-model="newEmail" class="form-control" placeholder="example@grubbring.com">-->
+            <!--</div>-->
+            <!--<button type="submit" class="btn btn-default">Update Email Address</button>-->
+        <!--</form>-->
+    <!--</div>-->
+
+    <!--<div>-->
+        <!--<form ng-submit="updateCellNumber()" class="form-inline">-->
+            <!--<div class="form-group">-->
+                <!--<label>New cell number</label>-->
+                <!--<input type="text" ng-model="newCell" class="form-control" placeholder="1234567890">-->
+            <!--</div>-->
+            <!--<button type="submit" class="btn btn-default">Update Cell Number</button>-->
+
+        <!--</form>-->
+    <!--</div>-->
+
+    <!--<div>-->
+        <!--<form ng-submit="updatePassword()" class="form-inline">-->
+            <!--<div class="form-group">-->
+                <!--<label>Old Password</label>-->
+                <!--<input type="password" ng-model="oldPassword" class="form-control" placeholder="Password">-->
+            <!--</div>-->
+            <!--<div class="form-group">-->
+                <!--<label>New Password</label>-->
+                <!--<input type="password" ng-model="newPassword" class="form-control" placeholder="New Password">-->
+            <!--</div>-->
+            <!--<div class="form-group">-->
+                <!--<label>Confirm New Password</label>-->
+                <!--<input type="password" ng-model="confirmPassword" class="form-control" placeholder="Confirm Password">-->
+            <!--</div>-->
+            <!--<button type="submit" class="btn btn-default">Update Password</button>-->
+        <!--</form>-->
+    <!--</div>-->
 </div>
