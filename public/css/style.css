@@ -349,9 +349,27 @@ nav img{
 }
 
 .panel-green {
-    background-color: #5CCBAF;
+    border: none;
 }
 
 .panel-green .panel-heading {
     background-color: #168A6F;
+    color: white;
+}
+
+.btn.btn-green {
+    background-color: #168A6F;
+    color: white;
+}
+
+#profile .control-label {
+    font-weight: normal;
+}
+
+#profile .control-label span {
+    color: red;
+}
+
+#profile h3 {
+    color: white;
 }
