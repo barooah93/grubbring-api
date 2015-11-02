@@ -13,7 +13,7 @@ require('../config/passport.js')(passport);
 
 app.get('/', function(req,res){
     glog.log(req.method + ' ' + req.url);
-	//res.render('login');
+	res.render('login');
 });
 
 //passport.authenticate will use local strategy to authenticate the user
