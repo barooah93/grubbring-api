@@ -16,7 +16,7 @@ body{
     padding-right: 40px;
 }
 
-.panel {
+.ringpanel-container .panel {
     box-shadow: 5px 5px 5px #888888;
 }
 
@@ -350,4 +350,8 @@ nav img{
 
 .panel-green {
     background-color: #5CCBAF;
+}
+
+.panel-green .panel-heading {
+    background-color: #168A6F;
 }
