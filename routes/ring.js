@@ -43,6 +43,28 @@ app.get('/', function(req,res){
 });
 //-------------------------END-------------------------------------------------------
 
+//-------------------------START-----------------------------------------------------
+/*Get rings a user is part of (owns or is in) */
+app.get('/subscribedRings/:userId', function(req, res) {
+    authenticate.checkAuthentication(req, res, function (data) {
+        var userId = req.params.userId;
+        var sql = null;
+        
+        // ring status for pending=0, approved=1, declined=2, and banned=3
+         sql = "SELECT * FROM tblRingUser RU, tblUser U WHERE RU.userId = U.userId AND U.userId = ?;"
+         var inserts = [userId];
+         sql = mysql.format(sql, inserts);
+            
+        db.dbExecuteQuery(sql, res, function(result){
+            // overwrite description
+            result.description="Got rings " + userId + "is a part of";
+            res.send(result);
+        });
+    });
+});
+    
+//-------------------------END-------------------------------------------------------
+
 
 //-------------------------START-----------------------------------------------------
 // POST: request to join the ring
@@ -208,7 +230,14 @@ app.get('/search/:key', function(req,res) {
                 else{
                     description = "Returned matching searches";
                 }
-                var data = {'status':'Success', 'description':description, 'data':{'rings':ringResult.data, 'leaders':leaderResult.data}};
+                var data = {
+                    status:'Success', 
+                    description: description, 
+                    data: {
+                        rings:ringResult.data,
+                        leaders:leaderResult.data
+                    }
+                };
                 res.send(data);
             });
         });

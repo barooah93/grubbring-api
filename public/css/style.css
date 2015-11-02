@@ -6,7 +6,7 @@ body{
     background: linear-gradient(#23B08F, #1ebd98);
 }
 
-/**dashboard panels**/
+/** start dashboard panels **/
 .ringpanel-container {
     position: relative;
     padding-top: 75px;
@@ -17,7 +17,7 @@ body{
 .ringpanel-container .panel {
     box-shadow: 5px 5px 5px #888888;
 }
-
+/** end dashboard panels**/
 
 /** Navigation bar styling (with hamburger menu, logo, and search bar) **/
 
