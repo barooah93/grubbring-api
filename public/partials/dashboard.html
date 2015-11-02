@@ -1,18 +1,4 @@
-<nav>
-  <div class="hamburger-menu-icon">
-    <a id="nav-toggle" href="#"><span></span></a>
-  </div>
-  <div class="nav-logo">
-    <a href="/dashboard"><img src="../images/grublogomini.png"></img></a>
-  </div>
-  <div class="nav-search-bar">
-    <form class="search-container" action="search()">
-      <input id="search-box" type="text" class="search-box" name="q" placeholder="search..." />
-      <label for="search-box"><span class="glyphicon glyphicon-search search-icon"></span></label>
-      <input type="submit" id="search-submit" />
-    </form>
-  </div>
-</nav>
+<ng-include src=" 'partials/template.html' "></ng-include>
 
    <!-- will add relevant data in soon-->
 <div class="ringpanel-container" ng-controller="DashboardCtrl as dash">
@@ -32,4 +18,3 @@
   </div>
 </div>
 </div>  
-
