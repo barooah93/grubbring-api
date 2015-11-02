@@ -55,27 +55,32 @@ app.controller('LoginCtrl', function($scope, $http, $location) {
 });
 
 app.controller('ProfileCtrl', function($scope, $http, $location) {
-    $http({
-        method: 'GET',
-        url: '/api/profile'
-    }).then(function (response) {
-        console.log(response);
-        $scope.user = response.data;
-    }, function (err) {
-        console.log(err);
-        $location.path('/login');
-    });
+    onLoad();
+
+    function onLoad() {
+        $http({
+            method: 'GET',
+            url: '/api/profile'
+        }).then(function (response) {
+            console.log(response);
+            $scope.user = response.data;
+        }, function (err) {
+            console.log(err);
+            $location.path('/login');
+        });
+    }
 
     $scope.updateEmail = function() {
         $http({
-            method: 'POST',
-            url: '/api/profile/updateEmail',
+            method: 'PUT',
+            url: '/api/profile/email',
             data: {
                 newEmail: $scope.newEmail
             }
         }).then(function(response) {
             console.log(response);
             $scope.newEmail = '';
+            onLoad();
             //need to refresh page so you can see new email update
         }, function(err) {
             console.log(err);
@@ -84,14 +89,15 @@ app.controller('ProfileCtrl', function($scope, $http, $location) {
 
     $scope.updateCellNumber = function() {
         $http({
-            method: 'POST',
-            url: '/api/profile/updateCellNumber',
+            method: 'PUT',
+            url: '/api/profile/cellphone',
             data: {
                 newCell: $scope.newCell
             }
         }).then(function (response) {
             console.log(response);
             $scope.newCell = '';
+            onLoad();
             //refresh page or send the new user data back.
         }, function(err) {
             console.log(err);
@@ -101,7 +107,7 @@ app.controller('ProfileCtrl', function($scope, $http, $location) {
     $scope.updatePassword = function() {
         $http({
             method: 'POST',
-            url: '/api/profile/updatePassword',
+            url: '/api/profile/password',
             data: {
                 oldPassword: $scope.oldPassword,
                 newPassword: $scope.newPassword,
@@ -112,6 +118,7 @@ app.controller('ProfileCtrl', function($scope, $http, $location) {
             $scope.oldPassword = '';
             $scope.newPassword = '';
             $scope.confirmPassword = '';
+            onLoad();
             //no refreshing of page needed since user cant see password
         }, function(err) {
             console.log(err);
@@ -151,9 +158,39 @@ app.controller('RegistrationCtrl', function($scope, $http, $location){
 });
 
 
-app.controller('DashboardCtrl', function($scope){
-    
-});
+/***************steph********************/
+
+function DashboardCtrl ($http, $location) {
+  this.rings = [{name:'ring1', desc:'hi'},{name:'ring2', desc:'hello'},{name:'ring3', desc:'i am a ring'}, {name:'ring4', desc:'the best'}];
+  
+  /*
+  this.rings = function() {
+        $http({
+            method: 'GET',
+            url: '/api/myrings',
+            data: {
+                name: this.name,
+            }
+        }).then(function(response) {
+            console.log(response);
+            if (response.status == 200){
+                alert("Retrieved my rings");
+            }
+            else{
+                alert("Did not retrieve my rings");
+                $location.path('/dashboard');
+            }
+            
+        }, function(err) {
+            console.log(err);
+        })
+    }
+    */
+}
+
+app.controller('DashboardCtrl', DashboardCtrl);
+
+/***********************************/
 
 app.controller('ConfirmationCtrl', function($scope, $http){
     $http({
@@ -188,5 +225,15 @@ $scope.submit = function() {
         })
      
  } 
+    
+});
+
+app.controller('TemplateCtrl', function($scope){
+    
+    document.querySelector( "#nav-toggle" ).addEventListener( "click", function() {
+    this.classList.toggle( "active" );
+    });
+    
+    document.addEventListener("touchstart", function(){}, true);
     
 });

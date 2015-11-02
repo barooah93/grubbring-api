@@ -31,6 +31,11 @@ app.config(['$routeProvider', '$locationProvider', function($routeProvider, $loc
             templateUrl: 'partials/confirmation.html',
             controller: 'ConfirmationCtrl'
         })
+        
+        .when('/template', { //NOTE: Remove when all pages complete, here as a placeholder for now
+            templateUrl: 'partials/template.html',
+            controller: 'TemplateCtrl'
+        })
         .otherwise({
             redirectTo: '/'
         });

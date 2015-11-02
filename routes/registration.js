@@ -7,6 +7,7 @@ var passport = require('passport');
 require('../config/passport.js')(passport);
 var debug = require('debug')('grubbring:registration');
 var db = require('../dbexecute');
+var emailServices = require('../emailServices');
 var mysql = require('mysql');
 
 //-------------------------------------------------------------------
@@ -57,7 +58,7 @@ app.post('/', function(req, res){
 				sql = mysql.format(sql, inserts);
 				debug(sql);
 				db.dbExecuteQuery(sql,res,function(result){
-					emailTokenToUser(token,email);
+					emailServices.emailTokenToUser(token,email);
 					result.description = "New user created.";
 					res.status(201);
 					res.json(result);	
@@ -108,33 +109,33 @@ app.post('/confirmation',function(req,res){
 
 });
 
-function emailTokenToUser(user_token, user_email){
-	//your app url instead of "https://grubbring-api-sshah0930-1.c9.io/"
-	var registrationConfirmationUrl = "https://grubbring-api-sshah0930-1.c9.io/api/registration/confirmation";
+// function emailTokenToUser(user_token, user_email){
+// 	//your app url instead of "https://grubbring-api-sshah0930-1.c9.io/"
+// 	var registrationConfirmationUrl = "https://grubbring-api-sshah0930-1.c9.io/api/registration/confirmation";
 
-	var transporter = nodemailer.createTransport({
-        service: 'Gmail',
-        auth: {
-            user: 'grubbring@gmail.com', // Your email id
-            pass: 'test2day' // Your password
-        }
-    });
+// 	var transporter = nodemailer.createTransport({
+//         service: 'Gmail',
+//         auth: {
+//             user: 'grubbring@gmail.com', // Your email id
+//             pass: 'test2day' // Your password
+//         }
+//     });
 
-    var mailOptions = {
-    	from: '<grubbring@gmail.com>', // sender address
-    	to: '<'+user_email+'>', // list of receivers
-    	subject: 'Registration Confirmation Email', // Subject line
-    	text: "Enter Confirmation Code at : "+registrationConfirmationUrl+" Confirmation Code : " + user_token 
-	};  
+//     var mailOptions = {
+//     	from: '<grubbring@gmail.com>', // sender address
+//     	to: '<'+user_email+'>', // list of receivers
+//     	subject: 'Registration Confirmation Email', // Subject line
+//     	text: "Enter Confirmation Code at : "+registrationConfirmationUrl+" Confirmation Code : " + user_token 
+// 	};  
 
-	transporter.sendMail(mailOptions, function(error, info){
-    if(error){
-        console.log(error);
-    }else{
-    	debug('Confirmation email sent: ' + info.response);
-        // console.log('Message sent: ' + info.response);
-    };
-});
-}
+// 	transporter.sendMail(mailOptions, function(error, info){
+//     if(error){
+//         console.log(error);
+//     }else{
+//     	debug('Confirmation email sent: ' + info.response);
+//         // console.log('Message sent: ' + info.response);
+//     };
+// });
+// }
 
 module.exports = app;
