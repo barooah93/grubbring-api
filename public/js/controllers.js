@@ -69,7 +69,7 @@ app.controller('ProfileCtrl', function($scope, $http, $location) {
             $location.path('/login');
         });
     }
-
+    
     $scope.updateEmail = function() {
         $http({
             method: 'PUT',
@@ -160,35 +160,39 @@ app.controller('RegistrationCtrl', function($scope, $http, $location){
 
 /***************steph********************/
 
-function DashboardCtrl ($http, $location) {
-  this.rings = [{name:'ring1', desc:'hi'},{name:'ring2', desc:'hello'},{name:'ring3', desc:'i am a ring'}, {name:'ring4', desc:'the best'}];
+/*Retrieves the ring details that the signed in user is a leader of */
+app.controller('DashboardCtrl', function DashboardCtrl ($scope, $http, $location) {
+    
+    getUserDetails();
   
-  /*
-  this.rings = function() {
+    function getUserDetails() {
         $http({
             method: 'GET',
-            url: '/api/myrings',
-            data: {
-                name: this.name,
-            }
-        }).then(function(response) {
+            url: '/api/profile'
+        }).then(function (response) {
             console.log(response);
-            if (response.status == 200){
-                alert("Retrieved my rings");
-            }
-            else{
-                alert("Did not retrieve my rings");
-                $location.path('/dashboard');
-            }
-            
-        }, function(err) {
+            $scope.userId = response.data.userId
+            getRingsUserIsPartOf();
+        }, function (err) {
             console.log(err);
-        })
+            $location.path('/dashboard');
+        });
     }
-    */
-}
-
-app.controller('DashboardCtrl', DashboardCtrl);
+    
+    function getRingsUserIsPartOf() { //messed up need more ring data
+          $http({
+            method: 'GET',
+            url: '/api/ring/subscribedRings/1'//+$scope.userId
+        }).then(function (response) {
+            console.log(response);
+            $scope.rings = response;
+        }, function (err) {
+            console.log(err);
+            $location.path('/dashboard');
+        });
+    }
+    
+});
 
 /***********************************/
 

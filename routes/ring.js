@@ -43,6 +43,28 @@ app.get('/', function(req,res){
 });
 //-------------------------END-------------------------------------------------------
 
+//-------------------------START-----------------------------------------------------
+/*Get rings a user is part of (owns or is in) */
+app.get('/subscribedRings/:userId', function(req, res) {
+    authenticate.checkAuthentication(req, res, function (data) {
+        var userId = req.params.userId;
+        var sql = null;
+        
+        // ring status for pending=0, approved=1, declined=2, and banned=3
+         sql = "SELECT * FROM tblRingUser RU, tblUser U WHERE RU.userId = U.userId AND U.userId = ?;"
+         var inserts = [userId];
+         sql = mysql.format(sql, inserts);
+            
+        db.dbExecuteQuery(sql, res, function(result){
+            // overwrite description
+            result.description="Got rings " + userId + "is a part of";
+            res.send(result);
+        });
+    });
+});
+    
+//-------------------------END-------------------------------------------------------
+
 
 //-------------------------START-----------------------------------------------------
 // POST: request to join the ring
@@ -157,14 +179,15 @@ app.get('/search/:key', function(req,res) {
         var leaderSql = null; // sql statement to find key in leaderId or leader name
         var description = "";
         var key = req.params.key; // is already url decoded
-        var tokenized = null;
+        var tokenized = [];
         var firstName = null;
         var lastName = null;
         
-        
-        
+        // tokenize key for multiple word search
         tokenized = key.split(" ");
-
+        if(tokenized.length<2){
+            tokenized[1]="";
+        }
         // execute first sql to see if key is a ringId or ring name (partial or full)
         ringSql = "SELECT * FROM tblRing R WHERE ((R.ringId=? OR R.name LIKE ?) AND R.ringStatus=1) ;";
         var inserts = [key,"%"+key+"%"];
@@ -193,12 +216,10 @@ app.get('/search/:key', function(req,res) {
             "INNER JOIN tblUser U "+
             "ON R.createdBy=U.userId "+
             "WHERE (U.username LIKE ? "+
-                "OR U.firstName LIKE ? "+
-                "OR U.lastName LIKE ? "+
-                "OR U.firstName LIKE ? "+
-                "OR U.lastName LIKE ?) "+
+                "OR (U.firstName LIKE ? AND U.lastName LIKE ?) "+
+                "OR (U.lastName LIKE ? AND U.firstName LIKE ?)) "+
             "AND R.ringStatus = 1;";
-            inserts = ["%"+key +"%", "%"+key+"%", "%"+key+"%", "%"+tokenized[0]+"%","%"+tokenized[0]+"%"];
+            inserts = ["%"+key +"%", "%"+tokenized[0]+"%", "%"+tokenized[1]+"%","%"+tokenized[0]+"%", "%"+tokenized[1]+"%"];
             leaderSql = mysql.format(leaderSql, inserts);
             
 //          connect and execute
@@ -209,7 +230,14 @@ app.get('/search/:key', function(req,res) {
                 else{
                     description = "Returned matching searches";
                 }
-                var data = {'status':'Success', 'description':description, 'data':{'rings':ringResult.data, 'leaders':leaderResult.data}};
+                var data = {
+                    status:'Success', 
+                    description: description, 
+                    data: {
+                        rings:ringResult.data,
+                        leaders:leaderResult.data
+                    }
+                };
                 res.send(data);
             });
         });
