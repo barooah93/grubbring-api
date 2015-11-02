@@ -152,7 +152,7 @@ app.get('/notifyLeader/:userId', function(req,res){
 // wildcard search
 // TODO: tokenize spaces/ url encoding. Use sql 'in'
 app.get('/search/:key', function(req,res) {
-//    authenticate.checkAuthentication(req, res, function (data) {
+    authenticate.checkAuthentication(req, res, function (data) {
         var ringSql = null; // sql statement to find key in ringIds or ring names
         var leaderSql = null; // sql statement to find key in leaderId or leader name
         var description = "";
@@ -307,7 +307,7 @@ app.get('/search/:key', function(req,res) {
             res.send(result);
         });
     */
-//    });
+    });
 });
 //-------------------------END-------------------------------------------------------
 
