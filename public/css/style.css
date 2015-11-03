@@ -1,5 +1,3 @@
-
-
 html{
     min-height: 100%;
 }
@@ -8,7 +6,7 @@ body{
     background: linear-gradient(#23B08F, #1ebd98);
 }
 
-/**dashboard panels**/
+/** start dashboard panels **/
 .ringpanel-container {
     position: relative;
     padding-top: 75px;
@@ -19,7 +17,7 @@ body{
 .ringpanel-container .panel {
     box-shadow: 5px 5px 5px #888888;
 }
-
+/** end dashboard panels**/
 
 /** Navigation bar styling (with hamburger menu, logo, and search bar) **/
 
@@ -357,13 +355,20 @@ nav img{
 }
 
 .panel-green {
-    background-color: #5CCBAF;
+    border: none;
 }
 
 .panel-green .panel-heading {
     background-color: #168A6F;
+    color: white;
 }
 
+.btn.btn-green {
+    background-color: #168A6F;
+    color: white;
+}
+
+<<<<<<< HEAD
 .password-reset-form {
   position: fixed;
   top: 40%;
@@ -400,3 +405,16 @@ nav img{
 }
 
 
+=======
+#profile .control-label {
+    font-weight: normal;
+}
+
+#profile .control-label span {
+    color: red;
+}
+
+#profile h3 {
+    color: white;
+}
+>>>>>>> 839fda1c1ece9abe4ce3f569a532f17dbffdbe1c

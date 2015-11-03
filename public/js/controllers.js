@@ -94,7 +94,7 @@ app.controller('ProfileCtrl', function($scope, $http, $location) {
             $location.path('/login');
         });
     }
-
+    
     $scope.updateEmail = function() {
         $http({
             method: 'PUT',
@@ -185,35 +185,38 @@ app.controller('RegistrationCtrl', function($scope, $http, $location){
 
 /***************steph********************/
 
-function DashboardCtrl ($http, $location) {
-  this.rings = [{name:'ring1', desc:'hi'},{name:'ring2', desc:'hello'},{name:'ring3', desc:'i am a ring'}, {name:'ring4', desc:'the best'}];
+/*Retrieves the ring details that the signed in user is a leader of */
+app.controller('DashboardCtrl', function DashboardCtrl ($scope, $http, $location) {
+    getUserDetails();
   
-  /*
-  this.rings = function() {
+    function getUserDetails() {
         $http({
             method: 'GET',
-            url: '/api/myrings',
-            data: {
-                name: this.name,
-            }
-        }).then(function(response) {
+            url: '/api/profile'
+        }).then(function (response) {
             console.log(response);
-            if (response.status == 200){
-                alert("Retrieved my rings");
-            }
-            else{
-                alert("Did not retrieve my rings");
-                $location.path('/dashboard');
-            }
-            
-        }, function(err) {
+            $scope.userId = response.data.userId
+            getRingsUserIsPartOf();
+        }, function (err) {
             console.log(err);
-        })
+            $location.path('/dashboard');
+        });
     }
-    */
-}
-
-app.controller('DashboardCtrl', DashboardCtrl);
+    
+    function getRingsUserIsPartOf() {
+          $http({
+            method: 'GET',
+            url: '/api/ring/subscribedRings/' + $scope.userId
+        }).then(function (response) {
+            console.log(response);
+            $scope.rings = response.data.data;
+        }, function (err) {
+            console.log(err);
+            $location.path('/dashboard');
+        });
+    }
+    
+});
 
 /***********************************/
 
@@ -225,7 +228,7 @@ app.controller('ConfirmationCtrl', function($scope, $http){
         console.log(response);
     }, function (err) {
         console.log(err);
-});
+    });
   
 $scope.submit = function() {
   
@@ -253,7 +256,26 @@ $scope.submit = function() {
     
 });
 
-app.controller('TemplateCtrl', function($scope){
+app.controller('TemplateCtrl', function($scope, $http){
+    
+    $scope.searchBox = function(){
+        if($scope.search.length >= 3){
+            $http({
+                method: 'GET',
+                url: '/api/ring/search/'+$scope.search
+            }).then(function (response) {
+                if(response.data.data.rings.length!=0 || response.data.data.leaders.length!=0){
+                    console.log(response);
+                }
+                else{
+                    console.log(response.data.description);
+                }
+            }, function (err) {
+                console.log(err);
+            });
+        }
+        
+    };
     
     document.querySelector( "#nav-toggle" ).addEventListener( "click", function() {
     this.classList.toggle( "active" );
