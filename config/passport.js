@@ -84,6 +84,7 @@ module.exports = function(passport){
 				}
 				
 		    }else{
+		    	console.log(username);
 		    	done(result.data[0]); //username doesn't exist
 		    }
 		});

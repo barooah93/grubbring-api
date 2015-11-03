@@ -124,6 +124,7 @@ app.get('/loginAttempts/:username',function(req, res) {
 
 app.post('/resetPassword/generateAccessCode', function(req, res){
    var emailAddress = req.body.email;
+   console.log(emailAddress);
    var sql = "SELECT * FROM tblUser WHERE emailAddr=?;";
    var inserts = [emailAddress];
    sql = mysql.format(sql, inserts);
@@ -134,6 +135,7 @@ app.post('/resetPassword/generateAccessCode', function(req, res){
           var accessCode = crypto.randomBytes(7).toString('hex');
           var msg = "Enter in this access code to reset your password: "+accessCode
           var subject = "Reset Password Access Code";
+          console.log(accessCode);
           emailServices.emailTokenToUser(msg, subject, emailAddress);
           
           //update access code for this user 
@@ -147,6 +149,7 @@ app.post('/resetPassword/generateAccessCode', function(req, res){
           //send email access code to this email address 
       }else{
           result.description = "There is no account associated with this email address";
+          result.status = "fail";
           res.json(result);
           // email address doesn't exist as grubbring profile
       }
@@ -167,6 +170,7 @@ app.post('/resetPassword/validateAccessCode',function(req, res){
             res.json(result);
         }else{
             result.description = "This is an invalid access code for this user."
+            result.status = "fail";
             res.json(result);
         }
     });
@@ -178,13 +182,16 @@ app.post('/resetPassword', function(req,res){
     var accessCode = req.body.accessCode;
     var newPassword = req.body.newPassword;
     var retypenewPassword = req.body.retypenewPassword;
+    var status = "active";
+    var loginAttempts = 3;
     
     if(newPassword != retypenewPassword){
+        res.json({"status":"fail"});
         //send message the 2 passwords aren't the same
     }else{
         var encryptedPassword = encrypt.generateHash(newPassword);
-        var sql = "UPDATE tblUser SET password=? WHERE emailAddr=? AND accessCode=?;"
-        var inserts = [encryptedPassword, emailAddress, accessCode];
+        var sql = "UPDATE tblUser SET password=?,accountStatus=?,loginAttempts=? WHERE emailAddr=? AND accessCode=?;"
+        var inserts = [encryptedPassword,status,loginAttempts, emailAddress, accessCode];
         sql = mysql.format(sql, inserts);
         
         db.dbExecuteQuery(sql,res,function(result) {

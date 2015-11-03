@@ -58,7 +58,7 @@ app.post('/', function(req, res){
 				sql = mysql.format(sql, inserts);
 				debug(sql);
 				db.dbExecuteQuery(sql,res,function(result){
-					emailServices.emailTokenToUser(token,email);
+					//emailServices.emailTokenToUser(token,email);
 					result.description = "New user created.";
 					res.status(201);
 					res.json(result);	

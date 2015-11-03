@@ -179,6 +179,14 @@ nav img{
     text-align: center;
 }
 
+.login-form p2{
+    color: #FFFFFF;
+    font-family: sans-serif, helvetica;
+    font-size: 13px;
+    text-align: center;
+    margin-bottom: 15px;
+}
+
 .login-form p a{
     font-family: sans-serif, helvetica;
     font-size: 18px;
@@ -355,3 +363,40 @@ nav img{
 .panel-green .panel-heading {
     background-color: #168A6F;
 }
+
+.password-reset-form {
+  position: fixed;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width:35%;
+}
+
+.password-reset h2 {
+    font-family: sans-serif, helvetica;
+    font-size: 3em;
+    color: white;
+    text-align: center;
+    padding-top: 30px;
+    font-weight: 100;
+}
+
+.password-reset p {
+    font-family: sans-serif, helvetica;
+    font-size: 18px;
+    color: white;
+    text-align: center;
+    padding-top: 30px;
+    font-weight: 100;
+}
+
+.password-reset p2 {
+    font-family: sans-serif, helvetica;
+    font-size: 18px;
+    color: white;
+    text-align: left;
+    padding-top: 30px;
+    font-weight: 100;
+}
+
+
