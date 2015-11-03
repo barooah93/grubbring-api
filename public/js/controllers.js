@@ -203,7 +203,7 @@ app.controller('ConfirmationCtrl', function($scope, $http){
         console.log(response);
     }, function (err) {
         console.log(err);
-});
+    });
   
 $scope.submit = function() {
   
@@ -231,7 +231,26 @@ $scope.submit = function() {
     
 });
 
-app.controller('TemplateCtrl', function($scope){
+app.controller('TemplateCtrl', function($scope, $http){
+    
+    $scope.searchBox = function(){
+        if($scope.search.length >= 3){
+            $http({
+                method: 'GET',
+                url: '/api/ring/search/'+$scope.search
+            }).then(function (response) {
+                if(response.data.data.rings.length!=0 || response.data.data.leaders.length!=0){
+                    console.log(response);
+                }
+                else{
+                    console.log(response.data.description);
+                }
+            }, function (err) {
+                console.log(err);
+            });
+        }
+        
+    };
     
     document.querySelector( "#nav-toggle" ).addEventListener( "click", function() {
     this.classList.toggle( "active" );
