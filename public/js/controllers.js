@@ -162,7 +162,6 @@ app.controller('RegistrationCtrl', function($scope, $http, $location){
 
 /*Retrieves the ring details that the signed in user is a leader of */
 app.controller('DashboardCtrl', function DashboardCtrl ($scope, $http, $location) {
-    
     getUserDetails();
   
     function getUserDetails() {
@@ -179,13 +178,13 @@ app.controller('DashboardCtrl', function DashboardCtrl ($scope, $http, $location
         });
     }
     
-    function getRingsUserIsPartOf() { //messed up need more ring data
+    function getRingsUserIsPartOf() {
           $http({
             method: 'GET',
-            url: '/api/ring/subscribedRings/1'//+$scope.userId
+            url: '/api/ring/subscribedRings/' + $scope.userId
         }).then(function (response) {
             console.log(response);
-            $scope.rings = response;
+            $scope.rings = response.data.data;
         }, function (err) {
             console.log(err);
             $location.path('/dashboard');

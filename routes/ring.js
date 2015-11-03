@@ -44,20 +44,20 @@ app.get('/', function(req,res){
 //-------------------------END-------------------------------------------------------
 
 //-------------------------START-----------------------------------------------------
-/*Get rings a user is part of (owns or is in) */
+/*Get rings a user is part of (leads or is in as a member of the ring) */
 app.get('/subscribedRings/:userId', function(req, res) {
     authenticate.checkAuthentication(req, res, function (data) {
         var userId = req.params.userId;
         var sql = null;
         
         // ring status for pending=0, approved=1, declined=2, and banned=3
-         sql = "SELECT * FROM tblRingUser RU, tblUser U WHERE RU.userId = U.userId AND U.userId = ?;"
+         sql = "SELECT * FROM tblRingUser RU, tblRing R WHERE RU.ringId = R.ringId AND RU.userId = ?;"
          var inserts = [userId];
          sql = mysql.format(sql, inserts);
             
         db.dbExecuteQuery(sql, res, function(result){
             // overwrite description
-            result.description="Got rings " + userId + "is a part of";
+            result.description="Got rings user with userId " + userId + " is a part of";
             res.send(result);
         });
     });
