@@ -36,6 +36,18 @@ app.config(['$routeProvider', '$locationProvider', function($routeProvider, $loc
             templateUrl: 'partials/template.html',
             controller: 'TemplateCtrl'
         })
+        .when('/begin_password_reset', { //NOTE: Remove when all pages complete, here as a placeholder for now
+            templateUrl: 'partials/begin_password_reset.html',
+            controller: 'BeginPasswordResetCtrl'
+        })
+        .when('/confirm_code_reset', { //NOTE: Remove when all pages complete, here as a placeholder for now
+            templateUrl: 'partials/confirm_code_reset.html',
+            controller: 'ConfirmCodeResetCtrl'
+        })
+        .when('/reset_password', { //NOTE: Remove when all pages complete, here as a placeholder for now
+            templateUrl: 'partials/reset_password.html',
+            controller: 'ResetPasswordCtrl'
+        })
         .otherwise({
             redirectTo: '/'
         });
