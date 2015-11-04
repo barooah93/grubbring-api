@@ -162,6 +162,7 @@ app.controller('RegistrationCtrl', function($scope, $http, $location){
 
 /*Retrieves the ring details that the signed in user is a leader of */
 app.controller('DashboardCtrl', function DashboardCtrl ($scope, $http, $location) {
+    
     getUserDetails();
   
     function getUserDetails() {

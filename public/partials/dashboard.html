@@ -2,20 +2,18 @@
 Explanation of {{::$id}}
 http://stackoverflow.com/questions/21021951/directive-template-unique-ids-for-elements
 -->
-
 <ng-include src=" 'partials/template.html' "></ng-include>
 
-<div class="rings-im-part-of">
-  <h1>
+<div class="ringpanel-container" ng-controller="DashboardCtrl">
+  <div class = "dash-heading">
     Rings I'm In
-  </h1>
-  
-  <div class="ringpanel-container" ng-controller="DashboardCtrl">
+  </div>
+   
     <div class="panel-group" ng-repeat="ring in rings">
       <div class="panel panel-default">
         <div class="panel-heading" data-toggle="collapse" data-target="#ring-desc_{{::$id}}">
           <h4 class="panel-title">
-            <img src="../images/1.png" class="img-circle" width="50" height="50"> <!--sub in relevant images later -->
+            <img ng-src="../images/default_ring_0.png" width="50" height="50"/>
             {{ ring.name }}
             Last Activity: just now
             <span style="float:right;" class="glyphicon glyphicon-chevron-down down-icon">
