@@ -344,14 +344,49 @@ app.controller('ConfirmCodeResetCtrl', function($scope, $http, $location, passEm
     }
 });
 
-app.controller('ResetPasswordCtrl', function($scope, $http, $location, passEmailService, passAccessCode){
-   $scope.isDisabled = true;
+app.controller('ResetPasswordCtrl', function($scope, $http, $location, passEmailService, passAccessCode, Password){
+   $scope.isSubmitDisabled = true;
    $scope.newPassword = "";
    $scope.retypenewPassword = "";
+   $scope.strengthMessage = "";
+
+   $scope.$watch('newPassword', function(pass){
+       
+       $scope.passwordStrength = Password.getStrength(pass);
+       if($scope.passwordStrength != 0){
+           if($scope.passwordStrength < 40){
+                $scope.strengthMessage = "Weak";
+                $scope.isRetypePasswordDisabled = true;
+           
+            }else if($scope.passwordStrength >= 40 && $scope.passwordStrength <= 70){
+                $scope.strengthMessage = "Medium";
+                $scope.isRetypePasswordDisabled = false;
+           
+            }else{
+                $scope.strengthMessage = "Strong";
+                $scope.isRetypePasswordDisabled = false;
+            }
+        }else{
+            $scope.isRetypePasswordDisabled = true;
+            $scope.strengthMessage = "";
+        }
+   });
+   
+   $scope.isPasswordWeak = function(){
+       return $scope.passwordStrength < 40;
+   }
+   $scope.isPasswordOk = function(){
+       return $scope.passwordStrength >= 40 && $scope.passwordStrength <= 70;
+   }
+   $scope.isPasswordStrong = function(){
+       return $scope.passwordStrength > 70;
+   }
    
    $scope.$watch('retypenewPassword', function(){
        if($scope.newPassword == $scope.retypenewPassword && $scope.newPassword.length > 0 && $scope.retypenewPassword.length > 0){
-           $scope.isDisabled = false;
+           $scope.isSubmitDisabled = false;
+       }else{
+           $scope.isSubmitDisabled = true;
        }
    });
    
@@ -404,3 +439,45 @@ app.service('passAccessCode', function() {
             }
         };
 });
+
+app.factory('Password', function() {
+
+		function getStrength(pass) {
+	    var score = 0;
+	    if (!pass)
+	        return score;
+
+	    // award every unique letter until 5 repetitions
+	    var letters = new Object();
+	    for (var i=0; i<pass.length; i++) {
+	        letters[pass[i]] = (letters[pass[i]] || 0) + 1;
+	        score += 5.0 / letters[pass[i]];
+	    }
+
+	    // bonus points for mixing it up
+	    var variations = {
+	        digits: /\d/.test(pass),
+	        lower: /[a-z]/.test(pass),
+	        upper: /[A-Z]/.test(pass),
+	        nonWords: /\W/.test(pass),
+	    }
+
+	    var variationCount = 0;
+	    for (var check in variations) {
+	        variationCount += (variations[check] == true) ? 1 : 0;
+	    }
+	    score += (variationCount - 1) * 10;
+
+	    if(score > 100) score = 100;
+
+	    return parseInt(score);
+		}
+
+
+		return {
+			getStrength: function(pass) {
+				return getStrength(pass);
+			}
+		}
+
+	});
