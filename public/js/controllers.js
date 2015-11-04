@@ -187,6 +187,7 @@ app.controller('RegistrationCtrl', function($scope, $http, $location){
 
 /*Retrieves the ring details that the signed in user is a leader of */
 app.controller('DashboardCtrl', function DashboardCtrl ($scope, $http, $location) {
+    
     getUserDetails();
   
     function getUserDetails() {
@@ -215,6 +216,22 @@ app.controller('DashboardCtrl', function DashboardCtrl ($scope, $http, $location
             $location.path('/dashboard');
         });
     }
+    
+});
+
+/*Find rings */
+app.controller('findRingsCtrl', function findRingsCtrl ($scope, $http, $location) {
+    
+    // get suggested rings to display to user
+    $http({
+        method: 'GET',
+        url: '/api/ring/'
+    }).then(function (response) {
+        console.log(response);
+    }, function (err) {
+        console.log(err);
+        $location.path('/find_rings');
+    });
     
 });
 
@@ -256,23 +273,27 @@ $scope.submit = function() {
     
 });
 
-app.controller('TemplateCtrl', function($scope, $http){
+app.controller('TemplateCtrl', function($scope, $http, $location){
     
+    // different search functionality for different pages
     $scope.searchBox = function(){
-        if($scope.search.length >= 3){
-            $http({
-                method: 'GET',
-                url: '/api/ring/search/'+$scope.search
-            }).then(function (response) {
-                if(response.data.data.rings.length!=0 || response.data.data.leaders.length!=0){
-                    console.log(response);
-                }
-                else{
-                    console.log(response.data.description);
-                }
-            }, function (err) {
-                console.log(err);
-            });
+        //if location is /find_rings
+        if($location.path()=='/find_rings'){
+            if($scope.search.length >= 3){
+                $http({
+                    method: 'GET',
+                    url: '/api/ring/search/'+$scope.search
+                }).then(function (response) {
+                    if(response.data.data.rings.length!=0 || response.data.data.leaders.length!=0){
+                        console.log(response);
+                    }
+                    else{
+                        console.log(response.data.description);
+                    }
+                }, function (err) {
+                    console.log(err);
+                });
+            }
         }
         
     };

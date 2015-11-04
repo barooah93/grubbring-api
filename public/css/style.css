@@ -6,18 +6,28 @@ body{
     background: linear-gradient(#23B08F, #1ebd98);
 }
 
-/** start dashboard panels **/
+/** start dashboard **/
 .ringpanel-container {
-    position: relative;
+    padding-top: 10px;
+    padding-left: 20%;
+    padding-right: 20%;
+    left: 40%;
+    top: 40%;
+}
+
+.dash-heading {
     padding-top: 75px;
-    padding-left: 40px;
-    padding-right: 40px;
+    padding-bottom: 10px;
+    text-align: center;
+    font-family: verdana, sans-serif;
+    color: white;
+    font-size:200%;
 }
 
 .ringpanel-container .panel {
     box-shadow: 5px 5px 5px #888888;
 }
-/** end dashboard panels**/
+/** end dashboard**/
 
 /** Navigation bar styling (with hamburger menu, logo, and search bar) **/
 

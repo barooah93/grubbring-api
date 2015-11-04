@@ -28,7 +28,7 @@ app.get('/', function(req,res){
         var userZipCode = gps.gps2zip(userLat, userLong).zip_code; // --> returns zipcode 07410 for Fair Lawn, NJ
         //find zipcodes within a certain radius (1 mile) of user's zipcode
         var zipcodesNearUser = zipcodes.radius(userZipCode, 1);
-        var queryParamZipcodeList = zipcodesNearUser.toString().split(',').join(" OR zipcode = ");
+        var queryParamZipcodeList = zipcodesNearUser[0].toString();
     
         var sql = "SELECT * FROM tblRing WHERE zipcode = ?;"; 
         var inserts = [queryParamZipcodeList];
@@ -44,13 +44,15 @@ app.get('/', function(req,res){
 //-------------------------END-------------------------------------------------------
 
 //-------------------------START-----------------------------------------------------
+// TODO: sort - put most active rings at the top
+// TODO: if no rings get some for the person to join and say that the user is in no rings
+
 /*Get rings a user is part of (leads or is in as a member of the ring) */
 app.get('/subscribedRings/:userId', function(req, res) {
     authenticate.checkAuthentication(req, res, function (data) {
         var userId = req.params.userId;
         var sql = null;
         
-        // ring status for pending=0, approved=1, declined=2, and banned=3
          sql = "SELECT * FROM tblRingUser RU, tblRing R WHERE RU.ringId = R.ringId AND RU.userId = ?;"
          var inserts = [userId];
          sql = mysql.format(sql, inserts);
