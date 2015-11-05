@@ -70,6 +70,9 @@ module.exports = function(passport){
 						done(result.data[0]); 
 					}
 					else{
+						if(db_loginAttempts < 0){
+							db_loginAttempts = 0;
+						}
 						sql = "UPDATE tblUser SET loginAttempts=? WHERE username=?;";
 						inserts = [db_loginAttempts,username];
 						sql = mysql.format(sql, inserts);
