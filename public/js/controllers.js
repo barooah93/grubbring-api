@@ -79,7 +79,7 @@ app.controller('LoginCtrl', function($scope, $http, $location) {
     }
 });
 
-app.controller('ProfileCtrl', function($scope, $http, $location) {
+app.controller('ProfileCtrl', function($scope, $http, $location, Password) {
     onLoad();
 
     function onLoad() {
@@ -109,6 +109,8 @@ app.controller('ProfileCtrl', function($scope, $http, $location) {
                 newEmail: $scope.newEmail
             }
         }).then(function(response) {
+            // TODO need to handle if existing email was entered, since i would still get a 200 status
+            // TODO maybe $http inteceptors would help solve it?
             console.log(response);
             $scope.newEmail = '';
             onLoad();
@@ -141,8 +143,8 @@ app.controller('ProfileCtrl', function($scope, $http, $location) {
 
     $scope.updatePassword = function() {
 
-        if ($scope.oldPassword === $scope.newPassword) {
-            console.log('Old password and new password is the same');
+        if ($scope.passwordStrength <= 70) {
+            console.log('Password is not strong enough.');
             return;
         }
 
@@ -155,20 +157,48 @@ app.controller('ProfileCtrl', function($scope, $http, $location) {
             method: 'POST',
             url: '/api/profile/password',
             data: {
-                oldPassword: $scope.oldPassword,
                 newPassword: $scope.newPassword,
                 confirmPassword : $scope.confirmPassword
             }
         }).then(function(response) {
             console.log(response);
-            $scope.oldPassword = '';
             $scope.newPassword = '';
             $scope.confirmPassword = '';
-            onLoad();
         }, function(err) {
             console.log(err);
         })
     };
+
+    $scope.$watch('newPassword', function(pass){
+
+        $scope.passwordStrength = Password.getStrength(pass);
+
+        if ($scope.passwordStrength != 0) {
+            if ($scope.passwordStrength < 40) {
+                $scope.strengthMessage = "Weak";
+
+            } else if ($scope.passwordStrength <= 70) {
+                $scope.strengthMessage = "Medium";
+
+            } else {
+                $scope.strengthMessage = "Strong";
+            }
+        } else {
+            $scope.strengthMessage = "";
+        }
+    });
+
+    $scope.isPasswordWeak = function(){
+        return $scope.passwordStrength < 40;
+    };
+
+    $scope.isPasswordOk = function(){
+        return $scope.passwordStrength >= 40 && $scope.passwordStrength <= 70;
+    };
+    $scope.isPasswordStrong = function(){
+        return $scope.passwordStrength > 70;
+    };
+
 });
 
 app.controller('RegistrationCtrl', function($scope, $http, $location){

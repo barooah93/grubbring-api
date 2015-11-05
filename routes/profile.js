@@ -113,10 +113,8 @@ app.put('/password', function(req, res) {
     authenticate.checkAuthentication(req, res, function (data) {
         debug(req.method + ' ' + req.url);
 
-        var oldPassword = req.body.oldPassword;
         var newPassword = req.body.newPassword;
         var confirmPassword = req.body.confirmPassword;
-        var oldHash = req.user.password;
         var userId = req.user.userId;
 
         if (!newPassword) {
@@ -125,24 +123,12 @@ app.put('/password', function(req, res) {
                 status: 'error',
                 description: 'New password field is empty'
             });
-        } else if (oldPassword === newPassword) {
-            debug('Old password and new password is the same');
-            res.json({
-                status: 'error',
-                description: 'Old password and new password is the same'
-            });
         } else if (newPassword != confirmPassword) {
             debug('New password and confirm password do not match');
             res.json({
                 status: 'error',
                 description: 'New password and confirm password do not match'
             });
-        } else if (encrypt.validatePassword(oldPassword, oldHash)) {
-            debug('Old password is incorrect');
-            res.json({
-                status: 'error',
-                description: 'Old password is incorrect'
-            })
         } else {
             debug('Updating password');
             var newHash = encrypt.generateHash(newPassword);
