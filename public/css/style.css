@@ -14,7 +14,6 @@ body{
     left: 40%;
     top: 40%;
 }
-
 .dash-heading {
     padding-top: 75px;
     padding-bottom: 10px;
@@ -22,6 +21,13 @@ body{
     font-family: verdana, sans-serif;
     color: white;
     font-size:200%;
+}
+
+.ring-panel-title-text {
+    position:relative;
+    padding-bottom: 10px;
+    padding-top:10px;
+    padding-left:70px;
 }
 
 .ringpanel-container .panel {
