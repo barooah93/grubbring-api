@@ -14,7 +14,6 @@ body{
     left: 40%;
     top: 40%;
 }
-
 .dash-heading {
     padding-top: 75px;
     padding-bottom: 10px;
@@ -22,6 +21,13 @@ body{
     font-family: verdana, sans-serif;
     color: white;
     font-size:200%;
+}
+
+.ring-panel-title-text {
+    position:relative;
+    padding-bottom: 10px;
+    padding-top:10px;
+    padding-left:70px;
 }
 
 .ringpanel-container .panel {
@@ -378,7 +384,6 @@ nav img{
     color: white;
 }
 
-<<<<<<< HEAD
 .password-reset-form {
   position: fixed;
   top: 40%;
@@ -415,7 +420,6 @@ nav img{
 }
 
 
-=======
 #profile .control-label {
     font-weight: normal;
 }
@@ -427,4 +431,3 @@ nav img{
 #profile h3 {
     color: white;
 }
->>>>>>> 839fda1c1ece9abe4ce3f569a532f17dbffdbe1c
