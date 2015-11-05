@@ -27,25 +27,44 @@ app.put('/email', function(req, res) {
         var newEmail = req.body.newEmail;
         var userId = req.user.userId;
 
-        if (!newEmail || currEmail === newEmail) {
-            debug('Email field was empty or the same email address was entered');
-            res.status(204);
+        if (!newEmail) {
+            debug('Email field was empty');
             res.json({
                 status: 'error',
-                description: 'Empty field or the same email was specified'
+                description: 'Email field was empty'
+            });
+        } else if (currEmail === newEmail) {
+            debug('The same email address was entered');
+            res.json({
+                status: 'error',
+                description: 'The same email address was specified'
             });
         } else {
-            var sql = 'UPDATE tblUser SET emailAddr=? WHERE userId=?';
-            var inserts = [newEmail, userId];
+            var sql = 'Select * from tblUser where emailAddr = ?';
+            var inserts = [newEmail];
             sql = mysql.format(sql, inserts);
 
             db.dbExecuteQuery(sql, res, function(result) {
-                result.description = 'Updated Email Address';
-                res.json(result);
+                if (result.data.length > 0) {
+                    debug('Email already exists');
+                    res.json({
+                        status: 'error',
+                        description: 'The email specified already exists'
+                    });
+                } else {
+                    debug('Updating email address');
+                    var sql = 'UPDATE tblUser SET emailAddr=? WHERE userId=?';
+                    var inserts = [newEmail, userId];
+                    sql = mysql.format(sql, inserts);
+
+                    db.dbExecuteQuery(sql, res, function(result) {
+                        result.description = 'Updated Email Address';
+                        res.json(result);
+                    });
+                }
             });
         }
     })
-
 });
 
 // Update cell phone
@@ -57,23 +76,34 @@ app.put('/cellphone', function(req, res) {
         var newCell = req.body.newCell;
         var userId = req.user.userId;
 
-        if (!newCell || currCell === newCell) {
-            debug('Cell number field was empty or the same number was entered');
-            res.status(204);
+        if (!newCell) {
+            debug('Cell number field is empty');
             res.json({
                 status: 'error',
-                description: 'Empty field or the new number is the same as the old number'
+                description: 'Cell number field is empty'
+            })
+        } else if (currCell === newCell) {
+            debug('The new number is the same as the old number');
+            res.json({
+                status: 'error',
+                description: 'The new number is the same as the old number'
+            })
+        } else if (isNaN(newCell)) {
+            debug('The new number is not of type number');
+            res.json({
+                status: 'error',
+                description: 'The new number is not of type number'
             })
         } else {
+            debug('Updating cell phone number');
             var sql = 'UPDATE tblUser SET cellPhone=? WHERE userId=?';
-            var inserts = [newCell, userId]
+            var inserts = [newCell, userId];
             sql = mysql.format(sql, inserts);
 
             db.dbExecuteQuery(sql, res, function (result) {
                 result.description = 'Updated Cell phone number';
                 res.json(result);
             })
-
         }
     });
 });
@@ -89,7 +119,32 @@ app.put('/password', function(req, res) {
         var oldHash = req.user.password;
         var userId = req.user.userId;
 
-        if (newPassword && oldPassword != newPassword && newPassword === confirmPassword && encrypt.validatePassword(oldPassword, oldHash)) {
+        if (!newPassword) {
+            debug('New password field is empty.');
+            res.json({
+                status: 'error',
+                description: 'New password field is empty'
+            });
+        } else if (oldPassword === newPassword) {
+            debug('Old password and new password is the same');
+            res.json({
+                status: 'error',
+                description: 'Old password and new password is the same'
+            });
+        } else if (newPassword != confirmPassword) {
+            debug('New password and confirm password do not match');
+            res.json({
+                status: 'error',
+                description: 'New password and confirm password do not match'
+            });
+        } else if (encrypt.validatePassword(oldPassword, oldHash)) {
+            debug('Old password is incorrect');
+            res.json({
+                status: 'error',
+                description: 'Old password is incorrect'
+            })
+        } else {
+            debug('Updating password');
             var newHash = encrypt.generateHash(newPassword);
 
             var sql = 'UPDATE tblUser SET password=? WHERE userId=?';
@@ -99,12 +154,6 @@ app.put('/password', function(req, res) {
             db.dbExecuteQuery(sql, res, function (result) {
                 result.description = 'Updated password';
                 res.json(result);
-            });
-        } else {
-            debug('One of the conditions have failed.');
-            res.json({
-                status: 'error',
-                description: 'At least one of the conditions for changing password is false'
             });
         }
     })

@@ -96,6 +96,12 @@ app.controller('ProfileCtrl', function($scope, $http, $location) {
     }
     
     $scope.updateEmail = function() {
+
+        if ($scope.user.emailAddr === $scope.newEmail) {
+            console.log('New email address cannot match your current email address.');
+            return;
+        }
+
         $http({
             method: 'PUT',
             url: '/api/profile/email',
@@ -106,13 +112,18 @@ app.controller('ProfileCtrl', function($scope, $http, $location) {
             console.log(response);
             $scope.newEmail = '';
             onLoad();
-            //need to refresh page so you can see new email update
         }, function(err) {
             console.log(err);
         })
-    }
+    };
 
     $scope.updateCellNumber = function() {
+
+        if (isNaN($scope.newCell)) {
+            console.log('New cell is not a number.');
+            return;
+        }
+
         $http({
             method: 'PUT',
             url: '/api/profile/cellphone',
@@ -123,13 +134,23 @@ app.controller('ProfileCtrl', function($scope, $http, $location) {
             console.log(response);
             $scope.newCell = '';
             onLoad();
-            //refresh page or send the new user data back.
         }, function(err) {
             console.log(err);
-        })
-    }
+        });
+    };
 
     $scope.updatePassword = function() {
+
+        if ($scope.oldPassword === $scope.newPassword) {
+            console.log('Old password and new password is the same');
+            return;
+        }
+
+        if ($scope.newPassword != $scope.confirmPassword) {
+            console.log('New password and confirm new password do not match.');
+            return;
+        }
+
         $http({
             method: 'POST',
             url: '/api/profile/password',
@@ -144,13 +165,10 @@ app.controller('ProfileCtrl', function($scope, $http, $location) {
             $scope.newPassword = '';
             $scope.confirmPassword = '';
             onLoad();
-            //no refreshing of page needed since user cant see password
         }, function(err) {
             console.log(err);
         })
-    }
-
-
+    };
 });
 
 app.controller('RegistrationCtrl', function($scope, $http, $location){
