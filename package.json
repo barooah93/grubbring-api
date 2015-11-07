@@ -4,7 +4,8 @@
   "description": "Grubbring application",
   "main": "server.js",
   "scripts": {
-    "debug": "DEBUG=grubbring* node server.js 1> std.log 2> err.log"
+    "debug": "DEBUG=grubbring* node server.js 1> std.log 2> err.log",
+    "debug-nolog": "DEBUG=grubbring* node server.js"
   },
   "dependencies": {
     "async": "^1.4.2",

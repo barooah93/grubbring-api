@@ -19,6 +19,10 @@ app.config(['$routeProvider', '$locationProvider', function($routeProvider, $loc
             templateUrl: 'partials/profile.html',
             controller: 'ProfileCtrl'
         })
+        .when('/confirm_code_email', {
+            templateUrl: 'partials/confirm_code_reset.html',
+            controller: 'ConfirmCodeEmailCtrl'
+        })
         .when('/register', {
             templateUrl: 'partials/register.html',
             controller: 'RegistrationCtrl'

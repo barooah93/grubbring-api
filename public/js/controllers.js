@@ -79,7 +79,7 @@ app.controller('LoginCtrl', function($scope, $http, $location) {
     }
 });
 
-app.controller('ProfileCtrl', function($scope, $http, $location, Password) {
+app.controller('ProfileCtrl', function($scope, $http, $location, Password, passEmailService) {
     onLoad();
 
     function onLoad() {
@@ -97,7 +97,9 @@ app.controller('ProfileCtrl', function($scope, $http, $location, Password) {
     
     $scope.updateEmail = function() {
 
-        if ($scope.user.emailAddr === $scope.newEmail) {
+        var newEmail = $scope.newEmail;
+
+        if ($scope.user.emailAddr === newEmail) {
             console.log('New email address cannot match your current email address.');
             return;
         }
@@ -106,14 +108,16 @@ app.controller('ProfileCtrl', function($scope, $http, $location, Password) {
             method: 'PUT',
             url: '/api/profile/email',
             data: {
-                newEmail: $scope.newEmail
+                newEmail: newEmail
             }
         }).then(function(response) {
-            // TODO need to handle if existing email was entered, since i would still get a 200 status
-            // TODO maybe $http inteceptors would help solve it?
-            console.log(response);
-            $scope.newEmail = '';
-            onLoad();
+            if (response.data.status === 'success') {
+                console.log(response);
+                passEmailService.setEmail(newEmail);
+                $location.path('/confirm_code_email');
+            } else {
+                console.log(response.data);
+            }
         }, function(err) {
             console.log(err);
         })
@@ -199,6 +203,37 @@ app.controller('ProfileCtrl', function($scope, $http, $location, Password) {
         return $scope.passwordStrength > 70;
     };
 
+});
+
+app.controller('ConfirmCodeEmailCtrl', function($scope, $http, $location, passEmailService, passAccessCode) {
+    $scope.headerMsg = "Validate Access Code";
+    $scope.dirMsg = "Please enter in the access code that was sent to you in email/text message.";
+
+    $scope.submit = function() {
+        var accessCode = $scope.accessCode;
+        var newEmail = passEmailService.getEmail();
+
+        $http({
+            method: 'PUT',
+            url: '/api/profile/email/validateAccessCode',
+            data: {
+                accessCode: accessCode,
+                newEmail: newEmail
+            }
+        }).then(function(response) {
+            if(response.data.status == "success"){
+                console.log(response);
+                $location.path('/profile');
+            }else{
+                $scope.headerMsg = "Invalid Access Code";
+                $scope.dirMsg = "Please enter in a valid access code to confirm .";
+                $scope.accessCode = "";
+            }
+        }, function(err) {
+            console.log(err);
+            $location.path('/login');   // assuming they are not logged in
+        })
+    }
 });
 
 app.controller('RegistrationCtrl', function($scope, $http, $location){

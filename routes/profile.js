@@ -6,8 +6,6 @@ var encrypt = require('../config/passwordEncryption.js');
 var authenticate = require('../servicesAuthenticate');
 var crypto = require('crypto');
 var db = require('../dbexecute');
-var authenticate = require('../servicesAuthenticate')
-var db = require('../dbexecute.js');
 var mysql = require('mysql');
 var emailServices = require('../emailServices');
 
@@ -25,7 +23,6 @@ app.put('/email', function(req, res) {
 
         var currEmail = req.user.emailAddr;
         var newEmail = req.body.newEmail;
-        var userId = req.user.userId;
 
         if (!newEmail) {
             debug('Email field was empty');
@@ -45,6 +42,7 @@ app.put('/email', function(req, res) {
             sql = mysql.format(sql, inserts);
 
             db.dbExecuteQuery(sql, res, function(result) {
+                debug('Generating access code');
                 if (result.data.length > 0) {
                     debug('Email already exists');
                     res.json({
@@ -52,19 +50,68 @@ app.put('/email', function(req, res) {
                         description: 'The email specified already exists'
                     });
                 } else {
-                    debug('Updating email address');
-                    var sql = 'UPDATE tblUser SET emailAddr=? WHERE userId=?';
-                    var inserts = [newEmail, userId];
+                    var oldEmailObj = {
+                        emailAddress: currEmail,
+                        subject: 'Grubbring - email change request',
+                        msg: 'Your request to change your email has been processed. \n If you did not make this change, please contact Grubbring.'
+                    };
+
+                    var accessCode = crypto.randomBytes(7).toString('hex');
+
+                    var newEmailObj = {
+                        emailAddress: newEmail,
+                        subject: 'Grubbring - change email access code',
+                        msg: 'Enter this access code to update your email address: ' + accessCode
+                    };
+
+                    sql = 'Update tblUser set accessCode = ? where emailAddr = ?';
+                    inserts = [accessCode, oldEmailObj.emailAddress];
                     sql = mysql.format(sql, inserts);
 
                     db.dbExecuteQuery(sql, res, function(result) {
-                        result.description = 'Updated Email Address';
+                        debug('Sent message to old email');
+                        emailServices.emailTokenToUser(oldEmailObj.msg, oldEmailObj.subject, oldEmailObj.emailAddress);
+
+                        debug('Sent message to new email with access code ' + accessCode);
+                        emailServices.emailTokenToUser(newEmailObj.msg, newEmailObj.subject, newEmailObj.emailAddress);
+
+                        result.description = 'An access code has been sent to the new email address.';
                         res.json(result);
                     });
                 }
             });
         }
     })
+});
+
+app.put('/email/validateAccessCode',function(req, res){
+    authenticate.checkAuthentication(req, res, function (data) {
+        var oldEmail = req.user.emailAddr;
+        var newEmail = req.body.newEmail;
+        var accessCode = req.body.accessCode;
+
+        var sql = "SELECT * FROM tblUser WHERE emailAddr=? AND accessCode=?;";
+        var inserts = [oldEmail, accessCode];
+        sql = mysql.format(sql, inserts);
+
+        db.dbExecuteQuery(sql, res, function (result) {
+            if (result.data.length > 0) {
+                sql = "Update tblUser set emailAddr = ? where emailAddr = ? and accessCode = ?";
+                inserts = [newEmail, oldEmail, accessCode];
+                sql = mysql.format(sql, inserts);
+                db.dbExecuteQuery(sql, res, function (result) {
+                    debug('Updated Email Address');
+                    result.description = "Email has been updated.";
+                    res.json(result);
+                });
+            } else {
+                debug('Invalid accessCode');
+                result.description = "This is an invalid access code for this user.";
+                result.status = "fail";
+                res.json(result);
+            }
+        });
+    });
 });
 
 // Update cell phone
