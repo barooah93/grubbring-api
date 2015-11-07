@@ -10,7 +10,7 @@ app.controller('MainCtrl', function($scope) {
 });
 
 app.controller('LoginCtrl', function($scope, $http, $location) {
-            
+
             $(function(){
 
     //             $(document).ready(function() {
@@ -32,7 +32,7 @@ app.controller('LoginCtrl', function($scope, $http, $location) {
 
                  $('#login-form').hide().delay(1500);
                  $('#login-form').fadeIn(1200);
-                
+
             });
     $scope.isSubmitDisabled = true;
     $scope.$watch('password', function(){
@@ -42,7 +42,7 @@ app.controller('LoginCtrl', function($scope, $http, $location) {
            $scope.isSubmitDisabled = true;
        }
    });
-            
+
     $scope.submit = function() {
         $scope.displayMsg1 = false;
         $scope.displayMsg2 = false;
@@ -75,7 +75,7 @@ app.controller('LoginCtrl', function($scope, $http, $location) {
                     $scope.displayMsg1 = true;
                     $scope.loginAttemptMsg = "You have attempted to login too many times using incorrect password. This account has been locked. Please reset your password.";
                     $location.path('/begin_password_reset');
-                    
+
                 }
                 else{
                     $scope.loginAttemptMsg = "This username or password is invalid.";
@@ -84,7 +84,7 @@ app.controller('LoginCtrl', function($scope, $http, $location) {
             }), function(err){
 
             }
-            
+
         });
     }
 });
@@ -104,7 +104,7 @@ app.controller('ProfileCtrl', function($scope, $http, $location, Password, passE
             $location.path('/login');
         });
     }
-    
+
     $scope.updateEmail = function() {
 
         var newEmail = $scope.newEmail;
@@ -186,20 +186,7 @@ app.controller('ProfileCtrl', function($scope, $http, $location, Password, passE
     $scope.$watch('newPassword', function(pass){
 
         $scope.passwordStrength = Password.getStrength(pass);
-
-        if ($scope.passwordStrength != 0) {
-            if ($scope.passwordStrength < 40) {
-                $scope.strengthMessage = "Weak";
-
-            } else if ($scope.passwordStrength <= 70) {
-                $scope.strengthMessage = "Medium";
-
-            } else {
-                $scope.strengthMessage = "Strong";
-            }
-        } else {
-            $scope.strengthMessage = "";
-        }
+        $scope.strengthMessage = Password.getMessage($scope.passwordStrength);
     });
 
     $scope.isPasswordWeak = function(){
@@ -252,7 +239,7 @@ app.controller('RegistrationCtrl', function($scope, $http, $location){
             method: 'POST',
             url: '/api/registration',
             data: {
-                
+
                 username: $scope.username,
                 password: $scope.password,
                 firstname: $scope.firstname,
@@ -268,7 +255,7 @@ app.controller('RegistrationCtrl', function($scope, $http, $location){
             else{
                 $location.path('/confirmation');
             }
-            
+
         }, function(err) {
             console.log(err);
         })
@@ -280,9 +267,9 @@ app.controller('RegistrationCtrl', function($scope, $http, $location){
 
 /*Retrieves the ring details that the signed in user is a leader of */
 app.controller('DashboardCtrl', function DashboardCtrl ($scope, $http, $location) {
-    
+
     getUserDetails();
-  
+
     function getUserDetails() {
         $http({
             method: 'GET',
@@ -296,7 +283,7 @@ app.controller('DashboardCtrl', function DashboardCtrl ($scope, $http, $location
             $location.path('/dashboard');
         });
     }
-    
+
     function getRingsUserIsPartOf() {
           $http({
             method: 'GET',
@@ -309,12 +296,12 @@ app.controller('DashboardCtrl', function DashboardCtrl ($scope, $http, $location
             $location.path('/dashboard');
         });
     }
-    
+
 });
 
 /*Find rings */
 app.controller('findRingsCtrl', function findRingsCtrl ($scope, $http, $location) {
-    
+
     // get suggested rings to display to user
     $http({
         method: 'GET',
@@ -325,7 +312,7 @@ app.controller('findRingsCtrl', function findRingsCtrl ($scope, $http, $location
         console.log(err);
         $location.path('/find_rings');
     });
-    
+
 });
 
 /***********************************/
@@ -339,9 +326,9 @@ app.controller('ConfirmationCtrl', function($scope, $http){
     }, function (err) {
         console.log(err);
     });
-  
+
 $scope.submit = function() {
-  
+
   $http({
             method: 'POST',
             url: '/api/registration/confirmation',
@@ -353,21 +340,21 @@ $scope.submit = function() {
             var str = response.description;
             if (str == "Account has been confirmed." ){ //they're the same - replace with status code later. also reg.js needs to be fixed.
                 alert("you're confirmed! congrats");
-            } 
+            }
             else{
                 alert("Account could not be confirmed");
             }
-            
+
         }, function(err) {
             console.log(err);
         })
-     
- } 
-    
+
+ }
+
 });
 
 app.controller('TemplateCtrl', function($scope, $http, $location){
-    
+
     // different search functionality for different pages
     $scope.searchBox = function(){
         //if location is /find_rings
@@ -388,15 +375,15 @@ app.controller('TemplateCtrl', function($scope, $http, $location){
                 });
             }
         }
-        
+
     };
-    
+
     document.querySelector( "#nav-toggle" ).addEventListener( "click", function() {
     this.classList.toggle( "active" );
     });
-    
+
     document.addEventListener("touchstart", function(){}, true);
-    
+
 });
 
 app.controller('BeginPasswordResetCtrl', function($scope, $http, $location, passEmailService){
@@ -433,7 +420,7 @@ app.controller('BeginPasswordResetCtrl', function($scope, $http, $location, pass
             alert('Email Address does not exist');
         })
     }
-    
+
 });
 
 app.controller('ConfirmCodeResetCtrl', function($scope, $http, $location, passEmailService, passAccessCode){
@@ -481,17 +468,17 @@ app.controller('ResetPasswordCtrl', function($scope, $http, $location, passEmail
    $scope.strengthMessage = "";
 
    $scope.$watch('newPassword', function(pass){
-       
+
        $scope.passwordStrength = Password.getStrength(pass);
        if($scope.passwordStrength != 0){
            if($scope.passwordStrength < 40){
                 $scope.strengthMessage = "Weak";
                 $scope.isRetypePasswordDisabled = true;
-           
+
             }else if($scope.passwordStrength >= 40 && $scope.passwordStrength <= 70){
                 $scope.strengthMessage = "Medium";
                 $scope.isRetypePasswordDisabled = false;
-           
+
             }else{
                 $scope.strengthMessage = "Strong";
                 $scope.isRetypePasswordDisabled = false;
@@ -501,7 +488,7 @@ app.controller('ResetPasswordCtrl', function($scope, $http, $location, passEmail
             $scope.strengthMessage = "";
         }
    });
-   
+
    $scope.isPasswordWeak = function(){
        return $scope.passwordStrength < 40;
    }
@@ -511,7 +498,7 @@ app.controller('ResetPasswordCtrl', function($scope, $http, $location, passEmail
    $scope.isPasswordStrong = function(){
        return $scope.passwordStrength > 70;
    }
-   
+
    $scope.$watch('retypenewPassword', function(){
        if($scope.newPassword == $scope.retypenewPassword && $scope.newPassword.length > 0 && $scope.retypenewPassword.length > 0){
            $scope.isSubmitDisabled = false;
@@ -519,7 +506,7 @@ app.controller('ResetPasswordCtrl', function($scope, $http, $location, passEmail
            $scope.isSubmitDisabled = true;
        }
    });
-   
+
    $scope.submit = function() {
         var email = passEmailService.getEmail();
         var accessCode = passAccessCode.getAccessCode();
@@ -572,7 +559,7 @@ app.service('passAccessCode', function() {
 
 app.factory('Password', function() {
 
-		function getStrength(pass) {
+    function getStrength(pass) {
 	    var score = 0;
 	    if (!pass)
 	        return score;
@@ -601,13 +588,28 @@ app.factory('Password', function() {
 	    if(score > 100) score = 100;
 
 	    return parseInt(score);
-		}
+    }
 
+    // Password strength display message
+    function getMessage(strength) {
+        if (strength != 0) {
+            if (strength < 40) {
+                return "Weak";
+            } else if (strength <= 70) {
+                return "Medium";
+            } else {
+                return "Strong";
+            }
+        } else {
+            return "";
+        }
+    }
 
-		return {
-			getStrength: function(pass) {
-				return getStrength(pass);
-			}
-		}
+    return {
+        getStrength: function(pass) {
+            return getStrength(pass);
+        },
+        getMessage: getMessage
+    }
 
 	});
