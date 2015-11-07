@@ -3,7 +3,7 @@ var debug = require('debug')('grubbring:emailServices');
 
 module.exports = {
     
-    emailTokenToUser: function(emailMessage, emailSubject, user_email){
+    sendEmail: function(emailMessage, emailSubject, user_email){
 	    var transporter = nodemailer.createTransport({
             service: 'Gmail',
             auth: {

@@ -6,6 +6,7 @@ var configAuth = require('./auth');
 var debug = require('debug')('grubbring:passport');
 var db = require('../dbexecute');
 var mysql = require('mysql');
+var emailServices = require('../emailServices');
 
 module.exports = function(passport){
 
@@ -28,24 +29,22 @@ module.exports = function(passport){
 //----------------------------------------------------------------------------------------
 	//log-in using local strategy (keep session once user logs in)
 	passport.use('local-login', new LocalStrategy(function(username, password, done){
-		
+		var emailAddress = username;
 		var sql = null;
-		sql = "SELECT * from tblUser WHERE username=?;";
-     	var inserts = [username];
+		sql = "SELECT * from tblUser WHERE emailAddr=?;";
+     	var inserts = [emailAddress];
      	sql = mysql.format(sql, inserts);
 		
 		db.dbExecuteQuery(sql, done, function(result) {
 		    if(result.data.length > 0){//checks if username exists
-		    	var db_username = result.data[0].username;
 				var db_password = result.data[0].password;
 				var db_status = result.data[0].accountStatus;
 				var db_loginAttempts = result.data[0].loginAttempts;
-				var db_token = result.data[0].confirmationToken;
 				var db_email = result.data[0].emailAddr;
 				
-				if(username === db_username && encrypt.validatePassword(password,db_password) && db_status === "active"){
-						sql = "UPDATE tblUser SET loginAttempts=? WHERE username=?;";
-						inserts = [3,username];
+				if(emailAddress === db_email && encrypt.validatePassword(password,db_password) && db_status === "active"){
+						sql = "UPDATE tblUser SET loginAttempts=? WHERE emailAddr=?;";
+						inserts = [3,emailAddress];
 						sql = mysql.format(sql, inserts);
 						
 						db.dbExecuteQuery(sql, done, function(result) {
@@ -57,10 +56,15 @@ module.exports = function(passport){
 				else{
 					db_loginAttempts--;
 					if(db_loginAttempts == 0){
-					//	registrationConfirmation.emailTokenToUser(db_token,db_email);
-						
-						sql = "UPDATE tblUser SET accountStatus=?, loginAttempts=? WHERE username=?;"
-						inserts = ["Blocked",db_loginAttempts,db_username];
+						//send email saying account is locked
+						var newEmailObj = {
+                        	emailAddress: db_email,
+                        	subject: 'Grubbring - Too many unsuccessful login attempts',
+                        	msg: 'Your account has been locked due to too many failed login attempts. Please reset your password.'
+                    	};
+          				emailServices.sendEmail(newEmailObj.msg, newEmailObj.subject, newEmailObj.emailAddress);
+						sql = "UPDATE tblUser SET accountStatus=?, loginAttempts=? WHERE emailAddr=?;"
+						inserts = ["Blocked",db_loginAttempts,db_email];
 						sql=mysql.format(sql,inserts);
 						
 						db.dbExecuteQuery(sql,done,function(result) {
@@ -73,8 +77,9 @@ module.exports = function(passport){
 						if(db_loginAttempts < 0){
 							db_loginAttempts = 0;
 						}
-						sql = "UPDATE tblUser SET loginAttempts=? WHERE username=?;";
-						inserts = [db_loginAttempts,username];
+						console.log(db_loginAttempts);
+						sql = "UPDATE tblUser SET loginAttempts=? WHERE emailAddr=?;";
+						inserts = [db_loginAttempts,emailAddress];
 						sql = mysql.format(sql, inserts);
 						
 						db.dbExecuteQuery(sql, done, function(result) {
@@ -87,7 +92,7 @@ module.exports = function(passport){
 				}
 				
 		    }else{
-		    	console.log(username);
+		    	console.log(emailAddress);
 		    	done(result.data[0]); //username doesn't exist
 		    }
 		});

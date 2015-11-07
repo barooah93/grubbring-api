@@ -6,7 +6,7 @@
             <div class="form-group">
                 <input type="text" name="accessCode" id="accessCode" ng-model="accessCode" class="form-control" placeholder="">
             </div>
-            <input type="submit" id="btn-login" class="btn btn-custom btn-lg btn-block" value="Submit">
+            <input type="submit" id="btn-login" class="btn btn-custom btn-lg btn-block" ng-disabled="isSubmitDisabled" value="Submit">
         </form>
     </div>
 </div>

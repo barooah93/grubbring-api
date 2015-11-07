@@ -70,10 +70,10 @@ app.put('/email', function(req, res) {
 
                     db.dbExecuteQuery(sql, res, function(result) {
                         debug('Sent message to old email');
-                        emailServices.emailTokenToUser(oldEmailObj.msg, oldEmailObj.subject, oldEmailObj.emailAddress);
+                        emailServices.sendEmail(oldEmailObj.msg, oldEmailObj.subject, oldEmailObj.emailAddress);
 
                         debug('Sent message to new email with access code ' + accessCode);
-                        emailServices.emailTokenToUser(newEmailObj.msg, newEmailObj.subject, newEmailObj.emailAddress);
+                        emailServices.sendEmail(newEmailObj.msg, newEmailObj.subject, newEmailObj.emailAddress);
 
                         result.description = 'An access code has been sent to the new email address.';
                         res.json(result);
@@ -192,10 +192,10 @@ app.put('/password', function(req, res) {
     })
 });
 
-app.get('/loginAttempts/:username',function(req, res) {
-   var username = req.params.username;
-   var sql = "SELECT loginAttempts,accountStatus FROM tblUser WHERE username=?;";
-   var inserts = [username];
+app.get('/loginAttempts/:email',function(req, res) {
+   var email = req.params.email;
+   var sql = "SELECT loginAttempts,accountStatus FROM tblUser WHERE emailAddr=?;";
+   var inserts = [email];
    sql = mysql.format(sql, inserts);
    
    db.dbExecuteQuery(sql, res, function(result) {
@@ -215,10 +215,13 @@ app.post('/resetPassword/generateAccessCode', function(req, res){
       if(result.data.length > 0){ //means that a grubbring user with entered emailAddress exists in database
           //email access code to this email address
           var accessCode = crypto.randomBytes(7).toString('hex');
-          var msg = "Enter in this access code to reset your password: "+accessCode
-          var subject = "Reset Password Access Code";
+          var newEmailObj = {
+                        emailAddress: emailAddress,
+                        subject: 'Grubbring - Reset Password Access Code',
+                        msg: 'Enter in this access code to reset your password: ' + accessCode
+                    };
           console.log(accessCode);
-          emailServices.emailTokenToUser(msg, subject, emailAddress);
+          emailServices.sendEmail(newEmailObj.msg, newEmailObj.subject, newEmailObj.emailAddress);
           
           //update access code for this user 
           sql = "UPDATE tblUser SET accessCode=? WHERE emailAddr=?;"

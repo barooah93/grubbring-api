@@ -34,6 +34,14 @@ app.controller('LoginCtrl', function($scope, $http, $location) {
                  $('#login-form').fadeIn(1200);
                 
             });
+    $scope.isSubmitDisabled = true;
+    $scope.$watch('password', function(){
+       if($scope.password.length > 0){
+           $scope.isSubmitDisabled = false;
+       }else{
+           $scope.isSubmitDisabled = true;
+       }
+   });
             
     $scope.submit = function() {
         $scope.displayMsg1 = false;
@@ -42,7 +50,7 @@ app.controller('LoginCtrl', function($scope, $http, $location) {
             method: 'POST',
             url: '/api/login',
             data: {
-                username: $scope.username,
+                username: $scope.email,
                 password: $scope.password
             }
         }).then(function(response) {
@@ -52,7 +60,7 @@ app.controller('LoginCtrl', function($scope, $http, $location) {
             $scope.password = "";
             $http({
                 method: 'GET',
-                url: '/api/profile/loginAttempts/'+$scope.username,
+                url: '/api/profile/loginAttempts/'+$scope.email,
             }).then(function(response){
                 var loginAttemptsRemain = response.data.loginAttempts;
                 if(loginAttemptsRemain > 1){
@@ -66,9 +74,11 @@ app.controller('LoginCtrl', function($scope, $http, $location) {
                 else if(loginAttemptsRemain == 0 || loginAttemptsRemain < 0){
                     $scope.displayMsg1 = true;
                     $scope.loginAttemptMsg = "You have attempted to login too many times using incorrect password. This account has been locked. Please reset your password.";
+                    $location.path('/begin_password_reset');
+                    
                 }
                 else{
-                    $scope.loginAttemptMsg = "This username does not exist.";
+                    $scope.loginAttemptMsg = "This username or password is invalid.";
                 }
                 $scope.displayMsg2 = true;
             }), function(err){
@@ -391,8 +401,16 @@ app.controller('TemplateCtrl', function($scope, $http, $location){
 
 app.controller('BeginPasswordResetCtrl', function($scope, $http, $location, passEmailService){
     var email = null;
-    $scope.headerMsg = "Find your Grubbring account";
-    $scope.dirMsg = "Enter your email address or phone number.";
+    $scope.isSubmitDisabled = true;
+    $scope.headerMsg = "Forgot your password?";
+    $scope.dirMsg = "Enter your email address or phone number to begin the process to reset your password.";
+    $scope.$watch('email', function(){
+       if($scope.email.length > 0){
+           $scope.isSubmitDisabled = false;
+       }else{
+           $scope.isSubmitDisabled = true;
+       }
+   });
     $scope.submit = function() {
         email = $scope.email;
         $http({
@@ -419,8 +437,16 @@ app.controller('BeginPasswordResetCtrl', function($scope, $http, $location, pass
 });
 
 app.controller('ConfirmCodeResetCtrl', function($scope, $http, $location, passEmailService, passAccessCode){
+    $scope.isSubmitDisabled = true;
     $scope.headerMsg = "Validate Access Code";
     $scope.dirMsg = "Please enter in the access code that was sent to you in email/text message.";
+    $scope.$watch('accessCode', function(){
+       if($scope.accessCode.length > 0){
+           $scope.isSubmitDisabled = false;
+       }else{
+           $scope.isSubmitDisabled = true;
+       }
+   });
     $scope.submit = function() {
         var accessCode = $scope.accessCode;
         var email = passEmailService.getEmail();
