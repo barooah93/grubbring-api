@@ -56,13 +56,35 @@ app.get('/subscribedRings/:userId', function(req, res) {
          sql = "SELECT * FROM tblRingUser RU, tblRing R WHERE RU.ringId = R.ringId AND RU.userId = ?;"
          var inserts = [userId];
          sql = mysql.format(sql, inserts);
-            
+        
         db.dbExecuteQuery(sql, res, function(result){
             // overwrite description
             result.description="Got rings user with userId " + userId + " is a part of";
             res.send(result);
         });
     });
+});
+    
+//-------------------------END-------------------------------------------------------
+
+//-------------------------START-----------------------------------------------------
+// TODO: sort - put most active rings at the top
+
+//statusId 0: no order = 0, in progress = 1, completed= 2
+app.get('/getActivityCount/:ringId', function(req, res) {
+    authenticate.checkAuthentication(req, res, function (data) {
+        var ringId = req.params.ringId;
+        var sql = null;
+        
+        //get number of activities in last 5 days
+        sql = "SELECT O.ringId, COUNT(*) AS count FROM tblOrder O, tblOrderStatus OS WHERE O.orderId = OS.orderId AND O.ringId = " + ringId + " AND OS.statusId = 2 AND OS.enteredOn >= DATE_SUB(CURDATE(), INTERVAL 5 DAY) AND OS.enteredOn <= CURDATE();";
+        db.dbExecuteQuery(sql, res, function(result){
+            // overwrite description
+            result.description = "Got activity count for ringId: " + ringId;
+            res.send(result);
+        });
+    });
+        /* Sort the rings by most activities*/
 });
     
 //-------------------------END-------------------------------------------------------
@@ -255,6 +277,7 @@ app.get('/search/:key', function(req,res) {
 
 
 //-----------------------Helper Functions--------------------------------------------
+
 
 // Function: returns pending status entries from tblRingUser associated with given ringIds
 // Parameters: ringIds - array containing ring ids

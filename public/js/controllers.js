@@ -267,7 +267,6 @@ app.controller('RegistrationCtrl', function($scope, $http, $location){
 
 /*Retrieves the ring details that the signed in user is a leader of */
 app.controller('DashboardCtrl', function DashboardCtrl ($scope, $http, $location) {
-
     getUserDetails();
 
     function getUserDetails() {
@@ -285,16 +284,34 @@ app.controller('DashboardCtrl', function DashboardCtrl ($scope, $http, $location
     }
 
     function getRingsUserIsPartOf() {
-          $http({
+        $http({
             method: 'GET',
             url: '/api/ring/subscribedRings/' + $scope.userId
         }).then(function (response) {
             console.log(response);
             $scope.rings = response.data.data;
+            sortRingsByMostActive();
         }, function (err) {
             console.log(err);
             $location.path('/dashboard');
         });
+    }
+    
+    function sortRingsByMostActive() {
+        $scope.ringNumActivityHash = [];
+        for(var i = 0; i < $scope.rings.length; i++) {
+            $http({
+                method: 'GET',
+                url: '/api/ring/getActivityCount/' + $scope.rings[i].ringId
+            }).then(function (response) {
+                console.log(response);
+                $scope.ringNumActivityHash.push(response.data);
+                console.log("the hash: " + $scope.ringNumActivityHash);
+            }, function (err) {
+                console.log(err);
+                $location.path('/dashboard');
+            });
+        }
     }
 
 });
