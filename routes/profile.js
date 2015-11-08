@@ -6,8 +6,6 @@ var encrypt = require('../config/passwordEncryption.js');
 var authenticate = require('../servicesAuthenticate');
 var crypto = require('crypto');
 var db = require('../dbexecute');
-var authenticate = require('../servicesAuthenticate')
-var db = require('../dbexecute.js');
 var mysql = require('mysql');
 var emailServices = require('../emailServices');
 
@@ -25,7 +23,6 @@ app.put('/email', function(req, res) {
 
         var currEmail = req.user.emailAddr;
         var newEmail = req.body.newEmail;
-        var userId = req.user.userId;
 
         if (!newEmail) {
             debug('Email field was empty');
@@ -45,6 +42,7 @@ app.put('/email', function(req, res) {
             sql = mysql.format(sql, inserts);
 
             db.dbExecuteQuery(sql, res, function(result) {
+                debug('Generating access code');
                 if (result.data.length > 0) {
                     debug('Email already exists');
                     res.json({
@@ -52,19 +50,68 @@ app.put('/email', function(req, res) {
                         description: 'The email specified already exists'
                     });
                 } else {
-                    debug('Updating email address');
-                    var sql = 'UPDATE tblUser SET emailAddr=? WHERE userId=?';
-                    var inserts = [newEmail, userId];
+                    var oldEmailObj = {
+                        emailAddress: currEmail,
+                        subject: 'Grubbring - email change request',
+                        msg: 'Your request to change your email has been processed. \n If you did not make this change, please contact Grubbring.'
+                    };
+
+                    var accessCode = crypto.randomBytes(7).toString('hex');
+
+                    var newEmailObj = {
+                        emailAddress: newEmail,
+                        subject: 'Grubbring - change email access code',
+                        msg: 'Enter this access code to update your email address: ' + accessCode
+                    };
+
+                    sql = 'Update tblUser set accessCode = ? where emailAddr = ?';
+                    inserts = [accessCode, oldEmailObj.emailAddress];
                     sql = mysql.format(sql, inserts);
 
                     db.dbExecuteQuery(sql, res, function(result) {
-                        result.description = 'Updated Email Address';
+                        debug('Sent message to old email');
+                        emailServices.sendEmail(oldEmailObj.msg, oldEmailObj.subject, oldEmailObj.emailAddress);
+
+                        debug('Sent message to new email with access code ' + accessCode);
+                        emailServices.sendEmail(newEmailObj.msg, newEmailObj.subject, newEmailObj.emailAddress);
+
+                        result.description = 'An access code has been sent to the new email address.';
                         res.json(result);
                     });
                 }
             });
         }
     })
+});
+
+app.put('/email/validateAccessCode',function(req, res){
+    authenticate.checkAuthentication(req, res, function (data) {
+        var oldEmail = req.user.emailAddr;
+        var newEmail = req.body.newEmail;
+        var accessCode = req.body.accessCode;
+
+        var sql = "SELECT * FROM tblUser WHERE emailAddr=? AND accessCode=?;";
+        var inserts = [oldEmail, accessCode];
+        sql = mysql.format(sql, inserts);
+
+        db.dbExecuteQuery(sql, res, function (result) {
+            if (result.data.length > 0) {
+                sql = "Update tblUser set emailAddr = ? where emailAddr = ? and accessCode = ?";
+                inserts = [newEmail, oldEmail, accessCode];
+                sql = mysql.format(sql, inserts);
+                db.dbExecuteQuery(sql, res, function (result) {
+                    debug('Updated Email Address');
+                    result.description = "Email has been updated.";
+                    res.json(result);
+                });
+            } else {
+                debug('Invalid accessCode');
+                result.description = "This is an invalid access code for this user.";
+                result.status = "fail";
+                res.json(result);
+            }
+        });
+    });
 });
 
 // Update cell phone
@@ -113,10 +160,8 @@ app.put('/password', function(req, res) {
     authenticate.checkAuthentication(req, res, function (data) {
         debug(req.method + ' ' + req.url);
 
-        var oldPassword = req.body.oldPassword;
         var newPassword = req.body.newPassword;
         var confirmPassword = req.body.confirmPassword;
-        var oldHash = req.user.password;
         var userId = req.user.userId;
 
         if (!newPassword) {
@@ -125,24 +170,12 @@ app.put('/password', function(req, res) {
                 status: 'error',
                 description: 'New password field is empty'
             });
-        } else if (oldPassword === newPassword) {
-            debug('Old password and new password is the same');
-            res.json({
-                status: 'error',
-                description: 'Old password and new password is the same'
-            });
         } else if (newPassword != confirmPassword) {
             debug('New password and confirm password do not match');
             res.json({
                 status: 'error',
                 description: 'New password and confirm password do not match'
             });
-        } else if (encrypt.validatePassword(oldPassword, oldHash)) {
-            debug('Old password is incorrect');
-            res.json({
-                status: 'error',
-                description: 'Old password is incorrect'
-            })
         } else {
             debug('Updating password');
             var newHash = encrypt.generateHash(newPassword);
@@ -159,10 +192,10 @@ app.put('/password', function(req, res) {
     })
 });
 
-app.get('/loginAttempts/:username',function(req, res) {
-   var username = req.params.username;
-   var sql = "SELECT loginAttempts,accountStatus FROM tblUser WHERE username=?;";
-   var inserts = [username];
+app.get('/loginAttempts/:email',function(req, res) {
+   var email = req.params.email;
+   var sql = "SELECT loginAttempts,accountStatus FROM tblUser WHERE emailAddr=?;";
+   var inserts = [email];
    sql = mysql.format(sql, inserts);
    
    db.dbExecuteQuery(sql, res, function(result) {
@@ -182,10 +215,13 @@ app.post('/resetPassword/generateAccessCode', function(req, res){
       if(result.data.length > 0){ //means that a grubbring user with entered emailAddress exists in database
           //email access code to this email address
           var accessCode = crypto.randomBytes(7).toString('hex');
-          var msg = "Enter in this access code to reset your password: "+accessCode
-          var subject = "Reset Password Access Code";
+          var newEmailObj = {
+                        emailAddress: emailAddress,
+                        subject: 'Grubbring - Reset Password Access Code',
+                        msg: 'Enter in this access code to reset your password: ' + accessCode
+                    };
           console.log(accessCode);
-          emailServices.emailTokenToUser(msg, subject, emailAddress);
+          emailServices.sendEmail(newEmailObj.msg, newEmailObj.subject, newEmailObj.emailAddress);
           
           //update access code for this user 
           sql = "UPDATE tblUser SET accessCode=? WHERE emailAddr=?;"

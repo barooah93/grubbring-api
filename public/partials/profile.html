@@ -69,13 +69,19 @@
                 <div class="panel-body">
                     <form ng-submit="updatePassword()">
                         <div class="form-group">
-                            <label class="control-label">Old Password <span>*</span></label>
-                            <input type="password" ng-model="oldPassword" class="form-control" placeholder="Password" required>
-                        </div>
-                        <div class="form-group">
                             <label class="control-label">New password <span>*</span></label>
                             <input type="password" ng-model="newPassword" class="form-control" placeholder="New password" required>
                         </div>
+                        <div class="progress" style="margin-top:10px">
+                            <div class="progress-bar"
+                                 ng-class="{'progress-bar-success': isPasswordStrong(), 'progress-bar-warning': isPasswordOk(), 'progress-bar-danger': isPasswordWeak()}"
+                                 aria-valuenow= "{{ passwordStrength }}"
+                                 aria-valuemin="0"
+                                 aria-valuemax="100"
+                                 style="width:{{ passwordStrength }}%">
+                            </div>
+                        </div>
+                        <p>{{ strengthMessage }}</p>
                         <div class="form-group">
                             <label class="control-label">Confirm new password <span>*</span></label>
                             <input type="password" ng-model="confirmPassword" class="form-control" placeholder="Confirm new password" required>

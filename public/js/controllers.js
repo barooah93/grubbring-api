@@ -10,7 +10,7 @@ app.controller('MainCtrl', function($scope) {
 });
 
 app.controller('LoginCtrl', function($scope, $http, $location) {
-            
+
             $(function(){
 
     //             $(document).ready(function() {
@@ -32,9 +32,17 @@ app.controller('LoginCtrl', function($scope, $http, $location) {
 
                  $('#login-form').hide().delay(1500);
                  $('#login-form').fadeIn(1200);
-                
+
             });
-            
+    $scope.isSubmitDisabled = true;
+    $scope.$watch('password', function(){
+       if($scope.password.length > 0){
+           $scope.isSubmitDisabled = false;
+       }else{
+           $scope.isSubmitDisabled = true;
+       }
+   });
+
     $scope.submit = function() {
         $scope.displayMsg1 = false;
         $scope.displayMsg2 = false;
@@ -42,7 +50,7 @@ app.controller('LoginCtrl', function($scope, $http, $location) {
             method: 'POST',
             url: '/api/login',
             data: {
-                username: $scope.username,
+                username: $scope.email,
                 password: $scope.password
             }
         }).then(function(response) {
@@ -52,7 +60,7 @@ app.controller('LoginCtrl', function($scope, $http, $location) {
             $scope.password = "";
             $http({
                 method: 'GET',
-                url: '/api/profile/loginAttempts/'+$scope.username,
+                url: '/api/profile/loginAttempts/'+$scope.email,
             }).then(function(response){
                 var loginAttemptsRemain = response.data.loginAttempts;
                 if(loginAttemptsRemain > 1){
@@ -66,20 +74,22 @@ app.controller('LoginCtrl', function($scope, $http, $location) {
                 else if(loginAttemptsRemain == 0 || loginAttemptsRemain < 0){
                     $scope.displayMsg1 = true;
                     $scope.loginAttemptMsg = "You have attempted to login too many times using incorrect password. This account has been locked. Please reset your password.";
+                    $location.path('/begin_password_reset');
+
                 }
                 else{
-                    $scope.loginAttemptMsg = "This username does not exist.";
+                    $scope.loginAttemptMsg = "This username or password is invalid.";
                 }
                 $scope.displayMsg2 = true;
             }), function(err){
 
             }
-            
+
         });
     }
 });
 
-app.controller('ProfileCtrl', function($scope, $http, $location) {
+app.controller('ProfileCtrl', function($scope, $http, $location, Password, passEmailService) {
     onLoad();
 
     function onLoad() {
@@ -94,10 +104,12 @@ app.controller('ProfileCtrl', function($scope, $http, $location) {
             $location.path('/login');
         });
     }
-    
+
     $scope.updateEmail = function() {
 
-        if ($scope.user.emailAddr === $scope.newEmail) {
+        var newEmail = $scope.newEmail;
+
+        if ($scope.user.emailAddr === newEmail) {
             console.log('New email address cannot match your current email address.');
             return;
         }
@@ -106,12 +118,16 @@ app.controller('ProfileCtrl', function($scope, $http, $location) {
             method: 'PUT',
             url: '/api/profile/email',
             data: {
-                newEmail: $scope.newEmail
+                newEmail: newEmail
             }
         }).then(function(response) {
-            console.log(response);
-            $scope.newEmail = '';
-            onLoad();
+            if (response.data.status === 'success') {
+                console.log(response);
+                passEmailService.setEmail(newEmail);
+                $location.path('/confirm_code_email');
+            } else {
+                console.log(response.data);
+            }
         }, function(err) {
             console.log(err);
         })
@@ -141,8 +157,8 @@ app.controller('ProfileCtrl', function($scope, $http, $location) {
 
     $scope.updatePassword = function() {
 
-        if ($scope.oldPassword === $scope.newPassword) {
-            console.log('Old password and new password is the same');
+        if ($scope.passwordStrength <= 70) {
+            console.log('Password is not strong enough.');
             return;
         }
 
@@ -155,20 +171,66 @@ app.controller('ProfileCtrl', function($scope, $http, $location) {
             method: 'POST',
             url: '/api/profile/password',
             data: {
-                oldPassword: $scope.oldPassword,
                 newPassword: $scope.newPassword,
                 confirmPassword : $scope.confirmPassword
             }
         }).then(function(response) {
             console.log(response);
-            $scope.oldPassword = '';
             $scope.newPassword = '';
             $scope.confirmPassword = '';
-            onLoad();
         }, function(err) {
             console.log(err);
         })
     };
+
+    $scope.$watch('newPassword', function(pass){
+
+        $scope.passwordStrength = Password.getStrength(pass);
+        $scope.strengthMessage = Password.getMessage($scope.passwordStrength);
+    });
+
+    $scope.isPasswordWeak = function(){
+        return $scope.passwordStrength < 40;
+    };
+
+    $scope.isPasswordOk = function(){
+        return $scope.passwordStrength >= 40 && $scope.passwordStrength <= 70;
+    };
+    $scope.isPasswordStrong = function(){
+        return $scope.passwordStrength > 70;
+    };
+
+});
+
+app.controller('ConfirmCodeEmailCtrl', function($scope, $http, $location, passEmailService, passAccessCode) {
+    $scope.headerMsg = "Validate Access Code";
+    $scope.dirMsg = "Please enter in the access code that was sent to you in email/text message.";
+
+    $scope.submit = function() {
+        var accessCode = $scope.accessCode;
+        var newEmail = passEmailService.getEmail();
+
+        $http({
+            method: 'PUT',
+            url: '/api/profile/email/validateAccessCode',
+            data: {
+                accessCode: accessCode,
+                newEmail: newEmail
+            }
+        }).then(function(response) {
+            if(response.data.status == "success"){
+                console.log(response);
+                $location.path('/profile');
+            }else{
+                $scope.headerMsg = "Invalid Access Code";
+                $scope.dirMsg = "Please enter in a valid access code to confirm .";
+                $scope.accessCode = "";
+            }
+        }, function(err) {
+            console.log(err);
+            $location.path('/login');   // assuming they are not logged in
+        })
+    }
 });
 
 app.controller('RegistrationCtrl', function($scope, $http, $location){
@@ -177,7 +239,7 @@ app.controller('RegistrationCtrl', function($scope, $http, $location){
             method: 'POST',
             url: '/api/registration',
             data: {
-                
+
                 username: $scope.username,
                 password: $scope.password,
                 firstname: $scope.firstname,
@@ -193,7 +255,7 @@ app.controller('RegistrationCtrl', function($scope, $http, $location){
             else{
                 $location.path('/confirmation');
             }
-            
+
         }, function(err) {
             console.log(err);
         })
@@ -205,9 +267,9 @@ app.controller('RegistrationCtrl', function($scope, $http, $location){
 
 /*Retrieves the ring details that the signed in user is a leader of */
 app.controller('DashboardCtrl', function DashboardCtrl ($scope, $http, $location) {
-    
+
     getUserDetails();
-  
+
     function getUserDetails() {
         $http({
             method: 'GET',
@@ -221,7 +283,7 @@ app.controller('DashboardCtrl', function DashboardCtrl ($scope, $http, $location
             $location.path('/dashboard');
         });
     }
-    
+
     function getRingsUserIsPartOf() {
           $http({
             method: 'GET',
@@ -234,12 +296,12 @@ app.controller('DashboardCtrl', function DashboardCtrl ($scope, $http, $location
             $location.path('/dashboard');
         });
     }
-    
+
 });
 
 /*Find rings */
 app.controller('findRingsCtrl', function findRingsCtrl ($scope, $http, $location) {
-    
+
     // get suggested rings to display to user
     $http({
         method: 'GET',
@@ -250,7 +312,7 @@ app.controller('findRingsCtrl', function findRingsCtrl ($scope, $http, $location
         console.log(err);
         $location.path('/find_rings');
     });
-    
+
 });
 
 /***********************************/
@@ -264,9 +326,9 @@ app.controller('ConfirmationCtrl', function($scope, $http){
     }, function (err) {
         console.log(err);
     });
-  
+
 $scope.submit = function() {
-  
+
   $http({
             method: 'POST',
             url: '/api/registration/confirmation',
@@ -278,21 +340,21 @@ $scope.submit = function() {
             var str = response.description;
             if (str == "Account has been confirmed." ){ //they're the same - replace with status code later. also reg.js needs to be fixed.
                 alert("you're confirmed! congrats");
-            } 
+            }
             else{
                 alert("Account could not be confirmed");
             }
-            
+
         }, function(err) {
             console.log(err);
         })
-     
- } 
-    
+
+ }
+
 });
 
 app.controller('TemplateCtrl', function($scope, $http, $location){
-    
+
     // different search functionality for different pages
     $scope.searchBox = function(){
         //if location is /find_rings
@@ -313,21 +375,29 @@ app.controller('TemplateCtrl', function($scope, $http, $location){
                 });
             }
         }
-        
+
     };
-    
+
     document.querySelector( "#nav-toggle" ).addEventListener( "click", function() {
     this.classList.toggle( "active" );
     });
-    
+
     document.addEventListener("touchstart", function(){}, true);
-    
+
 });
 
 app.controller('BeginPasswordResetCtrl', function($scope, $http, $location, passEmailService){
     var email = null;
-    $scope.headerMsg = "Find your Grubbring account";
-    $scope.dirMsg = "Enter your email address or phone number.";
+    $scope.isSubmitDisabled = true;
+    $scope.headerMsg = "Forgot your password?";
+    $scope.dirMsg = "Enter your email address or phone number to begin the process to reset your password.";
+    $scope.$watch('email', function(){
+       if($scope.email.length > 0){
+           $scope.isSubmitDisabled = false;
+       }else{
+           $scope.isSubmitDisabled = true;
+       }
+   });
     $scope.submit = function() {
         email = $scope.email;
         $http({
@@ -350,12 +420,20 @@ app.controller('BeginPasswordResetCtrl', function($scope, $http, $location, pass
             alert('Email Address does not exist');
         })
     }
-    
+
 });
 
 app.controller('ConfirmCodeResetCtrl', function($scope, $http, $location, passEmailService, passAccessCode){
+    $scope.isSubmitDisabled = true;
     $scope.headerMsg = "Validate Access Code";
     $scope.dirMsg = "Please enter in the access code that was sent to you in email/text message.";
+    $scope.$watch('accessCode', function(){
+       if($scope.accessCode.length > 0){
+           $scope.isSubmitDisabled = false;
+       }else{
+           $scope.isSubmitDisabled = true;
+       }
+   });
     $scope.submit = function() {
         var accessCode = $scope.accessCode;
         var email = passEmailService.getEmail();
@@ -390,17 +468,17 @@ app.controller('ResetPasswordCtrl', function($scope, $http, $location, passEmail
    $scope.strengthMessage = "";
 
    $scope.$watch('newPassword', function(pass){
-       
+
        $scope.passwordStrength = Password.getStrength(pass);
        if($scope.passwordStrength != 0){
            if($scope.passwordStrength < 40){
                 $scope.strengthMessage = "Weak";
                 $scope.isRetypePasswordDisabled = true;
-           
+
             }else if($scope.passwordStrength >= 40 && $scope.passwordStrength <= 70){
                 $scope.strengthMessage = "Medium";
                 $scope.isRetypePasswordDisabled = false;
-           
+
             }else{
                 $scope.strengthMessage = "Strong";
                 $scope.isRetypePasswordDisabled = false;
@@ -410,7 +488,7 @@ app.controller('ResetPasswordCtrl', function($scope, $http, $location, passEmail
             $scope.strengthMessage = "";
         }
    });
-   
+
    $scope.isPasswordWeak = function(){
        return $scope.passwordStrength < 40;
    }
@@ -420,7 +498,7 @@ app.controller('ResetPasswordCtrl', function($scope, $http, $location, passEmail
    $scope.isPasswordStrong = function(){
        return $scope.passwordStrength > 70;
    }
-   
+
    $scope.$watch('retypenewPassword', function(){
        if($scope.newPassword == $scope.retypenewPassword && $scope.newPassword.length > 0 && $scope.retypenewPassword.length > 0){
            $scope.isSubmitDisabled = false;
@@ -428,7 +506,7 @@ app.controller('ResetPasswordCtrl', function($scope, $http, $location, passEmail
            $scope.isSubmitDisabled = true;
        }
    });
-   
+
    $scope.submit = function() {
         var email = passEmailService.getEmail();
         var accessCode = passAccessCode.getAccessCode();
@@ -481,7 +559,7 @@ app.service('passAccessCode', function() {
 
 app.factory('Password', function() {
 
-		function getStrength(pass) {
+    function getStrength(pass) {
 	    var score = 0;
 	    if (!pass)
 	        return score;
@@ -510,13 +588,28 @@ app.factory('Password', function() {
 	    if(score > 100) score = 100;
 
 	    return parseInt(score);
-		}
+    }
 
+    // Password strength display message
+    function getMessage(strength) {
+        if (strength != 0) {
+            if (strength < 40) {
+                return "Weak";
+            } else if (strength <= 70) {
+                return "Medium";
+            } else {
+                return "Strong";
+            }
+        } else {
+            return "";
+        }
+    }
 
-		return {
-			getStrength: function(pass) {
-				return getStrength(pass);
-			}
-		}
+    return {
+        getStrength: function(pass) {
+            return getStrength(pass);
+        },
+        getMessage: getMessage
+    }
 
 	});

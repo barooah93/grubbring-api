@@ -8,14 +8,14 @@
 
             <form ng-submit="submit()" id="login-form">
                 <div class="form-group">
-                    <input type="text" name="username" id="username" ng-model="username" class="form-control" placeholder="Username">
+                    <input type="text" name="email" id="email" ng-model="email" class="form-control" placeholder="Email">
                 </div>
                 <div class="form-group">
                     <input type="password" name="password" id="password" ng-model="password" class="form-control" placeholder="Password">
                 </div>
                 <p2 ng-show="displayMsg1">You have entered an incorrect password.</p2><br>
                 <p2 ng-show="displayMsg2">{{loginAttemptMsg}}</p2>
-                <input type="submit" id="btn-login" class="btn btn-custom btn-lg btn-block" value="Log in">
+                <input type="submit" id="btn-login" class="btn btn-custom btn-lg btn-block" ng-disabled="isSubmitDisabled" value="Log in">
             </form>
             <p><a href="/auth/facebook" >Log in with Facebook   </a> | <a href="begin_password_reset">  Forgot your password?</a></p>
             <p>Don't have an account? <a href="register" class="register-link">Register now!</a></p>

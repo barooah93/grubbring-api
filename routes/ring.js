@@ -184,33 +184,37 @@ app.get('/search/:key', function(req,res) {
         var tokenized = [];
         var firstName = null;
         var lastName = null;
-        
+        var tokenizedSearch="";
+        var inserts =[];
+
         // tokenize key for multiple word search
         tokenized = key.split(" ");
+        inserts = [key,"%"+key+"%"];
+         
+        // check if there are multiple words in key
         if(tokenized.length<2){
-            tokenized[1]="";
+            tokenized[1]=""; // add blank string to second index if there is only one word in key so it is defined
         }
-        // execute first sql to see if key is a ringId or ring name (partial or full)
-        ringSql = "SELECT * FROM tblRing R WHERE ((R.ringId=? OR R.name LIKE ?) AND R.ringStatus=1) ;";
-        var inserts = [key,"%"+key+"%"];
-        
-
-/*     inserts.push(tokenized[0]);
-        
-        for(var i = 1; i < tokenized.length; i++){
-            if(i == tokenized.length-1) {
-                ringSql += "OR R.name LIKE ?% ";
-            }else {
-                ringSql += "OR R.name LIKE ? ";
+        else{ // tokenize the search to look for each word in ring name
+            tokenizedSearch = "OR ( ";
+            for(var i=0;i<tokenized.length;i++){
+                // check if last word in key
+                if(i == tokenized.length-1) {
+                    tokenizedSearch += "R.name LIKE ?)";
+                }
+                else{
+                    tokenizedSearch += "R.name LIKE ? AND "
+                }
+                inserts.push("%"+tokenized[i]+"%");
             }
-            inserts.push(tokenized[i]);
         }
         
-        ringSql += ") AND R.ringStatus = 1;";
-*/      
-        ringSql = mysql.format(ringSql, inserts);
         // execute first sql to see if key is a ringId or ring name (partial or full)
-
+        ringSql = "SELECT * FROM tblRing R WHERE ((R.ringId=? OR R.name LIKE ? "+tokenizedSearch+") AND R.ringStatus=1) ;";
+        
+        ringSql = mysql.format(ringSql, inserts);
+        
+        // execute first sql to see if key is a ringId or ring name (partial or full)
         // connect to db and execute sql
         db.dbExecuteQuery(ringSql,res, function(ringResult){
             // execute second sql to see if key is leaderId or leader's name
@@ -244,99 +248,7 @@ app.get('/search/:key', function(req,res) {
             });
         });
      
-    /*   
-        sql = "SELECT * FROM tblRing R "+
-            "INNER JOIN tblUser U "+
-            "ON R.createdBy=U.userId "+
-            "WHERE ((R.ringId LIKE ? "+
-                "OR U.username LIKE ? "+
-                "OR R.name LIKE ?) "+
-            "AND R.ringStatus = 1);";
-                
-        var inserts = [key + "%", key + "%", key + "%"];
-        sql = mysql.format(sql,inserts);
-    */    
-        
-        // TODO: need error checking
-    /*  
-        // ex: leaderName/brandon-barooah
-        if(req.params.field == 'leaderName'){
-            // if no dash found see if they're searching for first name or last name
-            if(req.params.key.indexOf('-') === -1)
-            {
-                sql = "SELECT * FROM tblRing R "+
-                "INNER JOIN tblUser U "+
-                "ON R.createdBy=U.userId "+
-                "WHERE (U.firstName LIKE ? "+
-                "OR U.lastName LIKE ?) " +
-                "AND R.ringStatus=1;"; 
-                var inserts=[req.params.key+"%", req.params.key+"%"];
-                sql = mysql.format(sql,inserts);
-            
-            }
-            else{ // a full first or last name was given seperated by a '-'
-                var fullEntry = req.params.key.split('-');
-                var firstEntry = fullEntry[0];   // this should be a full first OR last name
-                var secondEntry = fullEntry[1]; // this CAN be partially filled out since it is wildcard search
-                
-                sql = "SELECT * FROM tblRing R "+
-                "INNER JOIN tblUser U "+
-                "ON R.createdBy=U.userId "+
-                "WHERE "+
-                "(U.firstName=? OR U.lastName=?) "+
-                "AND "+
-                "(U.firstName LIKE ? OR U.lastName LIKE ?) " +
-                "AND "+
-                "R.ringStatus=1;";
-                var inserts=[firstEntry,firstEntry,secondEntry+"%",secondEntry+"%"];
-                sql = mysql.format(sql,inserts);
-    
-            }
-            
-            description = "Get ring details for ring leader's name: " + req.params.key + "*";
-        } 
-        else if(req.params.field == 'ringId'){
-            sql = "SELECT * FROM tblRing R " +
-            "WHERE R.ringId = ? "+
-            "AND R.ringStatus=1;";
-            var inserts=[req.params.key];
-            sql = mysql.format(sql,inserts);
-            
-            description = "Get ring details for ringId: " + req.params.key;
-    
-        }
-        else if(req.params.field == 'username'){
-            sql = "SELECT * FROM tblRing R, tblUser U " +
-            "WHERE R.createdBy = U.userId "+
-            "AND U.username LIKE ? "+
-            "AND R.ringStatus=1;";
-            var inserts=[req.params.key+"%"];
-            sql = mysql.format(sql,inserts);
-            
-            description = "Get ring details for ring leader's username: " + req.params.key;
-    
-        }
-        else if(req.params.field == 'ringName'){
-            sql = "SELECT * FROM tblRing R " +
-            "WHERE R.name LIKE '" + req.params.key + "%' "+
-            "AND R.ringStatus=1;";
-            var inserts=[req.params.key+"%"];
-            sql = mysql.format(sql,inserts);
-    
-            description = "Get ring details for ring name: " + req.params.key;
-        }
-    
-    */
-    /*
-        // connect to db and execute sql
-        db.dbExecuteQuery(sql,res, function(result){
-            if(result.data.length == 0){
-                // overwrite description
-                result.description="Could not match the search criteria with anything in our database.";
-            }
-            res.send(result);
-        });
-    */
+
     });
 });
 //-------------------------END-------------------------------------------------------
