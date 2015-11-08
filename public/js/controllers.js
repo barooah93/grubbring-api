@@ -300,17 +300,40 @@ app.controller('DashboardCtrl', function DashboardCtrl ($scope, $http, $location
     function sortRingsByMostActive() {
         $scope.ringNumActivityHash = [];
         for(var i = 0; i < $scope.rings.length; i++) {
+            console.log("current: " + $scope.rings[i].ringId);
+            
             $http({
                 method: 'GET',
                 url: '/api/ring/getActivityCount/' + $scope.rings[i].ringId
             }).then(function (response) {
                 console.log(response);
                 $scope.ringNumActivityHash.push(response.data);
-                console.log("the hash: " + $scope.ringNumActivityHash);
             }, function (err) {
                 console.log(err);
                 $location.path('/dashboard');
             });
+        }
+    }
+    
+    function compare(a,b) {
+        if(a == null || b == null){
+            console.log("null error");
+            return 0;
+        }
+        if (a.count < b.count)
+            return -1;
+        if (a.count > b.count)
+            return 1;
+        return 0;
+    }
+
+    $scope.ringNumActivityHash.sort(compare);
+    
+    for(var r = 0; r < $scope.rings.length; r++) {
+        for(var i = 0; i < $scope.ringNumActivityHash.length; i++) {
+            if($scope.rings[r].ringId == $scope.ringNumActivityHash[i]) {
+                $scope.sortedRings = $scope.rings[r];
+            }
         }
     }
 
