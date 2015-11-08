@@ -45,7 +45,7 @@ app.get('/', function(req,res){
 
 //-------------------------START-----------------------------------------------------
 // TODO: sort - put most active rings at the top
-// TODO: if no rings get some for the person to join and say that the user is in no rings
+// TODO: if no rings show a map - rings near them - for the person to join and say that the user is in no rings
 
 /*Get rings a user is part of (leads or is in as a member of the ring) */
 app.get('/subscribedRings/:userId', function(req, res) {
