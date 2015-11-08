@@ -418,11 +418,37 @@ app.controller('TemplateCtrl', function($scope, $http, $location){
 
     };
 
-    document.querySelector( "#nav-toggle" ).addEventListener( "click", function() {
-    this.classList.toggle( "active" );
-    });
+    // document.querySelector( "#nav-toggle" ).addEventListener( "click", function() {
+    // this.classList.toggle( "active" );
+    // });
 
-    document.addEventListener("touchstart", function(){}, true);
+    // document.addEventListener("touchstart", function(){}, true);
+    
+    var s = $('input'),
+    f  = $('form'),
+    a = $('.after'),
+		m = $('h4');
+
+s.focus(function(){
+  if( f.hasClass('open') ) return;
+  f.addClass('in');
+  setTimeout(function(){
+    f.addClass('open');
+    f.removeClass('in');
+  }, 1300);
+});
+
+a.on('click', function(e){
+  e.preventDefault();
+  if( !f.hasClass('open') ) return;
+   s.val('');
+  f.addClass('close');
+  f.removeClass('open');
+  setTimeout(function(){
+    f.removeClass('close');
+  }, 1300);
+})
+
 
 });
 
