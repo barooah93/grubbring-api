@@ -34,14 +34,6 @@ app.controller('LoginCtrl', function($scope, $http, $location) {
                  $('#login-form').fadeIn(1200);
 
             });
-    $scope.isSubmitDisabled = true;
-    $scope.$watch('password', function(){
-       if($scope.password.length > 0){
-           $scope.isSubmitDisabled = false;
-       }else{
-           $scope.isSubmitDisabled = true;
-       }
-   });
 
     $scope.submit = function() {
         $scope.displayMsg1 = false;

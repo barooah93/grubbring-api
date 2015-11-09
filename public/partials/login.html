@@ -13,7 +13,7 @@
               <div class="form-group">
                     <input type="password" name="password" id="password" ng-model="password" class="form-control" placeholder="Password">
                 </div>
-                <input type="submit" id="btn-login" class="btn btn-custom btn-lg btn-block" value="Log in">
+                <input type="submit" id="btn-login" class="btn btn-custom btn-lg btn-block" value="Log in" ng-disabled="!password">
             </form>
             <p><a href="/auth/facebook" >Log in with Facebook   </a> | <a href="begin_password_reset">  Forgot your password?</a></p>
             <p>Don't have an account? <a href="register" class="register-link">Register now!</a></p>
