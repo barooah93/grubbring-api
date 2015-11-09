@@ -290,7 +290,7 @@ app.controller('DashboardCtrl', function DashboardCtrl ($scope, $http, $location
         }).then(function (response) {
             console.log(response);
             $scope.rings = response.data.data;
-            sortRingsByMostActive();
+            //sortRingsByMostActive();
         }, function (err) {
             console.log(err);
             $location.path('/dashboard');
@@ -314,29 +314,7 @@ app.controller('DashboardCtrl', function DashboardCtrl ($scope, $http, $location
             });
         }
     }
-    
-    function compare(a,b) {
-        if(a == null || b == null){
-            console.log("null error");
-            return 0;
-        }
-        if (a.count < b.count)
-            return -1;
-        if (a.count > b.count)
-            return 1;
-        return 0;
-    }
-
-    $scope.ringNumActivityHash.sort(compare);
-    
-    for(var r = 0; r < $scope.rings.length; r++) {
-        for(var i = 0; i < $scope.ringNumActivityHash.length; i++) {
-            if($scope.rings[r].ringId == $scope.ringNumActivityHash[i]) {
-                $scope.sortedRings = $scope.rings[r];
-            }
-        }
-    }
-
+   
 });
 
 /*Find rings */
