@@ -244,6 +244,13 @@ html {
   padding-top: 100px;
 }
 form {
+  margin: 0 auto;
+  display: block;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.resetform {
   width: 36px;
   height: 36px;
   margin: 0 auto;
@@ -251,7 +258,7 @@ form {
   box-sizing: border-box;
   position: relative;
 }
-input[type="submit"]{
+#hidden input[type="submit"]{
   display: none !important;
 }
 input {
@@ -479,7 +486,7 @@ form.open .after:after {
 /*** login form container and fields ***/
 .login-form {
   position: fixed;
-  top: 68%;
+  top: 60%;
   left: 50%;
   transform: translate(-50%, -50%);
 }
