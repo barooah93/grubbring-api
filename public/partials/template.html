@@ -21,11 +21,7 @@
     <!--    <a href="/dashboard"><img src="../images/grublogomini.png"></img></a>-->
     <!--</div>-->
     <div class="nav-search-bar">
-     
-     <form ng-submit="searchBox()">
-  <input type="text" autocomplete="off" ng-model="search" />
-  <div class="after"></div>
-  <input type="submit" />
-</form>
-<h4>&nbsp;</h4>
+       <input id="search-box" type="text" class="search-box" name="q" placeholder="search..." autocomplete="off" ng-model="search" ng-change="searchBox()" />
+       <label for="search-box"><span class="glyphicon glyphicon-search search-icon"></span></label>
+    </div>
 </nav>
