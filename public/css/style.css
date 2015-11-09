@@ -251,12 +251,13 @@ form {
 }
 
 .resetform {
-  width: 36px;
+  width: 300px;
   height: 36px;
   margin: 0 auto;
   display: block;
   box-sizing: border-box;
   position: relative;
+  margin-top: 40px;
 }
 #hidden input[type="submit"]{
   display: none !important;
@@ -486,7 +487,7 @@ form.open .after:after {
 /*** login form container and fields ***/
 .login-form {
   position: fixed;
-  top: 60%;
+  top: 70%;
   left: 50%;
   transform: translate(-50%, -50%);
 }
