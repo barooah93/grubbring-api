@@ -8,6 +8,7 @@ var crypto = require('crypto');
 var db = require('../dbexecute');
 var mysql = require('mysql');
 var emailServices = require('../emailServices');
+var accountAcc = require('../accountAccessibility');
 
 app.get('/',function(req,res){
 	authenticate.checkAuthentication(req,res,function(data){
@@ -214,14 +215,10 @@ app.post('/resetPassword/generateAccessCode', function(req, res){
    db.dbExecuteQuery(sql, res, function(result) {
       if(result.data.length > 0){ //means that a grubbring user with entered emailAddress exists in database
           //email access code to this email address
-          var accessCode = crypto.randomBytes(7).toString('hex');
-          var newEmailObj = {
-                        emailAddress: emailAddress,
-                        subject: 'Grubbring - Reset Password Access Code',
-                        msg: 'Enter in this access code to reset your password: ' + accessCode
-                    };
-          console.log(accessCode);
-          emailServices.sendEmail(newEmailObj.msg, newEmailObj.subject, newEmailObj.emailAddress);
+          var accessCode = "";
+          accountAcc.generateAccessCode(emailAddress,function(data){
+              accessCode = data;
+          });
           
           //update access code for this user 
           sql = "UPDATE tblUser SET accessCode=? WHERE emailAddr=?;"
@@ -245,19 +242,8 @@ app.post('/resetPassword/validateAccessCode',function(req, res){
     var emailAddress = req.body.email;
     var accessCode = req.body.accessCode;
     
-    var sql = "SELECT * FROM tblUser WHERE emailAddr=? AND accessCode=?;"
-    var inserts = [emailAddress, accessCode];
-    sql = mysql.format(sql, inserts);
-          
-    db.dbExecuteQuery(sql,res,function(result) {
-        if(result.data.length > 0){
-            result.description = "This is a valid access code assigned to this user."
-            res.json(result);
-        }else{
-            result.description = "This is an invalid access code for this user."
-            result.status = "fail";
-            res.json(result);
-        }
+    accountAcc.validateAccessCode(emailAddress,accessCode,res,function(data){
+        res.json(data);
     });
     
 });
@@ -266,23 +252,12 @@ app.post('/resetPassword', function(req,res){
     var emailAddress = req.body.email;
     var accessCode = req.body.accessCode;
     var newPassword = req.body.newPassword;
-    var retypenewPassword = req.body.retypenewPassword;
-    var status = "active";
-    var loginAttempts = 3;
+    var encryptedPassword = encrypt.generateHash(newPassword);
     
-    if(newPassword != retypenewPassword){
-        res.json({"status":"fail"});
-        //send message the 2 passwords aren't the same
-    }else{
-        var encryptedPassword = encrypt.generateHash(newPassword);
-        var sql = "UPDATE tblUser SET password=?,accountStatus=?,loginAttempts=? WHERE emailAddr=? AND accessCode=?;"
-        var inserts = [encryptedPassword,status,loginAttempts, emailAddress, accessCode];
-        sql = mysql.format(sql, inserts);
-        
-        db.dbExecuteQuery(sql,res,function(result) {
-            res.json(result);
-        });
-    }
+    accountAcc.resetPassword(emailAddress, accessCode, encryptedPassword, res, function(data){
+        res.json(data);
+    });
+
 });
 
 module.exports = app;
