@@ -9,6 +9,7 @@ var debug = require('debug')('grubbring:registration');
 var db = require('../dbexecute');
 var emailServices = require('../emailServices');
 var mysql = require('mysql');
+var accountAcc = require('../accountAccessibility');
 
 //-------------------------------------------------------------------
 
@@ -25,117 +26,65 @@ app.get('/', function(req,res){
 });
 //---------------------------------------------------------
 
-app.post('/', function(req, res){
+app.post('/beginRegistration', function(req, res){
 
-	debug(req.method + ' ' + req.url);
-
-		var firstname = req.body.firstname;
-		var lastname = req.body.lastname;
-		var phonenumber = req.body.phonenumber;
-		if(phonenumber === undefined){
-			phonenumber = 0;
-		}
-		var username = req.body.username;
-		var password = req.body.password;
-        var encryptedPassword = encrypt.generateHash(password);
-
-        var email = req.body.email;
-        var token = crypto.randomBytes(7).toString('hex');
-		var sql = null;
-		
-		sql = "SELECT * FROM tblUser WHERE username=? OR emailAddr=?;";
-		var inserts = [username,email];
-		sql = mysql.format(sql, inserts);
-		debug(sql);
-		db.dbExecuteQuery(sql,res,function(result){
-			if(result.data.length > 0){
-				result.description = "This username/email has already been used for an account.";
-				res.status(200);
-				res.json(result);
-			}else{
-				sql = "INSERT INTO tblUser (username, password, firstName, lastName, emailAddr, cellPhone, confirmationToken) VALUES (?,?,?,?,?,?,?);";
-				inserts = [username,encryptedPassword,firstname,lastname,email,phonenumber,token];
-				sql = mysql.format(sql, inserts);
-				debug(sql);
-				db.dbExecuteQuery(sql,res,function(result){
-					//emailServices.emailTokenToUser(token,email);
-					result.description = "New user created.";
-					res.status(201);
-					res.json(result);	
-				});
-			}
-		});
-
-});
-//---------------------------------------------------------
-
-
-app.get('/confirmation',function(req,res){
-	var data = {
-    		"status":"OK",
-			"message":"Present Confirmation Page"
-		};
-		
-	res.status(200);
-	res.json(data);
-	debug(req.method + ' ' + req.url);
-});
-//---------------------------------------------------------
-
-app.post('/confirmation',function(req,res){
-	debug(req.method + ' ' + req.url);
-	var status = "active";
-	var username = req.body.username;
-	var confirmationToken = req.body.token;
-
-	console.log("this is a test "+confirmationToken+" "+username);
-	var sql = null;
-	sql = "UPDATE tblUser SET accountStatus=? WHERE confirmationToken=? AND username=?";
-	var inserts = [status,confirmationToken,username];
-	sql = mysql.format(sql, inserts);
+	var firstname = req.body.firstname;
+	var lastname = req.body.lastname;
+	var phonenumber = req.body.phonenumber;
+    var emailAddress = req.body.email;
+    console.log(emailAddress);
 	
-	db.dbExecuteQuery(sql,res,function(result) {
-		if(result.data.affectedRows == 1){
-			result.description = "Account has been confirmed.";
-		 	res.status(200);
-	    	res.json(result);
-		}else{
-			result.description = "Account could not be confirmed.";
-			res.status(200);
-			res.json(result);
-		}
-	    
-	});
+	var sql = "SELECT * FROM tblUser WHERE emailAddr=?;";
+    var inserts = [emailAddress];
+    sql = mysql.format(sql, inserts);
+        
+    db.dbExecuteQuery(sql,res,function(result) {
+       if(result.data.length < 1){ //user doesn't exist already. add them.
+      		console.log("user doesn't exist. add them.");
+       		var accessCode = "";
+          	accountAcc.generateAccessCode(emailAddress,function(data){
+              accessCode = data;
+          	});
+          	
+          	sql = "INSERT INTO tblUser (firstName, lastName, emailAddr, cellPhone, accessCode) VALUES (?,?,?,?,?);";
+          	inserts = [firstname, lastname, emailAddress, phonenumber, accessCode];
+          	sql = mysql.format(sql, inserts);
+          	db.dbExecuteQuery(sql,res,function(result) {
+              	result.description = "New User added. Access Code is emailed to them to continue registration process.";
+              	res.json(result);
+          	});
+          
+       }else{//user already exists
+       		console.log("user already exists.");
+       		result.status = "fail";
+       		result.description = "User with this email address or phone number already exists.";
+            res.json(result.status);
+       }
+    });	
+});
+
+app.post('/validateAccessCode', function(req, res){
+	var emailAddress = req.body.email;
+	var accessCode = req.body.accessCode;
+	console.log(emailAddress);
+	accountAcc.validateAccessCode(emailAddress,accessCode,res,function(data){
+        res.json(data);
+    });
+	
+});
+
+app.post('/setPassword', function(req,res){
+    var emailAddress = req.body.email;
+    var accessCode = req.body.accessCode;
+    var password = req.body.password;
+    console.log(password);
+    var encryptedPassword = encrypt.generateHash(password);
+    
+    accountAcc.resetPassword(emailAddress, accessCode, encryptedPassword, res, function(data){
+        res.json(data);
+    });
 
 });
 
-// function emailTokenToUser(user_token, user_email){
-// 	//your app url instead of "https://grubbring-api-sshah0930-1.c9.io/"
-// 	var registrationConfirmationUrl = "https://grubbring-api-sshah0930-1.c9.io/api/registration/confirmation";
-
-// 	var transporter = nodemailer.createTransport({
-//         service: 'Gmail',
-//         auth: {
-//             user: 'grubbring@gmail.com', // Your email id
-//             pass: 'test2day' // Your password
-//         }
-//     });
-
-//     var mailOptions = {
-//     	from: '<grubbring@gmail.com>', // sender address
-//     	to: '<'+user_email+'>', // list of receivers
-//     	subject: 'Registration Confirmation Email', // Subject line
-//     	text: "Enter Confirmation Code at : "+registrationConfirmationUrl+" Confirmation Code : " + user_token 
-// 	};  
-
-// 	transporter.sendMail(mailOptions, function(error, info){
-//     if(error){
-//         console.log(error);
-//     }else{
-//     	debug('Confirmation email sent: ' + info.response);
-//         // console.log('Message sent: ' + info.response);
-//     };
-// });
-// }
 
 module.exports = app;
