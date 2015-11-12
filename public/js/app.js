@@ -23,13 +23,17 @@ app.config(['$routeProvider', '$locationProvider', function($routeProvider, $loc
             templateUrl: 'partials/confirm_code_reset.html',
             controller: 'ConfirmCodeEmailCtrl'
         })
-        .when('/register', {
+        .when('/begin_register', {
             templateUrl: 'partials/register.html',
-            controller: 'RegistrationCtrl'
+            controller: 'BeginRegistrationCtrl'
         })
-        .when('/dashboard', {
-            templateUrl: 'partials/dashboard.html',
-            controller: 'DashboardCtrl'
+        .when('/validateRegister', {
+            templateUrl: 'partials/validateRegister.html',
+            controller: 'ConfirmCodeRegisterCtrl'
+        })
+        .when('/finishRegister', {
+            templateUrl: 'partials/finishRegister.html',
+            controller: 'ResetPasswordCtrl'
         })
          .when('/find_rings', {
             templateUrl: 'partials/find_rings.html',
@@ -39,7 +43,10 @@ app.config(['$routeProvider', '$locationProvider', function($routeProvider, $loc
             templateUrl: 'partials/confirmation.html',
             controller: 'ConfirmationCtrl'
         })
-        
+        .when('/dashboard', {
+            templateUrl: 'partials/dashboard.html',
+            controller: 'DashboardCtrl'
+        })
         .when('/template', { //NOTE: Remove when all pages complete, here as a placeholder for now
             templateUrl: 'partials/template.html',
             controller: 'TemplateCtrl'

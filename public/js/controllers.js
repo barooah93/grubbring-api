@@ -225,15 +225,25 @@ app.controller('ConfirmCodeEmailCtrl', function($scope, $http, $location, passEm
     }
 });
 
-app.controller('RegistrationCtrl', function($scope, $http, $location){
+app.controller('BeginRegistrationCtrl', function($scope, $http, $location, passEmailService){
+    $scope.isSubmitDisabled = true;
+    
+    $scope.userExistsMsg = "";
+    
+   $scope.$watch('phonenumber', function(){
+       if($scope.phonenumber.toString().length > 0 && $scope.firstname.length > 0 && $scope.lastname.length > 0 && $scope.email.length >0){
+           $scope.isSubmitDisabled = false;
+       }else{
+          $scope.isSubmitDisabled = true; 
+       }
+   });
+    
     $scope.register = function() {
+        
         $http({
             method: 'POST',
-            url: '/api/registration',
+            url: '/api/registration/beginRegistration',
             data: {
-
-                username: $scope.username,
-                password: $scope.password,
                 firstname: $scope.firstname,
                 lastname: $scope.lastname,
                 email: $scope.email,
@@ -241,20 +251,97 @@ app.controller('RegistrationCtrl', function($scope, $http, $location){
             }
         }).then(function(response) {
             console.log(response);
-            if (response.status == 200){
-                alert("There is a user already registered with that username/e-mail address!");
+            if(response.data.status == "success"){
+                passEmailService.setEmail($scope.email);
+                $location.path('/validateRegister');
+            }else{
+                $scope.userExistsMsg = "This email or phone number is already linked to a Grubbring account. Please use a different email and phone number."
+                $scope.email = "";
+                $scope.phonenumber = "";
             }
-            else{
-                $location.path('/confirmation');
-            }
-
         }, function(err) {
             console.log(err);
+            $location.path('/register'); 
         })
     }
 });
 
+app.controller('ConfirmCodeRegisterCtrl', function ($scope, $http, $location, passEmailService, passAccessCode){
+    var email = "";
+    $scope.isSubmitDisabled = true;
+    $scope.isEmailVisible = false;
+    var passedEmail = passEmailService.getEmail();
+    if(passedEmail == ""){
+        $scope.welcomeMsg = "Your account registration is incomplete. Please enter your email address and access code that was emailed to you to finish the registration process.";
+        $scope.isEmailVisible = true;
+    }else{
+        $scope.welcomeMsg = "Enter the access code you received at "+passedEmail+" to complete the registration process.";
+        $scope.isEmailVisible = false;
+        email = passedEmail;
+    }
+    
+    if($scope.isEmailVisible == true){
+        $scope.$watch('accessCode', function(){
+            if($scope.accessCode.length > 0 && $scope.email.length > 0){
+                $scope.isSubmitDisabled = false;
+            }else{
+                $scope.isSubmitDisabled = true; 
+            }
+        });
+    }
+    if($scope.isEmailVisible == false){
+        $scope.$watch('accessCode', function(){
+            if($scope.accessCode.length > 0){
+                $scope.isSubmitDisabled = false;
+            }else{
+                $scope.isSubmitDisabled = true; 
+            }
+        });
+    }
 
+    $scope.register = function() {
+        
+        if($scope.isEmailVisible == true){
+            email = $scope.email;
+        }
+        
+        $http({
+            method: 'POST',
+            url: '/api/registration/validateAccessCode',
+            data: {
+                accessCode: $scope.accessCode,
+                email: email
+            }
+        }).then(function(response) {
+            if(response.data.status == "success"){
+                passEmailService.setEmail(email);
+                passAccessCode.setAccessCode($scope.accessCode);
+                $location.path('/finishRegister');
+            }else{
+                $scope.welcomeMsg = "You entered an incorrect access code for this email address. Please try again.";
+            }
+        }, function(err) {
+            console.log(err);
+            $location.path('/validateRegister'); 
+        })
+    }
+    
+});
+
+app.controller('findRingsCtrl', function findRingsCtrl ($scope, $http, $location) {
+
+    // get suggested rings to display to user
+    $http({
+        method: 'GET',
+        url: '/api/ring/'
+    }).then(function (response) {
+        console.log(response);
+    }, function (err) {
+        console.log(err);
+        $location.path('/find_rings');
+    });
+
+});
 /***************steph********************/
 
 /*Retrieves the ring details that the signed in user is a leader of */
@@ -308,6 +395,8 @@ app.controller('DashboardCtrl', function DashboardCtrl ($scope, $http, $location
     }
    
 });
+
+
 
 /*Find rings */
 app.controller('findRingsCtrl', function findRingsCtrl ($scope, $http, $location) {
@@ -473,6 +562,12 @@ app.controller('ConfirmCodeResetCtrl', function($scope, $http, $location, passEm
 });
 
 app.controller('ResetPasswordCtrl', function($scope, $http, $location, passEmailService, passAccessCode, Password){
+    
+    if(passEmailService.getEmail() == "" || passAccessCode.getAccessCode() == ""){
+        $location.path('/validateRegister');
+    }    
+    
+    
    $scope.isSubmitDisabled = true;
    $scope.newPassword = "";
    $scope.retypenewPassword = "";

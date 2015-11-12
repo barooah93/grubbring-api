@@ -1,0 +1,19 @@
+<div class="reg-page-header-shadow">
+	<div class="reg-page-header">
+		<h1>Validate Email</h1>
+		<h2>You are almost there!</h2>
+	</div>
+</div>
+
+<div class="reg-page-body">
+	<h3>{{ welcomeMsg }}</h3>
+	<form ng-submit="register()" class="reg-page-form">
+		<div class="form-group">
+	    	<input type = "text" name="email" ng-model="email" placeholder="Email" ng-show=isEmailVisible class="form-control">
+		</div>
+	    <div class="form-group">
+	    	<input type = "text" name="accessCode" ng-model="accessCode" placeholder="Access Code" class="form-control">
+		</div>
+		<input type="submit" id="btn-login" class="btn btn-custom btn-lg btn-block" ng-disabled="isSubmitDisabled" value="Registration">
+	</form>
+</div>

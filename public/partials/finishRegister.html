@@ -1,0 +1,27 @@
+<div class="password-reset">
+    <h2>Set Your Password</h2>
+    <div class="password-reset-form" id="password-reset-form">
+        <form ng-submit="submit()" id="password-reset-form" class="resetform">
+            <div class="form-group">
+                <p2>Enter new password</p2>
+                <input ng-required=true type="password" name="newPassword" id="newPassword" ng-model="newPassword" class="form-control" placeholder="">
+                <div class="progress" style="margin-top:10px">
+                    <div class="progress-bar"
+                        ng-class="{'progress-bar-success': isPasswordStrong(), 'progress-bar-warning': isPasswordOk(), 'progress-bar-danger': isPasswordWeak()}"
+                        aria-valuenow= "{{ passwordStrength }}"
+                        aria-valuemin="0"
+                        aria-valuemax="100"
+                        style="width:{{ passwordStrength }}%">
+                    </div>
+                </div>
+                <p>{{ strengthMessage }}</p>
+                
+                
+                <p2>Re-enter new password</p2>
+                <input ng-required=true type="password" name="retypenewPassword" id="retypenewPassword" ng-model="retypenewPassword" class="form-control" ng-disabled="isRetypePasswordDisabled" placeholder="">
+
+            </div>
+            <input type="submit" id="hidden" class="btn btn-custom btn-lg btn-block" ng-disabled="isSubmitDisabled" value="Submit">
+        </form>
+    </div>
+</div>
