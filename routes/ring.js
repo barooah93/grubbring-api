@@ -53,14 +53,13 @@ app.get('/subscribedRings/:userId', function(req, res) {
         var userId = req.params.userId;
         var ringsWithActivitiesSql = null;
         
-        //sql = "SELECT * FROM tblRingUser RU, tblRing R WHERE RU.ringId = R.ringId AND RU.userId = ?;" //all rings a user is part of
-        
+//yes i know this is crazy :(        
         /*
         The inner SELECT finds all rings a user is a part of and has activities
         The outer ring groups rings by ringId, counts the ringIds (to get number of activities for that ring, and sorts by numActivities
         so that rings with the most activities appear at the top of the list
         
-        later - maybe group by something else as well and order by numOrders
+        later - maybe group by something else as well and order by numOrders for now its in a diff query
         */
         ringsWithActivitiesSql = "SELECT sub.orderId, sub.userId, sub.enteredOn, sub.ringId, sub.name, sub.addr, sub.city, " 
          + "sub.state, sub.zipcode, sub.ringStatus, sub.createdBy, sub.createdOn, COUNT(sub.ringId) AS numActivities " +
@@ -86,17 +85,15 @@ app.get('/subscribedRings/:userId', function(req, res) {
         inserts = [userId];
         ringsWithNoActivitiesSql = mysql.format(ringsWithNoActivitiesSql, inserts);
         
-        
         var ringsWithOrdersSql = "SELECT sub.orderId, sub.userId, sub.enteredOn, sub.ringId, sub.name, sub.addr, sub.city, sub.state, "+
-        "sub.zipcode, sub.ringStatus, sub.createdBy, sub.createdOn, COUNT(sub.ringId) AS numActivities, COUNT(sub.orderId) AS numOrders "+
+        "sub.zipcode, sub.ringStatus, sub.createdBy, sub.createdOn, COUNT(sub.orderId) AS numOrders "+
         "FROM "+
-            "(SELECT O.orderId, OS.userId, OS.enteredOn, R.ringId, R.name, R.addr, R.city, R.state, R.zipcode, R.ringStatus, R.createdBy, "+
-            "R.createdOn "+
+            "(SELECT O.orderId, OS.userId, OS.enteredOn, R.ringId, R.name, R.addr, R.city, R.state, R.zipcode, R.ringStatus, "+
+            "R.createdBy, R.createdOn "+
             "FROM tblOrderStatus OS, tblOrder O, tblRing R, tblRingUser RU, tblOrderUser OU "+
             "WHERE O.orderId = OS.orderId AND R.ringId = O.ringId AND OS.statusId = 2 AND RU.ringId = R.ringId AND RU.userId = 68 "+
             "AND OU.orderId = O.orderId AND OS.enteredOn >= DATE_SUB(CURDATE(), INTERVAL 5 DAY)) AS sub "+
-        "GROUP BY sub.ringId "+
-        "ORDER By numActivities DESC;";
+        "GROUP BY sub.ringId ORDER By numOrders DESC";
         inserts = [userId];
         ringsWithOrdersSql = mysql.format(ringsWithOrdersSql, inserts);
 

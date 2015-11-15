@@ -374,28 +374,43 @@ app.controller('DashboardCtrl', function DashboardCtrl ($scope, $http, $location
                 //bring up the find rings
             } else {
                 $scope.rings = response.data.data.ringsWithActivities;
+                
                 $scope.ringsWithOrders = response.data.data.ringsWithOrders;
                 
                 /*For each ring with activities, find if there is a tie, if there is a tie put the ring that has more orders at an index
                 before the ring with less orders in the $scope.rings array*/
-                for(var r = 0; r < $scope.rings.length; r++) {
+                
+                /*if length is one put numOrders*/
+                if($scope.rings.length == 1) {
+                    $scope.rings[0].numOrders = getNumOrders($scope.ringsWithOrders.name[0]);
+                }
+                for(var i = 0; i < $scope.rings.length; i++) {
                     if($scope.rings[i+1] != null && $scope.rings[i].numActivities == $scope.rings[i+1].numActivities) { //there is a tie
-                        var currRingName = $scope.rings[i];
+                        var currRingName = $scope.rings[i].name;
                         var nextRingName = $scope.rings[i+1].name;
+                        
                         var currOrders = getNumOrders($scope.ringsWithOrders, currRingName);
                         var nextOrders = getNumOrders($scope.ringsWithOrders, nextRingName);
-                        if(currOrders < nextOrders) { //swap the rings
+                        
+                        if(currOrders < nextOrders) { //swap the rings and assign numOrders
                             var currRing = $scope.rings[i];
                             var nextRing = $scope.rings[i+1];
                             var temp = currRing;
                             $scope.rings[i] = nextRing;
                             $scope.rings[i+1] = temp;
+                            
+                            $scope.rings[i].numOrders = nextOrders;
+                            $scope.rings[i+1].numOrders = currOrders;
+                        } else { //don't swap, assign numOrders to respective rings
+                            $scope.rings[i].numOrders = currOrders;
+                            $scope.rings[i+1].numOrders = nextOrders;
                         }
                     }
                 }
                 
                 for(var i = 0; i < response.data.data.ringsWithNoActivities.length; i++) {
                    response.data.data.ringsWithNoActivities[i].numActivities = 0;
+                   response.data.data.ringsWithNoActivities[i].numOrders = 0;
                    $scope.rings.push(response.data.data.ringsWithNoActivities[i]); 
                 }
             }
@@ -409,8 +424,8 @@ app.controller('DashboardCtrl', function DashboardCtrl ($scope, $http, $location
 
 function getNumOrders(ringsWithOrders, ringName) {
     for(var i = 0; i < ringsWithOrders.length; i++){
-        if(ringsWithOrders.name == ringName) {
-            return ringsWithOrders.numOrders;
+        if(ringsWithOrders[i].name == ringName) {
+            return ringsWithOrders[i].numOrders;
         }
     }
 }
