@@ -369,8 +369,13 @@ app.controller('DashboardCtrl', function DashboardCtrl ($scope, $http, $location
             method: 'GET',
             url: '/api/ring/subscribedRings/' + $scope.userId
         }).then(function (response) {
-            console.log(response);
-            $scope.rings = response.data.data;
+            console.log($scope.userId);
+            if(response.data.data == null) {
+                //bring up the find rings
+            } else {
+                $scope.rings = response.data.data.ringsWithActivitiesResult;
+                $scope.ringsWithNoActivities = response.data.data.ringsWithNoActivitiesResult;
+            }
         }, function (err) {
             console.log(err);
             $location.path('/dashboard');

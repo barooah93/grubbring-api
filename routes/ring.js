@@ -44,35 +44,57 @@ app.get('/', function(req,res){
 //-------------------------END-------------------------------------------------------
 
 //-------------------------START-----------------------------------------------------
+// TODO: sort - put most active rings at the top
 // TODO: if no rings show a map - rings near them - for the person to join and say that the user is in no rings
 
 /*Get rings a user is part of (leads or is in as a member of the ring) */
 app.get('/subscribedRings/:userId', function(req, res) {
     authenticate.checkAuthentication(req, res, function (data) {
         var userId = req.params.userId;
-        var sql = null;
+        var ringsWithActivitiesSql = null;
         
-         sql = "SELECT sub.orderId, sub.userId, sub.enteredOn, sub.ringId, sub.name, sub.addr, sub.city, " 
+        //sql = "SELECT * FROM tblRingUser RU, tblRing R WHERE RU.ringId = R.ringId AND RU.userId = ?;" //all rings a user is part of
+        
+        ringsWithActivitiesSql = "SELECT sub.orderId, sub.userId, sub.enteredOn, sub.ringId, sub.name, sub.addr, sub.city, " 
          + "sub.state, sub.zipcode, sub.ringStatus, sub.createdBy, sub.createdOn, COUNT(sub.ringId) AS numActivities " +
          "FROM "+
                 "(SELECT O.orderId, OS.userId, OS.enteredOn, R.ringId, R.name, R.addr, R.city, R.state, R.zipcode, R.ringStatus, "+
                 "R.createdBy, R.createdOn "+
-                "FROM tblOrderStatus OS, tblOrder O, tblRing R "+
-                "WHERE O.orderId = OS.orderId AND R.ringId = O.ringId AND OS.userId = ? AND OS.statusId = 2 "+
+                "FROM tblOrderStatus OS, tblOrder O, tblRing R, tblRingUser RU "+
+                "WHERE O.orderId = OS.orderId AND R.ringId = O.ringId AND OS.statusId = 2 AND RU.ringId = R.ringId AND RU.userId = ? "+
                 "AND OS.enteredOn >= DATE_SUB(CURDATE(), INTERVAL 5 DAY)) AS sub "+
-        "GROUP BY sub.ringId ORDER By numActivities DESC;";
-         var inserts = [userId];
-         sql = mysql.format(sql, inserts);
+        "GROUP BY sub.ringId ORDER By numActivities DESC;"; //all rings that a user is part of and has order
+        var inserts = [userId];
+        ringsWithActivitiesSql = mysql.format(ringsWithActivitiesSql, inserts);
         
-        db.dbExecuteQuery(sql, res, function(result){
+        var ringsWithNoActivitiesSql = "SELECT * FROM tblRingUser RU, tblRing R WHERE RU.ringId = R.ringId AND RU.userId = ?;";
+        inserts = [userId];
+        ringsWithNoActivitiesSql = mysql.format(ringsWithNoActivitiesSql, inserts);
+
+        db.dbExecuteQuery(ringsWithActivitiesSql, res, function(ringsWithActivitiesResult){
             // overwrite description
-            result.description="Got rings user with userId " + userId + " is a part of";
-            res.send(result);
+            ringsWithActivitiesResult.description="Got rings user with userId " + userId + " is a part of and has activities";
+            
+            db.dbExecuteQuery(ringsWithNoActivitiesSql, res, function(ringsWithNoActivitiesResult){
+            // overwrite description
+            ringsWithActivitiesResult.description="Got rings user with userId " + userId + " is a part of but has no activities";
+            
+            var data = {
+                    status:'Success', 
+                    description: description, 
+                    data: {
+                        ringsWithActivities:ringsWithActivitiesResult.data,
+                        ringsWithNoActivities:ringsWithNoActivitiesResult.data
+                    }
+                };
+            res.send(data);
         });
+        
     });
 });
     
 //-------------------------END-------------------------------------------------------
+
 
 //-------------------------START-----------------------------------------------------
 // POST: request to join the ring
