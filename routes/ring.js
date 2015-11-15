@@ -44,7 +44,6 @@ app.get('/', function(req,res){
 //-------------------------END-------------------------------------------------------
 
 //-------------------------START-----------------------------------------------------
-// TODO: sort - put most active rings at the top
 // TODO: if no rings show a map - rings near them - for the person to join and say that the user is in no rings
 
 /*Get rings a user is part of (leads or is in as a member of the ring) */
@@ -53,7 +52,15 @@ app.get('/subscribedRings/:userId', function(req, res) {
         var userId = req.params.userId;
         var sql = null;
         
-         sql = "SELECT * FROM tblRingUser RU, tblRing R WHERE RU.ringId = R.ringId AND RU.userId = ?;"
+         sql = "SELECT sub.orderId, sub.userId, sub.enteredOn, sub.ringId, sub.name, sub.addr, sub.city, " 
+         + "sub.state, sub.zipcode, sub.ringStatus, sub.createdBy, sub.createdOn, COUNT(sub.ringId) AS numActivities " +
+         "FROM "+
+                "(SELECT O.orderId, OS.userId, OS.enteredOn, R.ringId, R.name, R.addr, R.city, R.state, R.zipcode, R.ringStatus, "+
+                "R.createdBy, R.createdOn "+
+                "FROM tblOrderStatus OS, tblOrder O, tblRing R "+
+                "WHERE O.orderId = OS.orderId AND R.ringId = O.ringId AND OS.userId = ? AND OS.statusId = 2 "+
+                "AND OS.enteredOn >= DATE_SUB(CURDATE(), INTERVAL 5 DAY)) AS sub "+
+        "GROUP BY sub.ringId ORDER By numActivities DESC;";
          var inserts = [userId];
          sql = mysql.format(sql, inserts);
         
@@ -66,29 +73,6 @@ app.get('/subscribedRings/:userId', function(req, res) {
 });
     
 //-------------------------END-------------------------------------------------------
-
-//-------------------------START-----------------------------------------------------
-// TODO: sort - put most active rings at the top
-
-//statusId 0: no order = 0, in progress = 1, completed= 2
-app.get('/getActivityCount/:ringId', function(req, res) {
-    authenticate.checkAuthentication(req, res, function (data) {
-        var ringId = req.params.ringId;
-        var sql = null;
-        
-        //get number of activities in last 5 days
-        sql = "SELECT O.ringId, COUNT(*) AS count FROM tblOrder O, tblOrderStatus OS WHERE O.orderId = OS.orderId AND O.ringId = " + ringId + " AND OS.statusId = 2 AND OS.enteredOn >= DATE_SUB(CURDATE(), INTERVAL 5 DAY) AND OS.enteredOn <= CURDATE();";
-        db.dbExecuteQuery(sql, res, function(result){
-            // overwrite description
-            result.description = "Got activity count for ringId: " + ringId;
-            res.send(result);
-        });
-    });
-        /* Sort the rings by most activities*/
-});
-    
-//-------------------------END-------------------------------------------------------
-
 
 //-------------------------START-----------------------------------------------------
 // POST: request to join the ring

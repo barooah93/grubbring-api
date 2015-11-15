@@ -346,6 +346,8 @@ app.controller('findRingsCtrl', function findRingsCtrl ($scope, $http, $location
 
 /*Retrieves the ring details that the signed in user is a leader of */
 app.controller('DashboardCtrl', function DashboardCtrl ($scope, $http, $location) {
+    $scope.rings = null;
+    $scope.sortedCounts = null;
     getUserDetails();
 
     function getUserDetails() {
@@ -369,29 +371,10 @@ app.controller('DashboardCtrl', function DashboardCtrl ($scope, $http, $location
         }).then(function (response) {
             console.log(response);
             $scope.rings = response.data.data;
-            //sortRingsByMostActive();
         }, function (err) {
             console.log(err);
             $location.path('/dashboard');
         });
-    }
-    
-    function sortRingsByMostActive() {
-        $scope.ringNumActivityHash = [];
-        for(var i = 0; i < $scope.rings.length; i++) {
-            console.log("current: " + $scope.rings[i].ringId);
-            
-            $http({
-                method: 'GET',
-                url: '/api/ring/getActivityCount/' + $scope.rings[i].ringId
-            }).then(function (response) {
-                console.log(response);
-                $scope.ringNumActivityHash.push(response.data);
-            }, function (err) {
-                console.log(err);
-                $location.path('/dashboard');
-            });
-        }
     }
    
 });
