@@ -373,8 +373,11 @@ app.controller('DashboardCtrl', function DashboardCtrl ($scope, $http, $location
             if(response.data.data == null) {
                 //bring up the find rings
             } else {
-                $scope.rings = response.data.data.ringsWithActivitiesResult;
-                $scope.ringsWithNoActivities = response.data.data.ringsWithNoActivitiesResult;
+                $scope.rings = response.data.data.ringsWithActivities;
+                for(var i = 0; i < response.data.data.ringsWithNoActivities.length; i++) {
+                   response.data.data.ringsWithNoActivities[i].numActivities = 0;
+                   $scope.rings.push(response.data.data.ringsWithNoActivities[i]); 
+                }
             }
         }, function (err) {
             console.log(err);

@@ -63,11 +63,11 @@ app.get('/subscribedRings/:userId', function(req, res) {
                 "FROM tblOrderStatus OS, tblOrder O, tblRing R, tblRingUser RU "+
                 "WHERE O.orderId = OS.orderId AND R.ringId = O.ringId AND OS.statusId = 2 AND RU.ringId = R.ringId AND RU.userId = ? "+
                 "AND OS.enteredOn >= DATE_SUB(CURDATE(), INTERVAL 5 DAY)) AS sub "+
-        "GROUP BY sub.ringId ORDER By numActivities DESC;"; //all rings that a user is part of and has order
+        "GROUP BY sub.ringId ORDER By numActivities DESC;"; //all rings that a user is part of and has activities (sorted by number of activities)
         var inserts = [userId];
         ringsWithActivitiesSql = mysql.format(ringsWithActivitiesSql, inserts);
         
-        var ringsWithNoActivitiesSql = "SELECT * FROM tblRingUser RU, tblRing R WHERE RU.ringId = R.ringId AND RU.userId = ?;";
+        var ringsWithNoActivitiesSql = "SELECT R.ringId, RU.userId, RU.roleId, RU.status, RU.joinedOn, R.name, R.addr, R.city, R.state, R.zipcode, R.ringStatus, R.createdBy, R.createdOn FROM tblRingUser RU, tblRing R WHERE RU.ringId = R.ringId AND RU.userId = 68 AND R.ringId NOT IN (SELECT DISTINCT R.ringId FROM tblRingUser RU, tblRing R, tblOrder O WHERE RU.ringId = R.ringId AND RU.userId = 68 AND R.ringId = O.ringId)";
         inserts = [userId];
         ringsWithNoActivitiesSql = mysql.format(ringsWithNoActivitiesSql, inserts);
 
@@ -81,7 +81,7 @@ app.get('/subscribedRings/:userId', function(req, res) {
             
             var data = {
                     status:'Success', 
-                    description: description, 
+                    description: "got rings", 
                     data: {
                         ringsWithActivities:ringsWithActivitiesResult.data,
                         ringsWithNoActivities:ringsWithNoActivitiesResult.data
@@ -90,6 +90,7 @@ app.get('/subscribedRings/:userId', function(req, res) {
             res.send(data);
         });
         
+    });
     });
 });
     
@@ -326,7 +327,5 @@ var getPendingUsersFromRingIds = function(ringIds,res, callback){
         });
     }
 };
-
-
 
 module.exports = app;
