@@ -44,7 +44,7 @@ app.get('/', function(req,res){
 //-------------------------END-------------------------------------------------------
 
 //-------------------------START-----------------------------------------------------
-// TODO: sort - put most active rings at the top
+// TODO: finish tie breaker for orders
 // TODO: if no rings show a map - rings near them - for the person to join and say that the user is in no rings
 
 /*Get rings a user is part of (leads or is in as a member of the ring) */
@@ -55,42 +55,85 @@ app.get('/subscribedRings/:userId', function(req, res) {
         
         //sql = "SELECT * FROM tblRingUser RU, tblRing R WHERE RU.ringId = R.ringId AND RU.userId = ?;" //all rings a user is part of
         
+        /*
+        The inner SELECT finds all rings a user is a part of and has activities
+        The outer ring groups rings by ringId, counts the ringIds (to get number of activities for that ring, and sorts by numActivities
+        so that rings with the most activities appear at the top of the list
+        
+        later - maybe group by something else as well and order by numOrders
+        */
         ringsWithActivitiesSql = "SELECT sub.orderId, sub.userId, sub.enteredOn, sub.ringId, sub.name, sub.addr, sub.city, " 
          + "sub.state, sub.zipcode, sub.ringStatus, sub.createdBy, sub.createdOn, COUNT(sub.ringId) AS numActivities " +
          "FROM "+
                 "(SELECT O.orderId, OS.userId, OS.enteredOn, R.ringId, R.name, R.addr, R.city, R.state, R.zipcode, R.ringStatus, "+
                 "R.createdBy, R.createdOn "+
                 "FROM tblOrderStatus OS, tblOrder O, tblRing R, tblRingUser RU "+
-                "WHERE O.orderId = OS.orderId AND R.ringId = O.ringId AND OS.statusId = 2 AND RU.ringId = R.ringId AND RU.userId = ? "+
+                "WHERE O.orderId = OS.orderId AND R.ringId = O.ringId AND OS.statusId = 2 AND RU.ringId = R.ringId AND RU.userId = 68 "+
                 "AND OS.enteredOn >= DATE_SUB(CURDATE(), INTERVAL 5 DAY)) AS sub "+
         "GROUP BY sub.ringId ORDER By numActivities DESC;"; //all rings that a user is part of and has activities (sorted by number of activities)
         var inserts = [userId];
         ringsWithActivitiesSql = mysql.format(ringsWithActivitiesSql, inserts);
         
-        var ringsWithNoActivitiesSql = "SELECT R.ringId, RU.userId, RU.roleId, RU.status, RU.joinedOn, R.name, R.addr, R.city, R.state, R.zipcode, R.ringStatus, R.createdBy, R.createdOn FROM tblRingUser RU, tblRing R WHERE RU.ringId = R.ringId AND RU.userId = 68 AND R.ringId NOT IN (SELECT DISTINCT R.ringId FROM tblRingUser RU, tblRing R, tblOrder O WHERE RU.ringId = R.ringId AND RU.userId = 68 AND R.ringId = O.ringId)";
+        /*
+        The inner query selects a subset, M, of all ringIds that a user is part of that has an activity.
+        The outer query selects all ring info that has a ringId that is not part of the subset, M */
+        var ringsWithNoActivitiesSql = "SELECT R.ringId, RU.userId, RU.roleId, RU.status, RU.joinedOn, R.name, R.addr, R.city, "+
+        "R.state, R.zipcode, R.ringStatus, R.createdBy, R.createdOn "+
+        "FROM tblRingUser RU, tblRing R "+
+        "WHERE RU.ringId = R.ringId AND RU.userId = 68 AND R.ringId "+
+        "NOT IN (SELECT DISTINCT R.ringId FROM tblRingUser RU, tblRing R, tblOrder O "+
+        "WHERE RU.ringId = R.ringId AND RU.userId = 68 AND R.ringId = O.ringId);"; //all rings a user is a part of and has no activities
         inserts = [userId];
         ringsWithNoActivitiesSql = mysql.format(ringsWithNoActivitiesSql, inserts);
+        
+        
+        var ringsWithOrdersSql = "SELECT sub.orderId, sub.userId, sub.enteredOn, sub.ringId, sub.name, sub.addr, sub.city, sub.state, "+
+        "sub.zipcode, sub.ringStatus, sub.createdBy, sub.createdOn, COUNT(sub.ringId) AS numActivities, COUNT(sub.orderId) AS numOrders "+
+        "FROM "+
+            "(SELECT O.orderId, OS.userId, OS.enteredOn, R.ringId, R.name, R.addr, R.city, R.state, R.zipcode, R.ringStatus, R.createdBy, "+
+            "R.createdOn "+
+            "FROM tblOrderStatus OS, tblOrder O, tblRing R, tblRingUser RU, tblOrderUser OU "+
+            "WHERE O.orderId = OS.orderId AND R.ringId = O.ringId AND OS.statusId = 2 AND RU.ringId = R.ringId AND RU.userId = 68 "+
+            "AND OU.orderId = O.orderId AND OS.enteredOn >= DATE_SUB(CURDATE(), INTERVAL 5 DAY)) AS sub "+
+        "GROUP BY sub.ringId "+
+        "ORDER By numActivities DESC;";
+        inserts = [userId];
+        ringsWithOrdersSql = mysql.format(ringsWithOrdersSql, inserts);
 
         db.dbExecuteQuery(ringsWithActivitiesSql, res, function(ringsWithActivitiesResult){
             // overwrite description
             ringsWithActivitiesResult.description="Got rings user with userId " + userId + " is a part of and has activities";
             
             db.dbExecuteQuery(ringsWithNoActivitiesSql, res, function(ringsWithNoActivitiesResult){
-            // overwrite description
-            ringsWithActivitiesResult.description="Got rings user with userId " + userId + " is a part of but has no activities";
-            
-            var data = {
-                    status:'Success', 
-                    description: "got rings", 
-                    data: {
-                        ringsWithActivities:ringsWithActivitiesResult.data,
-                        ringsWithNoActivities:ringsWithNoActivitiesResult.data
+                // overwrite description
+                ringsWithNoActivitiesResult.description="Got rings user with userId " + userId + " is a part of but has no activities";
+                
+                db.dbExecuteQuery(ringsWithOrdersSql, res, function(ringsWithOrdersResult){
+                    // overwrite description
+                    ringsWithOrdersResult.description="Got rings user with userId " + userId + " is a part of and the ring has orders";
+                
+                    if(ringsWithActivitiesResult.length == 0 && ringsWithNoActivitiesResult.length == 0) {
+                       var data = {
+                            status:'Success', 
+                            description: "No rings that userId " + userId + " is a part of", 
+                            data: null
+                        };
+                        res.send(data); 
+                    } else {
+                        data = {
+                            status:'Success', 
+                            description: "got rings", 
+                            data: {
+                                ringsWithActivities:ringsWithActivitiesResult.data,
+                                ringsWithNoActivities:ringsWithNoActivitiesResult.data,
+                                ringsWithOrders:ringsWithOrdersResult.data
+                            }
+                        };
+                        res.send(data);
                     }
-                };
-            res.send(data);
+                });
+            });
         });
-        
-    });
     });
 });
     
