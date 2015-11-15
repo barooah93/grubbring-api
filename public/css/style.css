@@ -587,7 +587,8 @@ Header
   left: 0;
   height: 45px;
   width: 100%;
-  background: #3e454c;
+  /*background: #3e454c;*/
+  background: #353C42;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -614,7 +615,7 @@ Header
 }
 @media only screen and (min-width: 768px) {
   .cd-logo {
-    margin: 16px 0 0 36px;
+    margin: 10px 0 0 36px;
   }
 }
 
@@ -750,7 +751,7 @@ Header
     display: inline-block;
     width: 250px;
     height: 100%;
-    margin: 0 0 0 2.5em;
+    margin: 0 0 0 2em;
   }
   .cd-search.is-hidden {
     /* reset style */
@@ -768,7 +769,8 @@ Header
     border: none;
     padding-left: 2.6em;
     border-radius: 0;
-    background-color: #3e454c;
+    /*background-color: #3e454c;*/
+    background-color: #353C42;
     border-left: 1px solid #51575d;
     color: #ffffff;
   }
