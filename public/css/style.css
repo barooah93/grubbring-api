@@ -906,13 +906,14 @@ Sidebar
   text-transform: uppercase;
   font-weight: bold;
   color: #646a6f;
-  font-size: 1rem;
+  font-size: 1.2rem;
   letter-spacing: .1em;
 }
 .cd-side-nav a {
   position: relative;
   color: #ffffff;
   font-size: 1.4rem;
+  text-decoration: none;
 }
 .cd-side-nav ul.cd-top-nav > li:last-of-type > a {
   border-bottom: none;
@@ -920,6 +921,7 @@ Sidebar
 .cd-side-nav > ul > li > a {
   padding-left: calc(5% + 24px);
   border-bottom: 1px solid #373d44;
+  font-size: 1.3rem;
 }
 .cd-side-nav > ul > li > a::before {
   /* icon before item name */
