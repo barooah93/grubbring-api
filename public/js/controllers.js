@@ -370,8 +370,19 @@ app.controller('DashboardCtrl', function DashboardCtrl ($scope, $http, $location
             url: '/api/ring/subscribedRings/' + $scope.userId
         }).then(function (response) {
             console.log($scope.userId);
-            if(response.data.data == null) {
+            
+            if(response.data.data == null) { //no rings
                 //bring up the find rings api
+                $http({
+                    method: 'GET',
+                    url: '/api/ring'
+                }).then(function (response) {
+                    console.log(response);
+                    $scope.ringId = response.data.ringId //rings you can join
+                }, function (err) {
+                    console.log(err);
+                    $location.path('/dashboard');
+                });
             } else {
                 $scope.rings = response.data.data.ringsWithActivities;
                 

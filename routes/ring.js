@@ -44,7 +44,8 @@ app.get('/', function(req,res){
 //-------------------------END-------------------------------------------------------
 
 //-------------------------START-----------------------------------------------------
-// TODO: finish tie breaker for orders
+// TODO: remove the hardcoded 68
+// TODO: add promises?
 // TODO: if no rings show a map - rings near them - for the person to join and say that the user is in no rings
 
 /*Get rings a user is part of (leads or is in as a member of the ring) */
@@ -93,7 +94,7 @@ app.get('/subscribedRings/:userId', function(req, res) {
             "FROM tblOrderStatus OS, tblOrder O, tblRing R, tblRingUser RU, tblOrderUser OU "+
             "WHERE O.orderId = OS.orderId AND R.ringId = O.ringId AND OS.statusId = 2 AND RU.ringId = R.ringId AND RU.userId = 68 "+
             "AND OU.orderId = O.orderId AND OS.enteredOn >= DATE_SUB(CURDATE(), INTERVAL 5 DAY)) AS sub "+
-        "GROUP BY sub.ringId ORDER By numOrders DESC";
+            "GROUP BY sub.ringId ORDER By numOrders DESC";
         inserts = [userId];
         ringsWithOrdersSql = mysql.format(ringsWithOrdersSql, inserts);
 
