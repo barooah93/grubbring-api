@@ -371,7 +371,7 @@ app.controller('DashboardCtrl', function DashboardCtrl ($scope, $http, $location
         }).then(function (response) {
             console.log($scope.userId);
             if(response.data.data == null) {
-                //bring up the find rings
+                //bring up the find rings api
             } else {
                 $scope.rings = response.data.data.ringsWithActivities;
                 
@@ -379,36 +379,21 @@ app.controller('DashboardCtrl', function DashboardCtrl ($scope, $http, $location
                 
                 /*For each ring with activities, find if there is a tie, if there is a tie put the ring that has more orders at an index
                 before the ring with less orders in the $scope.rings array*/
-                
-                /*if length is one put numOrders*/
-                if($scope.rings.length == 1) {
-                    $scope.rings[0].numOrders = getNumOrders($scope.ringsWithOrders.name[0]);
-                }
-                for(var i = 0; i < $scope.rings.length; i++) {
-                    if($scope.rings[i+1] != null && $scope.rings[i].numActivities == $scope.rings[i+1].numActivities) { //there is a tie
-                        var currRingName = $scope.rings[i].name;
-                        var nextRingName = $scope.rings[i+1].name;
-                        
-                        var currOrders = getNumOrders($scope.ringsWithOrders, currRingName);
-                        var nextOrders = getNumOrders($scope.ringsWithOrders, nextRingName);
-                        
-                        if(currOrders < nextOrders) { //swap the rings and assign numOrders
-                            var currRing = $scope.rings[i];
-                            var nextRing = $scope.rings[i+1];
-                            var temp = currRing;
-                            $scope.rings[i] = nextRing;
-                            $scope.rings[i+1] = temp;
-                            
-                            $scope.rings[i].numOrders = nextOrders;
-                            $scope.rings[i+1].numOrders = currOrders;
-                        } else { //don't swap, assign numOrders to respective rings
-                            $scope.rings[i].numOrders = currOrders;
-                            $scope.rings[i+1].numOrders = nextOrders;
-                        }
+                var unsortedList = $scope.rings;
+                var len = unsortedList.length;
+                //assign numOrders to each ring with activities, sort numOrders within numActivities using insertion sort
+                for(var i = 0; i < len; i++) {
+                    var tempRing = unsortedList[i];
+                    tempRing.numOrders = getNumOrders($scope.ringsWithOrders, tempRing.name);
+                    /*Check through the sorted part and compare with the 
+                     number in tmp. If large, shift the number*/
+                    for(var j = i-1; j>=0 && (unsortedList[j].numOrders < tempRing.numOrders) && unsortedList[j].numActivities == tempRing.numActivities; j--) {
+                        unsortedList[j+1] = unsortedList[j];
                     }
+                    unsortedList[j+1] = tempRing;
                 }
                 
-                for(var i = 0; i < response.data.data.ringsWithNoActivities.length; i++) {
+                for(i = 0; i < response.data.data.ringsWithNoActivities.length; i++) {
                    response.data.data.ringsWithNoActivities[i].numActivities = 0;
                    response.data.data.ringsWithNoActivities[i].numOrders = 0;
                    $scope.rings.push(response.data.data.ringsWithNoActivities[i]); 
