@@ -25,72 +25,114 @@
 <!--       <label for="search-box"><span class="glyphicon glyphicon-search search-icon"></span></label>-->
 <!--    </div>-->
 <!--</nav>-->
+
 <header class="cd-main-header">
-	<!--<a href="#0" class="cd-logo"><img src="images/grublogo.png" alt="Logo" width="119" height="44"></a>-->
-	
-	<!-- cd-search code -->
-	<div class="cd-search">
-		<form action="#0" ng-model="search" ng-change="searchBox()">
-			<input type="search" placeholder="Search...">
-		</form>
-	</div>
-	
-	<a href="#0" class="cd-nav-trigger">Menu<span></span></a>
-	
-	<!-- .cd-main-header  -->
+		<a href="#0" class="cd-logo"><img src="images/cd-logo.svg" alt="Logo"></a>
+		
+		<div class="cd-search is-hidden">
+			<form action="#0">
+				<input type="search" placeholder="Search...">
+			</form>
+		</div> <!-- cd-search -->
+
+		<a href="#0" class="cd-nav-trigger">Menu<span></span></a>
+
 		<nav class="cd-nav">
-		<ul class="cd-top-nav">
-			<li><a href="#0">Help</a></li>
-			<li><a href="#0">Feedback</a></li>
-			<li class="has-children account">
-				<a href="#0">
-					<img src="images/cd-avatar.png" alt="avatar">
-					Account
-				</a>
- 
-				<ul>
-					<li><a href="#0">Edit Profile</a></li>
-					<li><a href="#0">Account Settings</a></li>
-					<li><a href="#0">Logout</a></li>
+			<ul class="cd-top-nav">
+				<li><a href="#0">Tour</a></li>
+				<li><a href="#0">Support</a></li>
+				<li class="has-children account">
+					<a href="#0">
+						<img src="images/cd-avatar.png" alt="avatar">
+						Account
+					</a>
+
+					<ul>
+
+						<li><a href="#0">My Account</a></li>
+						<li><a href="#0">Edit Account</a></li>
+						<li><a href="#0">Logout</a></li>
 					</ul>
 				</li>
 			</ul>
 		</nav>
-	</header>
+	</header> <!-- .cd-main-header -->
 
-
-<!-- side navigation bar  -->
-<!-- .cd-main-content -->
 	<main class="cd-main-content">
 		<nav class="cd-side-nav">
 			<ul>
-				<li class="cd-label">Rings</li>
+				<li class="cd-label">Main</li>
 				<li class="has-children overview">
-					<a href="#0">My Rings</a>
+					<a href="#0">Overview</a>
+					
+					<ul>
+						<li><a href="#0">All Data</a></li>
+						<li><a href="#0">Category 1</a></li>
+						<li><a href="#0">Category 2</a></li>
+					</ul>
 				</li>
-				<li class="has-children overview">
-					<a href="#0">Create a Ring</a>
+				<li class="has-children notifications active">
+					<a href="#0">Notifications<span class="count">3</span></a>
+					
+					<ul>
+						<li><a href="#0">All Notifications</a></li>
+						<li><a href="#0">Friends</a></li>
+						<li><a href="#0">Other</a></li>
+					</ul>
 				</li>
-				<li>
-				    <a href="#0">Join a Ring</a>
+
+				<li class="has-children comments">
+					<a href="#0">Comments</a>
+					
+					<ul>
+						<li><a href="#0">All Comments</a></li>
+						<li><a href="#0">Edit Comment</a></li>
+						<li><a href="#0">Delete Comment</a></li>
+					</ul>
 				</li>
 			</ul>
 
 			<ul>
-				<li class="cd-label">Activities</li>
-				<li class="has-children overview">
-					<a href="#0">My Activities</div></a>
+				<li class="cd-label">Secondary</li>
+				<li class="has-children bookmarks">
+					<a href="#0">Bookmarks</a>
+					
+					<ul>
+						<li><a href="#0">All Bookmarks</a></li>
+						<li><a href="#0">Edit Bookmark</a></li>
+						<li><a href="#0">Import Bookmark</a></li>
+					</ul>
 				</li>
-				<li class="has-children overview">
-					<a href="#0">Create an Activity</a>
+				<li class="has-children images">
+					<a href="#0">Images</a>
+					
+					<ul>
+						<li><a href="#0">All Images</a></li>
+						<li><a href="#0">Edit Image</a></li>
+					</ul>
+				</li>
+
+				<li class="has-children users">
+					<a href="#0">Users</a>
+					
+					<ul>
+						<li><a href="#0">All Users</a></li>
+						<li><a href="#0">Edit User</a></li>
+						<li><a href="#0">Add User</a></li>
+					</ul>
 				</li>
 			</ul>
 
 			<ul>
+				<li class="cd-label">Action</li>
 				<li class="action-btn"><a href="#0">+ Button</a></li>
 			</ul>
 		</nav>
 
 		<div class="content-wrapper">
 		</div> <!-- .content-wrapper -->
-	</main> 
+	</main> <!-- .cd-main-content -->
+<!--<script src="js/jquery-2.1.4.js"></script>-->
+<!--<script src="js/jquery.menu-aim.js"></script>-->
+<!--<script src="js/main.js"></script> <!-- Resource jQuery -->
+</body>
