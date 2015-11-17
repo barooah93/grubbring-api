@@ -4,7 +4,8 @@
 /*global angular */
 var app = angular.module('grubbring', [
     'controllers',
-    'ngRoute'
+    'ngRoute',
+    'ui.bootstrap'
 ]);
 
 app.config(['$routeProvider', '$locationProvider', function($routeProvider, $locationProvider) {
