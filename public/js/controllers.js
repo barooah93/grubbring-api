@@ -371,7 +371,7 @@ app.controller('DashboardCtrl', function DashboardCtrl ($scope, $http, $location
         }).then(function (response) {
             console.log($scope.userId);
             
-            if(response.data.data == null) { //no rings
+            if(response.data.data == null) { //no rings call shivangs
                 //bring up the find rings api
                 $http({
                     method: 'GET',

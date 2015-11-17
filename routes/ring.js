@@ -44,7 +44,6 @@ app.get('/', function(req,res){
 //-------------------------END-------------------------------------------------------
 
 //-------------------------START-----------------------------------------------------
-// TODO: remove the hardcoded 68
 // TODO: add promises?
 // TODO: if no rings show a map - rings near them - for the person to join and say that the user is in no rings
 
@@ -68,7 +67,7 @@ app.get('/subscribedRings/:userId', function(req, res) {
                 "(SELECT O.orderId, OS.userId, OS.enteredOn, R.ringId, R.name, R.addr, R.city, R.state, R.zipcode, R.ringStatus, "+
                 "R.createdBy, R.createdOn "+
                 "FROM tblOrderStatus OS, tblOrder O, tblRing R, tblRingUser RU "+
-                "WHERE O.orderId = OS.orderId AND R.ringId = O.ringId AND OS.statusId = 2 AND RU.ringId = R.ringId AND RU.userId = 68 "+
+                "WHERE O.orderId = OS.orderId AND R.ringId = O.ringId AND OS.statusId = 2 AND RU.ringId = R.ringId AND RU.userId = ? "+
                 "AND OS.enteredOn >= DATE_SUB(CURDATE(), INTERVAL 5 DAY)) AS sub "+
         "GROUP BY sub.ringId ORDER By numActivities DESC;"; //all rings that a user is part of and has activities (sorted by number of activities)
         var inserts = [userId];
@@ -80,10 +79,10 @@ app.get('/subscribedRings/:userId', function(req, res) {
         var ringsWithNoActivitiesSql = "SELECT R.ringId, RU.userId, RU.roleId, RU.status, RU.joinedOn, R.name, R.addr, R.city, "+
         "R.state, R.zipcode, R.ringStatus, R.createdBy, R.createdOn "+
         "FROM tblRingUser RU, tblRing R "+
-        "WHERE RU.ringId = R.ringId AND RU.userId = 68 AND R.ringId "+
+        "WHERE RU.ringId = R.ringId AND RU.userId = ? AND R.ringId "+
         "NOT IN (SELECT DISTINCT R.ringId FROM tblRingUser RU, tblRing R, tblOrder O "+
-        "WHERE RU.ringId = R.ringId AND RU.userId = 68 AND R.ringId = O.ringId);"; //all rings a user is a part of and has no activities
-        inserts = [userId];
+        "WHERE RU.ringId = R.ringId AND RU.userId = ? AND R.ringId = O.ringId);"; //all rings a user is a part of and has no activities
+        inserts = [userId, userId];
         ringsWithNoActivitiesSql = mysql.format(ringsWithNoActivitiesSql, inserts);
         
         var ringsWithOrdersSql = "SELECT sub.orderId, sub.userId, sub.enteredOn, sub.ringId, sub.name, sub.addr, sub.city, sub.state, "+
@@ -92,7 +91,7 @@ app.get('/subscribedRings/:userId', function(req, res) {
             "(SELECT O.orderId, OS.userId, OS.enteredOn, R.ringId, R.name, R.addr, R.city, R.state, R.zipcode, R.ringStatus, "+
             "R.createdBy, R.createdOn "+
             "FROM tblOrderStatus OS, tblOrder O, tblRing R, tblRingUser RU, tblOrderUser OU "+
-            "WHERE O.orderId = OS.orderId AND R.ringId = O.ringId AND OS.statusId = 2 AND RU.ringId = R.ringId AND RU.userId = 68 "+
+            "WHERE O.orderId = OS.orderId AND R.ringId = O.ringId AND OS.statusId = 2 AND RU.ringId = R.ringId AND RU.userId = ? "+
             "AND OU.orderId = O.orderId AND OS.enteredOn >= DATE_SUB(CURDATE(), INTERVAL 5 DAY)) AS sub "+
             "GROUP BY sub.ringId ORDER By numOrders DESC";
         inserts = [userId];
@@ -105,6 +104,9 @@ app.get('/subscribedRings/:userId', function(req, res) {
             db.dbExecuteQuery(ringsWithNoActivitiesSql, res, function(ringsWithNoActivitiesResult){
                 // overwrite description
                 ringsWithNoActivitiesResult.description="Got rings user with userId " + userId + " is a part of but has no activities";
+                
+                /*TODO: put if check for ringswithactivities and ringswithnoactivities here - if both == 0 - dont run third query*/
+                
                 
                 db.dbExecuteQuery(ringsWithOrdersSql, res, function(ringsWithOrdersResult){
                     // overwrite description
