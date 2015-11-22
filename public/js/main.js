@@ -83,10 +83,10 @@ jQuery(document).ready(function(){
         submenuSelector: ".has-children",
     });
 
-		function checkMQ() {
+	function checkMQ() {
 		//check if mobile or desktop device
-		console.log(document.getElementsByClassName('.cd-main-content'));
-		return window.getComputedStyle(document.getElementsByClassName('.cd-main-content'), '::before').getPropertyValue('content').replace(/'/g, "").replace(/"/g, "");
+		console.log(document.getElementsByClassName('cd-main-content'));
+		return window.getComputedStyle(document.getElementsByClassName('cd-main-content'), '::before').getPropertyValue('content').replace(/'/g, "").replace(/"/g, "");
 	}
 
 	function moveNavigation(){
