@@ -612,10 +612,13 @@ Header
 }
 .cd-logo img {
   display: block;
+   -webkit-filter: drop-shadow(1.5px 1.5px 1.5px #86898A);
+  filter: drop-shadow(1.5px 1.5px 1.5px #86898A); 
 }
 @media only screen and (min-width: 768px) {
   .cd-logo {
-    margin: 10px 0 0 36px;
+    margin: 15px 0 0 10px;
+    
   }
 }
 
@@ -752,7 +755,7 @@ Header
     display: inline-block;
     width: 250px;
     height: 100%;
-    margin: 0 0 0 2em;
+    margin: 0 0 0 12.5em;
   }
   .cd-search.is-hidden {
     /* reset style */
@@ -1069,8 +1072,13 @@ Sidebar
   .cd-side-nav > ul {
     padding: 0.6em 0;
   }
-  .cd-side-nav > ul > li:not(.action-btn):hover > a {
-    background-color: #33383e;
+  /*.cd-side-nav > ul > li:not(.action-btn):hover > a {*/
+    /*background-color: #33383e;*/
+  /*  color: blue;*/
+  /*}*/
+  
+  .cd-side-nav > ul > li:not(.action-btn) > a:hover{
+    color: #1784c7;
   }
   .cd-side-nav > ul > li > a {
     padding: 1em 1em 1em 42px;
@@ -1232,10 +1240,12 @@ Sidebar
 }
 
 
-
 /** For the dropdown part of the Account menu on the search bar **/
 
-
+.dropdown-menu{
+  margin-top: -3px;
+  margin-right: -2px;
+}
 .dropdown-menu > li > a {
 color: white;
 }
