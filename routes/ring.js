@@ -251,79 +251,142 @@ app.get('/search/:key', function(req,res) {
     authenticate.checkAuthentication(req, res, function (data) {
         var ringSql = null; // sql statement to find key in ringIds or ring names
         var leaderSql = null; // sql statement to find key in leaderId or leader name
+        var grubberySql=null;
+        var userSql=null;
         var description = "";
+        var context = req.query.context;
+        var userId = req.query.userId;
         var key = req.params.key; // is already url decoded
         var tokenized = [];
         var firstName = null;
         var lastName = null;
         var tokenizedSearch="";
         var inserts =[];
-
+        
         // tokenize key for multiple word search
         tokenized = key.split(" ");
-        inserts = [key,"%"+key+"%"];
-         
-        // check if there are multiple words in key
-        if(tokenized.length<2){
-            tokenized[1]=""; // add blank string to second index if there is only one word in key so it is defined
-        }
-        else{ // tokenize the search to look for each word in ring name
-            tokenizedSearch = "OR ( ";
-            for(var i=0;i<tokenized.length;i++){
-                // check if last word in key
-                if(i == tokenized.length-1) {
-                    tokenizedSearch += "R.name LIKE ?)";
-                }
-                else{
-                    tokenizedSearch += "R.name LIKE ? AND "
-                }
-                inserts.push("%"+tokenized[i]+"%");
-            }
-        }
         
-        // execute first sql to see if key is a ringId or ring name (partial or full)
-        ringSql = "SELECT * FROM tblRing R WHERE ((R.ringId=? OR R.name LIKE ? "+tokenizedSearch+") AND R.ringStatus=1) ;";
-        
-        ringSql = mysql.format(ringSql, inserts);
-        
-        // execute first sql to see if key is a ringId or ring name (partial or full)
-        // connect to db and execute sql
-        db.dbExecuteQuery(ringSql,res, function(ringResult){
-            // execute second sql to see if key is leaderId or leader's name
-            leaderSql = "SELECT * FROM tblRing R "+
-            "INNER JOIN tblUser U "+
-            "ON R.createdBy=U.userId "+
-            "WHERE (U.username LIKE ? "+
-                "OR (U.firstName LIKE ? AND U.lastName LIKE ?) "+
-                "OR (U.lastName LIKE ? AND U.firstName LIKE ?)) "+
-            "AND R.ringStatus = 1;";
-            inserts = ["%"+key +"%", "%"+tokenized[0]+"%", "%"+tokenized[1]+"%","%"+tokenized[0]+"%", "%"+tokenized[1]+"%"];
-            leaderSql = mysql.format(leaderSql, inserts);
+        var sqlSelectStatement = "SELECT G.name AS grubbery, R.name, U.firstName, U.lastName FROM tblOrder O "+
+                "INNER JOIN tblGrubbery G "+
+                "ON O.grubberyId = G.grubberyId "+
+                "INNER JOIN tblRing R "+
+                "ON O.ringId = R.ringId "+
+                "INNER JOIN tblUser U "+
+                "ON O.bringerUserId = U.userId "+
+                "INNER JOIN tblOrderUser OU "+
+                "ON OU.orderId=O.orderId ";
+                
+        // check the context of the search (each page might want to show results unique to that page)
+        if(context == "myActivities"){
             
-//          connect and execute
-            db.dbExecuteQuery(leaderSql,res, function(leaderResult){
-                if(leaderResult.data.length ==0 && ringResult.data.length == 0){
-                    description = "Could not match the search criteria with anything in our database.";
-                }
-                else{
-                    description = "Returned matching searches";
-                }
-                var data = {
-                    status:'Success', 
-                    description: description, 
-                    data: {
-                        rings:ringResult.data,
-                        leaders:leaderResult.data
-                    }
-                };
-                res.send(data);
+            grubberySql = sqlSelectStatement+"WHERE G.name LIKE ? AND U.userId = ?;";
+            
+            inserts = ["%"+key+"%",userId];
+            grubberySql = mysql.format(grubberySql,inserts);
+            glog.log(grubberySql);
+            //execute
+            db.dbExecuteQuery(grubberySql,res, function(grubberyResult){
+                // TODO: tokenize multiple word search
+                ringSql =sqlSelectStatement+"WHERE R.name LIKE ? AND U.userId = ?;";
+                
+                inserts = ["%"+key+"%", userId];
+                ringSql = mysql.format(ringSql,inserts);
+                // execute
+                db.dbExecuteQuery(ringSql,res, function(ringResult){
+                    userSql = sqlSelectStatement+"WHERE (U.username LIKE ? "+
+                                "OR (U.firstName LIKE ? AND U.lastName LIKE ?) "+
+                                "OR (U.lastName LIKE ? AND U.firstName LIKE ?)) AND U.userId = ?;";
+                            
+                    inserts = ["%"+key +"%", "%"+tokenized[0]+"%", "%"+tokenized[1]+"%","%"+tokenized[0]+"%", "%"+tokenized[1]+"%",userId];
+                    userSql = mysql.format(userSql,inserts); 
+                    // execute
+                    db.dbExecuteQuery(userSql,res, function(userResult){
+                        if(userResult.data.length ==0 && ringResult.data.length == 0 && grubberyResult.data.length == 0){
+                            description = "Could not match the search criteria with anything in our database.";
+                        }
+                        else{
+                            description = "Returned matching searches";
+                        }
+                        var data = {
+                            status:'Success', 
+                            description: description, 
+                            data: {
+                                grubberies:grubberyResult.data,
+                                rings:ringResult.data,
+                                users:userResult.data
+                            }
+                        };
+                        res.send(data);
+                    });
+                });
             });
-        });
-     
+        }
+        else if(context == "findRings"){
 
+            inserts = [key,"%"+key+"%"];
+             
+            // check if there are multiple words in key
+            if(tokenized.length<2){
+                tokenized[1]=""; // add blank string to second index if there is only one word in key so it is defined
+            }
+            else{ // tokenize the search to look for each word in ring name
+                tokenizedSearch = "OR ( ";
+                for(var i=0;i<tokenized.length;i++){
+                    // check if last word in key
+                    if(i == tokenized.length-1) {
+                        tokenizedSearch += "R.name LIKE ?)";
+                    }
+                    else{
+                        tokenizedSearch += "R.name LIKE ? AND "
+                    }
+                    inserts.push("%"+tokenized[i]+"%");
+                }
+            }
+            
+            // execute first sql to see if key is a ringId or ring name (partial or full)
+            ringSql = "SELECT * FROM tblRing R WHERE ((R.ringId=? OR R.name LIKE ? "+tokenizedSearch+") AND R.ringStatus=1) ;";
+            
+            ringSql = mysql.format(ringSql, inserts);
+            
+            // execute first sql to see if key is a ringId or ring name (partial or full)
+            // connect to db and execute sql
+            db.dbExecuteQuery(ringSql,res, function(ringResult){
+                // execute second sql to see if key is leaderId or leader's name
+                leaderSql = "SELECT * FROM tblRing R "+
+                "INNER JOIN tblUser U "+
+                "ON R.createdBy=U.userId "+
+                "WHERE (U.username LIKE ? "+
+                    "OR (U.firstName LIKE ? AND U.lastName LIKE ?) "+
+                    "OR (U.lastName LIKE ? AND U.firstName LIKE ?)) "+
+                "AND R.ringStatus = 1;";
+                inserts = ["%"+key +"%", "%"+tokenized[0]+"%", "%"+tokenized[1]+"%","%"+tokenized[0]+"%", "%"+tokenized[1]+"%"];
+                leaderSql = mysql.format(leaderSql, inserts);
+                
+    //          connect and execute
+                db.dbExecuteQuery(leaderSql,res, function(leaderResult){
+                    if(leaderResult.data.length ==0 && ringResult.data.length == 0){
+                        description = "Could not match the search criteria with anything in our database.";
+                    }
+                    else{
+                        description = "Returned matching searches";
+                    }
+                    var data = {
+                        status:'Success', 
+                        description: description, 
+                        data: {
+                            rings:ringResult.data,
+                            leaders:leaderResult.data
+                        }
+                    };
+                    res.send(data);
+                });
+            });
+        }
     });
+    
 });
 //-------------------------END-------------------------------------------------------
+
 
 
 //-----------------------Helper Functions--------------------------------------------
