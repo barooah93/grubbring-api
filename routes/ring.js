@@ -19,19 +19,33 @@ app.get('/', function(req,res){
         For website - browser can get user's coordiates --> Example: http://www.w3schools.com/html/html5_geolocation.asp
         For Android/IOS - use mobiles geolocation api to get user's coordinates and pass to this api
         */
-        // var userLat = req.body.latitude;
-        // var userLong = req.body.longitude;
-        var userLat = 40.926063899999995; //for testing 
-        var userLong = -74.1047229; //for testing
-        
+        var userLat = req.query.latitude;
+        var userLong = req.query.longitude;
         //get user zipcode based on lat and log
         var userZipCode = gps.gps2zip(userLat, userLong).zip_code; // --> returns zipcode 07410 for Fair Lawn, NJ
-        //find zipcodes within a certain radius (1 mile) of user's zipcode
-        var zipcodesNearUser = zipcodes.radius(userZipCode, 1);
-        var queryParamZipcodeList = zipcodesNearUser[0].toString();
-    
-        var sql = "SELECT * FROM tblRing WHERE zipcode = ?;"; 
-        var inserts = [queryParamZipcodeList];
+        //find zipcodes within a certain radius (2 mile) of user's zipcode
+        var zipcodesNearUser = zipcodes.radius(userZipCode, 2);
+        glog.log(zipcodesNearUser);
+        // Check if zipcodes were returned
+        if(!zipcodesNearUser.length>0){
+            glog.error("No zipcodes returned for latitude: "+userLat+" longitude: "+userLong);
+            var response = {
+                status: "error",
+                description: "No zipcodes returned for latitude: "+userLat+" longitude: "+userLong,
+                data: null
+            }
+            res.send(response);
+        }
+        
+        // inject first zipcode into sql
+        var sql = "SELECT * FROM tblRing WHERE zipcode = ? ";
+        var inserts = [zipcodesNearUser[0].toString()];
+        // inject the rest
+        for(var i=1;i<zipcodesNearUser.length;i++){
+            sql+=" OR zipcode = ? ";
+            inserts.push(zipcodesNearUser[i].toString());
+        }
+        
         sql = mysql.format(sql, inserts);
         glog.log(sql);
         db.dbExecuteQuery(sql, res, function(result){

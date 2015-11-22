@@ -330,17 +330,43 @@ app.controller('ConfirmCodeRegisterCtrl', function ($scope, $http, $location, pa
 
 app.controller('findRingsCtrl', function findRingsCtrl ($scope, $http, $location) {
 
-    // get suggested rings to display to user
-    $http({
-        method: 'GET',
-        url: '/api/ring/'
-    }).then(function (response) {
-        console.log(response);
-    }, function (err) {
-        console.log(err);
-        $location.path('/find_rings');
-    });
+    var lat;
+    var long;
+    
+    if (navigator.geolocation)
+    {
+        navigator.geolocation.getCurrentPosition(successFunction, errorFunction);
+    }
+    else 
+    {
+        alert('It seems like Geolocation, which is required for this page, is not enabled in your browser.');
+    }  
+    
+    function successFunction(position) 
+    {
+        var lat = position.coords.latitude;
+        var long = position.coords.longitude;
+        alert('Your latitude is :'+lat+' and longitude is '+long);
+        // get suggested rings to display to user
+        $http({
+            method: 'GET',
+            url: '/api/ring?latitude='+lat+'&longitude='+long,
+            data: {
+                latitude: lat,
+                longitude: long
+            }
+        }).then(function (response) {
+            console.log(response.data.data);
+        }, function (err) {
+            console.log(err);
+        });
+    }
 
+    function errorFunction(position) 
+    {
+       console.log('Error!');
+    }
+    
 });
 /***************steph********************/
 
@@ -425,23 +451,6 @@ function getNumOrders(ringsWithOrders, ringName) {
         }
     }
 }
-
-
-/*Find rings */
-app.controller('findRingsCtrl', function findRingsCtrl ($scope, $http, $location) {
-
-    // get suggested rings to display to user
-    $http({
-        method: 'GET',
-        url: '/api/ring/'
-    }).then(function (response) {
-        console.log(response);
-    }, function (err) {
-        console.log(err);
-        $location.path('/find_rings');
-    });
-
-});
 
 /***********************************/
 
