@@ -24,7 +24,7 @@ app.get('/', function(req,res){
         //get user zipcode based on lat and log
         var userZipCode = gps.gps2zip(userLat, userLong).zip_code; // --> returns zipcode 07410 for Fair Lawn, NJ
         //find zipcodes within a certain radius (2 mile) of user's zipcode
-        var zipcodesNearUser = zipcodes.radius(userZipCode, 2);
+        var zipcodesNearUser = zipcodes.radius(userZipCode, 1);
         glog.log(zipcodesNearUser);
         // Check if zipcodes were returned
         if(!zipcodesNearUser.length>0){
@@ -42,12 +42,11 @@ app.get('/', function(req,res){
         var inserts = [zipcodesNearUser[0].toString()];
         // inject the rest
         for(var i=1;i<zipcodesNearUser.length;i++){
-            sql+=" OR zipcode = ? ";
+            sql+="OR zipcode = ? ";
             inserts.push(zipcodesNearUser[i].toString());
         }
         
         sql = mysql.format(sql, inserts);
-        glog.log(sql);
         db.dbExecuteQuery(sql, res, function(result){
             // overwrite description
             result.description="Returned all rings";
@@ -291,51 +290,51 @@ app.get('/search/:key', function(req,res) {
                 "ON OU.orderId=O.orderId ";
                 
         // check the context of the search (each page might want to show results unique to that page)
-        if(context == "myActivities"){
+        // if(context == "myActivities"){
             
-            grubberySql = sqlSelectStatement+"WHERE G.name LIKE ? AND U.userId = ?;";
+        //     grubberySql = sqlSelectStatement+"WHERE G.name LIKE ? AND U.userId = ?;";
             
-            inserts = ["%"+key+"%",userId];
-            grubberySql = mysql.format(grubberySql,inserts);
-            glog.log(grubberySql);
-            //execute
-            db.dbExecuteQuery(grubberySql,res, function(grubberyResult){
-                // TODO: tokenize multiple word search
-                ringSql =sqlSelectStatement+"WHERE R.name LIKE ? AND U.userId = ?;";
+        //     inserts = ["%"+key+"%",userId];
+        //     grubberySql = mysql.format(grubberySql,inserts);
+        //     glog.log(grubberySql);
+        //     //execute
+        //     db.dbExecuteQuery(grubberySql,res, function(grubberyResult){
+        //         // TODO: tokenize multiple word search
+        //         ringSql =sqlSelectStatement+"WHERE R.name LIKE ? AND U.userId = ?;";
                 
-                inserts = ["%"+key+"%", userId];
-                ringSql = mysql.format(ringSql,inserts);
-                // execute
-                db.dbExecuteQuery(ringSql,res, function(ringResult){
-                    userSql = sqlSelectStatement+"WHERE (U.username LIKE ? "+
-                                "OR (U.firstName LIKE ? AND U.lastName LIKE ?) "+
-                                "OR (U.lastName LIKE ? AND U.firstName LIKE ?)) AND U.userId = ?;";
+        //         inserts = ["%"+key+"%", userId];
+        //         ringSql = mysql.format(ringSql,inserts);
+        //         // execute
+        //         db.dbExecuteQuery(ringSql,res, function(ringResult){
+        //             userSql = sqlSelectStatement+"WHERE (U.username LIKE ? "+
+        //                         "OR (U.firstName LIKE ? AND U.lastName LIKE ?) "+
+        //                         "OR (U.lastName LIKE ? AND U.firstName LIKE ?)) AND U.userId = ?;";
                             
-                    inserts = ["%"+key +"%", "%"+tokenized[0]+"%", "%"+tokenized[1]+"%","%"+tokenized[0]+"%", "%"+tokenized[1]+"%",userId];
-                    userSql = mysql.format(userSql,inserts); 
-                    // execute
-                    db.dbExecuteQuery(userSql,res, function(userResult){
-                        if(userResult.data.length ==0 && ringResult.data.length == 0 && grubberyResult.data.length == 0){
-                            description = "Could not match the search criteria with anything in our database.";
-                        }
-                        else{
-                            description = "Returned matching searches";
-                        }
-                        var data = {
-                            status:'Success', 
-                            description: description, 
-                            data: {
-                                grubberies:grubberyResult.data,
-                                rings:ringResult.data,
-                                users:userResult.data
-                            }
-                        };
-                        res.send(data);
-                    });
-                });
-            });
-        }
-        else if(context == "findRings"){
+        //             inserts = ["%"+key +"%", "%"+tokenized[0]+"%", "%"+tokenized[1]+"%","%"+tokenized[0]+"%", "%"+tokenized[1]+"%",userId];
+        //             userSql = mysql.format(userSql,inserts); 
+        //             // execute
+        //             db.dbExecuteQuery(userSql,res, function(userResult){
+        //                 if(userResult.data.length ==0 && ringResult.data.length == 0 && grubberyResult.data.length == 0){
+        //                     description = "Could not match the search criteria with anything in our database.";
+        //                 }
+        //                 else{
+        //                     description = "Returned matching searches";
+        //                 }
+        //                 var data = {
+        //                     status:'Success', 
+        //                     description: description, 
+        //                     data: {
+        //                         grubberies:grubberyResult.data,
+        //                         rings:ringResult.data,
+        //                         users:userResult.data
+        //                     }
+        //                 };
+        //                 res.send(data);
+        //             });
+        //         });
+        //     });
+        // }
+        if(context == "findRings"){
 
             inserts = [key,"%"+key+"%"];
              
