@@ -351,12 +351,32 @@ app.controller('findRingsCtrl', function findRingsCtrl ($scope, $http, $location
         var lat = position.coords.latitude;
         var long = position.coords.longitude;
         
+        var geocoder= new google.maps.Geocoder();
+        
         var mapOptions = {
           center: new google.maps.LatLng(lat, long),
           zoom: zoomLevel,
           mapTypeId: google.maps.MapTypeId.ROADMAP
         }
         var map = new google.maps.Map(mapCanvas, mapOptions);
+        
+        function codeAddress(address, city, state) {
+            geocoder.geocode( { 'address': address+' '+city+', '+state}, function(results, status) {
+            if (status == google.maps.GeocoderStatus.OK) {
+                var marker = new google.maps.Marker({
+                    map: map,
+                    position: results[0].geometry.location
+                });
+                marker.addListener('click', function() {
+                    map.setCenter(marker.getPosition());
+                });
+            } else {
+                alert("Geocode was not successful for the following reason: " + status);
+            }
+        });
+        
+        
+  }
     
         // get suggested rings to display to user
         $http({
@@ -367,7 +387,11 @@ app.controller('findRingsCtrl', function findRingsCtrl ($scope, $http, $location
                 longitude: long
             }
         }).then(function (response) {
-            console.log(response.data.data);
+            console.log(response);
+            for (var i = 0; i < response.data.data.length; i++) {
+                codeAddress(response.data.data[i].addr, response.data.data[i].city, response.data.data[i].state)
+            }
+
         }, function (err) {
             console.log(err);
         });
