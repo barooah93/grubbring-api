@@ -332,11 +332,17 @@ app.controller('findRingsCtrl', function findRingsCtrl ($scope, $http, $location
 
     // initialize map canvas
     var mapCanvas = document.getElementById('map');
-    var zoomLevel = 14;
-
-    var lat;
-    var long;
+    var zoomLevel = 15;
     
+    // div box for marker
+    var popup = $('#popup');
+    
+    // intialize popup for markers
+    popup.hide();
+    popup.css('background-color', 'white');
+    popup.css('position','absolute');
+    popup.css('z-index',2);
+
     if (navigator.geolocation)
     {
         navigator.geolocation.getCurrentPosition(successFunction, errorFunction);
@@ -348,6 +354,7 @@ app.controller('findRingsCtrl', function findRingsCtrl ($scope, $http, $location
     
     function successFunction(position) 
     {
+        // get client coordinates
         var lat = position.coords.latitude;
         var long = position.coords.longitude;
         
@@ -360,23 +367,23 @@ app.controller('findRingsCtrl', function findRingsCtrl ($scope, $http, $location
         }
         var map = new google.maps.Map(mapCanvas, mapOptions);
         
-        function codeAddress(address, city, state) {
-            geocoder.geocode( { 'address': address+' '+city+', '+state}, function(results, status) {
-            if (status == google.maps.GeocoderStatus.OK) {
-                var marker = new google.maps.Marker({
-                    map: map,
-                    position: results[0].geometry.location
-                });
-                marker.addListener('click', function() {
-                    map.setCenter(marker.getPosition());
-                });
-            } else {
-                alert("Geocode was not successful for the following reason: " + status);
-            }
-        });
+        // decodes address into long and lat coordinates to add markers to the map
+        function codeAddress(ring) {
+            geocoder.geocode( { 'address': ring.addr+' '+ring.city+', '+ring.state}, function(results, status) {
+                if (status == google.maps.GeocoderStatus.OK) {
+                    var marker = new google.maps.Marker({
+                        map: map,
+                        position: results[0].geometry.location
+                    });
+                    // add tooltip giving info about the ring
+                    marker.setTitle(ring.name+"\n"+ring.addr+"\n"+ring.username);
+
+                } else {
+                    alert("Geocode was not successful for the following reason: " + status);
+                }
+            });
         
-        
-  }
+        }
     
         // get suggested rings to display to user
         $http({
@@ -389,7 +396,7 @@ app.controller('findRingsCtrl', function findRingsCtrl ($scope, $http, $location
         }).then(function (response) {
             console.log(response);
             for (var i = 0; i < response.data.data.length; i++) {
-                codeAddress(response.data.data[i].addr, response.data.data[i].city, response.data.data[i].state)
+                codeAddress(response.data.data[i]);
             }
 
         }, function (err) {

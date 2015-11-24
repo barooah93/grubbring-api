@@ -25,7 +25,6 @@ app.get('/', function(req,res){
         var userZipCode = gps.gps2zip(userLat, userLong).zip_code; // --> returns zipcode 07410 for Fair Lawn, NJ
         //find zipcodes within a certain radius (2 mile) of user's zipcode
         var zipcodesNearUser = zipcodes.radius(userZipCode, 1);
-        glog.log(zipcodesNearUser);
         // Check if zipcodes were returned
         if(!zipcodesNearUser.length>0){
             glog.error("No zipcodes returned for latitude: "+userLat+" longitude: "+userLong);
@@ -38,7 +37,10 @@ app.get('/', function(req,res){
         }
         
         // inject first zipcode into sql
-        var sql = "SELECT * FROM tblRing WHERE zipcode = ? ";
+        var sql = "SELECT R.addr, R.city, R.state, R.name, U.username FROM tblRing R "+
+        "INNER JOIN tblUser U "+
+        "ON R.createdBy=U.userId "+
+        "WHERE zipcode = ? ";
         var inserts = [zipcodesNearUser[0].toString()];
         // inject the rest
         for(var i=1;i<zipcodesNearUser.length;i++){
