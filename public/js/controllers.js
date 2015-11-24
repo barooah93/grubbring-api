@@ -330,6 +330,10 @@ app.controller('ConfirmCodeRegisterCtrl', function ($scope, $http, $location, pa
 
 app.controller('findRingsCtrl', function findRingsCtrl ($scope, $http, $location) {
 
+    // initialize map canvas
+    var mapCanvas = document.getElementById('map');
+    var zoomLevel = 14;
+
     var lat;
     var long;
     
@@ -346,7 +350,14 @@ app.controller('findRingsCtrl', function findRingsCtrl ($scope, $http, $location
     {
         var lat = position.coords.latitude;
         var long = position.coords.longitude;
-        alert('Your latitude is :'+lat+' and longitude is '+long);
+        
+        var mapOptions = {
+          center: new google.maps.LatLng(lat, long),
+          zoom: zoomLevel,
+          mapTypeId: google.maps.MapTypeId.ROADMAP
+        }
+        var map = new google.maps.Map(mapCanvas, mapOptions);
+    
         // get suggested rings to display to user
         $http({
             method: 'GET',
