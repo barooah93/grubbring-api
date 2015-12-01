@@ -9,7 +9,7 @@ app.controller('MainCtrl', function($scope) {
 
 });
 
-app.controller('LoginCtrl', function($scope, $http, $location) {
+app.controller('LoginCtrl', function($scope, $http, $location, passEmailService) {
 
             $(function(){
 
@@ -66,7 +66,23 @@ app.controller('LoginCtrl', function($scope, $http, $location) {
                 else if(loginAttemptsRemain == 0 || loginAttemptsRemain < 0){
                     $scope.displayMsg1 = true;
                     $scope.loginAttemptMsg = "You have attempted to login too many times using incorrect password. This account has been locked. Please reset your password.";
-                    $location.path('/begin_password_reset');
+                    passEmailService.setEmail($scope.email);
+                    
+                    //call api to send code to email address
+                    
+                    $http({
+                        method: 'POST',
+                        url: '/api/profile/resetPassword/generateAccessCode',
+                        data: {
+                            email: $scope.email
+                        }
+                    }).then(function(response) {
+                    if(response.data.status == "success"){
+                        $location.path('/confirm_code_reset');
+                    }
+                    }, function(err) {
+                        alert('Email Address does not exist');
+                    })
 
                 }
                 else{
@@ -605,7 +621,7 @@ app.controller('BeginPasswordResetCtrl', function($scope, $http, $location, pass
 app.controller('ConfirmCodeResetCtrl', function($scope, $http, $location, passEmailService, passAccessCode){
     $scope.isSubmitDisabled = true;
     $scope.headerMsg = "Validate Access Code";
-    $scope.dirMsg = "Please enter in the access code that was sent to you in email/text message.";
+    $scope.dirMsg = "Please enter in the access code that was sent to you in email/text message for "+passEmailService.getEmail()+".";
     $scope.$watch('accessCode', function(){
        if($scope.accessCode.length > 0){
            $scope.isSubmitDisabled = false;
