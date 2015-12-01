@@ -37,7 +37,7 @@ app.get('/', function(req,res){
         }
         
         // inject first zipcode into sql
-        var sql = "SELECT R.addr, R.city, R.state, R.name, U.username FROM tblRing R "+
+        var sql = "SELECT R.addr, R.city, R.state, R.name, U.firstName, U.lastName FROM tblRing R "+
         "INNER JOIN tblUser U "+
         "ON R.createdBy=U.userId "+
         "WHERE zipcode = ? ";

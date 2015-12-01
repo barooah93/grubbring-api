@@ -376,10 +376,9 @@ app.controller('findRingsCtrl', function findRingsCtrl ($scope, $http, $location
                         position: results[0].geometry.location
                     });
                     // add tooltip giving info about the ring
-                    marker.setTitle(ring.name+"\n"+ring.addr+"\n"+ring.username);
-
+                    marker.setTitle(ring.name+"\n"+ring.addr+"\n"+ring.firstName+" "+ring.lastName);
                 } else {
-                    alert("Geocode was not successful for the following reason: " + status);
+                    alert("We could not find your location successfully: " + status);
                 }
             });
         
