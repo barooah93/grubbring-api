@@ -346,18 +346,23 @@ app.controller('ConfirmCodeRegisterCtrl', function ($scope, $http, $location, pa
 
 app.controller('findRingsCtrl', function findRingsCtrl ($scope, $http, $location) {
 
+    // array containing rings near person's location
+    $scope.nearbyRings = [];
+    
     // initialize map canvas
     var mapCanvas = document.getElementById('map');
     var zoomLevel = 15;
     
-    // div box for marker
-    var popup = $('#popup');
+    // Use this if customizing popup when hovering over marker --------------------------------
+    // // div box for marker
+    // var popup = $('#popup');
     
-    // intialize popup for markers
-    popup.hide();
-    popup.css('background-color', 'white');
-    popup.css('position','absolute');
-    popup.css('z-index',2);
+    // // intialize popup for markers
+    // popup.hide();
+    // popup.css('background-color', 'white');
+    // popup.css('position','absolute');
+    // popup.css('z-index',2);
+    // --------------------------------------------------------------
 
     if (navigator.geolocation)
     {
@@ -368,19 +373,24 @@ app.controller('findRingsCtrl', function findRingsCtrl ($scope, $http, $location
         alert('It seems like Geolocation, which is required for this page, is not enabled in your browser.');
     }  
     
+    // if successfully received long and lat 
     function successFunction(position) 
     {
         // get client coordinates
         var lat = position.coords.latitude;
         var long = position.coords.longitude;
         
+        // initialize geocoder for finding long and lat of an address
         var geocoder= new google.maps.Geocoder();
         
+        // initialize options for map
         var mapOptions = {
           center: new google.maps.LatLng(lat, long),
           zoom: zoomLevel,
           mapTypeId: google.maps.MapTypeId.ROADMAP
         }
+        
+        // initialize google map object onto div mapCanvas with specified options
         var map = new google.maps.Map(mapCanvas, mapOptions);
         
         // decodes address into long and lat coordinates to add markers to the map
@@ -394,7 +404,7 @@ app.controller('findRingsCtrl', function findRingsCtrl ($scope, $http, $location
                     // add tooltip giving info about the ring
                     marker.setTitle(ring.name+"\n"+ring.addr+"\n"+ring.firstName+" "+ring.lastName);
                 } else {
-                    alert("We could not find your location successfully: " + status);
+                    alert("We could not find nearby locations successfully: " + status);
                 }
             });
         
@@ -412,6 +422,7 @@ app.controller('findRingsCtrl', function findRingsCtrl ($scope, $http, $location
             console.log(response);
             for (var i = 0; i < response.data.data.length; i++) {
                 codeAddress(response.data.data[i]);
+                $scope.nearbyRings.push(response.data.data[i]);
             }
 
         }, function (err) {
