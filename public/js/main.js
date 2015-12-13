@@ -85,8 +85,7 @@ jQuery(document).ready(function(){
 
 	function checkMQ() {
 		//check if mobile or desktop device
-		console.log(document.getElementsByClassName('cd-main-content'));
-		return window.getComputedStyle(document.getElementsByClassName('cd-main-content'), '::before').getPropertyValue('content').replace(/'/g, "").replace(/"/g, "");
+		return window.getComputedStyle(document.querySelector('.cd-main-content'), '::before').getPropertyValue('content').replace(/'/g, "").replace(/"/g, "");
 	}
 
 	function moveNavigation(){
