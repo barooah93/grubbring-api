@@ -51,8 +51,28 @@ app.get('/', function(req,res){
 });
 
 //-------------------------START-----------------------------------------------------
-// POST: create an activity for a user
-app.post('/createActivity/:userId', function(req,res) {
+// POST: create an activity for a user - steph - incomplete
+app.post('/createActivity/:userId/:ringId/:bringerUserId/:maxNumOrders/:grubberyId/:lastOrderDateTime', function(req,res) {
+	var sql = null;
+	
+	var userId = req.params.userId;
+	var ringId = req.params.ringId;
+	var bringerUserId = req.params.bringerUserId;
+	var maxNumOrders = req.params.maxNumOrders;
+	var grubberyId = req.params.grubberyId;
+	var lastOrderDateTime = req.params.lastOrderDateTime; //TODO: convert this to datetime format
+	
+	sql = "INSERT INTO tblOrder (orderId, ringId, bringerUserId, maxNumOrders, grubberyId, lastOrderDateTime)" + 
+	"VALUES ('NULL',?,?,?,?,?);";  
+	
+	var inserts = [ringId, bringerUserId, maxNumOrders, grubberyId, lastOrderDateTime];
+    sql = mysql.format(sql, inserts);
+            
+    db.dbExecuteQuery(sql, res, function(insertActivityResult){
+        
+        insertActivityResult.description="Added activity with id for user " + userId;
+        res.send(insertActivityResult); //what if this fails
+    });
 	
 });
 //-------------------------end-----------------------------------------------------
