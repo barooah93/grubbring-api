@@ -52,15 +52,15 @@ app.get('/', function(req,res){
 
 //-------------------------START-----------------------------------------------------
 // POST: create an activity for a user - steph - incomplete
-app.post('/createActivity/:userId/:ringId/:bringerUserId/:maxNumOrders/:grubberyId/:lastOrderDateTime', function(req,res) {
+app.post('/createActivity', function(req,res) {
 	var sql = null;
 	
-	var userId = req.params.userId;
-	var ringId = req.params.ringId;
-	var bringerUserId = req.params.bringerUserId;
-	var maxNumOrders = req.params.maxNumOrders;
-	var grubberyId = req.params.grubberyId;
-	var lastOrderDateTime = req.params.lastOrderDateTime; //TODO: convert this to datetime format
+	var userId = req.body.userId;
+	var ringId = req.body.ringId;
+	var bringerUserId = req.body.bringerUserId;
+	var maxNumOrders = req.body.maxNumOrders;
+	var grubberyId = req.body.grubberyId;
+	var lastOrderDateTime = req.body.lastOrderDateTime; //TODO: get datetime format
 	
 	sql = "INSERT INTO tblOrder (orderId, ringId, bringerUserId, maxNumOrders, grubberyId, lastOrderDateTime)" + 
 	"VALUES ('NULL',?,?,?,?,?);";  
