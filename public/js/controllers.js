@@ -413,11 +413,7 @@ app.controller('findRingsCtrl', function findRingsCtrl ($scope, $http, $location
         // get suggested rings to display to user
         $http({
             method: 'GET',
-            url: '/api/ring?latitude='+lat+'&longitude='+long,
-            data: {
-                latitude: lat,
-                longitude: long
-            }
+            url: '/api/ring?latitude='+lat+'&longitude='+long
         }).then(function (response) {
             console.log(response);
             for (var i = 0; i < response.data.data.length; i++) {
