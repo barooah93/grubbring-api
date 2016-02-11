@@ -1,15 +1,19 @@
 @import url(https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,300,200);
 
+
+
 html{
     min-height: 100%;
 }
 body{
-    background-color:  #1ebd98;
+    /*background-color:  #1ebd98;*/
+    background-color: white;
     background: linear-gradient(#23B08F, #1ebd98);
 }
 
 /** start dashboard **/
 .ringpanel-container {
+    padding-top: 10px;
     padding-left: 20%;
     padding-right: 20%;
     left: 40%;
@@ -27,7 +31,7 @@ body{
 .ring-panel-title-text {
     position:relative;
     padding-bottom: 10px;
-    padding-top:0px;
+    padding-top:10px;
     padding-left:70px;
 }
 
@@ -433,7 +437,6 @@ body{
 }
 
 .panel-green .panel-heading {
-    padding:0px;
     background-color: #168A6F;
     color: white;
 }
@@ -588,7 +591,7 @@ Header
   height: 45px;
   width: 100%;
   /*background: #3e454c;*/
-  background: #353C42;
+  background: #2ba0c2;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -774,21 +777,21 @@ Header
     padding-left: 2.6em;
     border-radius: 0;
     /*background-color: #3e454c;*/
-    background-color: #353C42;
-    border-left: 1px solid #51575d;
+    background-color: #2ba0c2;
+    border-left: 1px solid white;
     color: #ffffff;
   }
   .cd-search input::-webkit-input-placeholder {
-    color: #777c81;
+    color: white;
   }
   .cd-search input::-moz-placeholder {
-    color: #777c81;
+    color: white;
   }
   .cd-search input:-moz-placeholder {
-    color: #777c81;
+    color: white;
   }
   .cd-search input:-ms-input-placeholder {
-    color: #777c81;
+    color: white;
   }
 }
 
@@ -1238,8 +1241,6 @@ Sidebar
     visibility: visible;
   }
 }
-
-
 /** For the dropdown part of the Account menu on the search bar **/
 
 .dropdown-menu{
@@ -1255,29 +1256,8 @@ color: white;
 }
 
 /** GOOGLE MAPS **/
-#mapContainerTable{
-  position: relative;
-  top: 10px;
-  left:50px;
-  width:900px;
-  height:400px;
-  
-}
 #map {
-  position: absolute;
-  top:0px;
-  width: 50%;
-  height: 100%;
+  width: 500px;
+  height: 400px;
 }
-#mapList{
-  position: absolute;
-  top:0px;
-  margin-left:5px;
-  list-style-type: none;
-  height:100%; 
-  width:50%;
-  overflow:hidden; 
-  overflow-y:scroll;
-}
-
 
