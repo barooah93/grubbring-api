@@ -413,11 +413,7 @@ app.controller('findRingsCtrl', function findRingsCtrl ($scope, $http, $location
         // get suggested rings to display to user
         $http({
             method: 'GET',
-            url: '/api/ring?latitude='+lat+'&longitude='+long,
-            data: {
-                latitude: lat,
-                longitude: long
-            }
+            url: '/api/ring?latitude='+lat+'&longitude='+long
         }).then(function (response) {
             console.log(response);
             for (var i = 0; i < response.data.data.length; i++) {
@@ -437,6 +433,43 @@ app.controller('findRingsCtrl', function findRingsCtrl ($scope, $http, $location
     
 });
 /***************steph********************/
+
+app.controller('ActivityCtrl', function ActivityCtrl($scope,$http,$location) {
+    $scope.userId = "";
+    getUserDetails();
+    
+    function getUserDetails() {
+        $http({
+            method: 'GET',
+            url: '/api/profile'
+        }).then(function (response) {
+            console.log(response);
+            $scope.userId = response.data.userId
+        }, function (err) {
+            console.log(err);
+            $location.path('/activities');
+        });
+    }
+    
+    function createActivity() {
+        $http({
+            method: 'POST',
+            url: '/api/activities/createActivity',
+            data: {
+                userId: $scope.userId,
+                ringId: $scope.ringId,
+                bringerUserId: $scope.bringerUserId,
+            	maxNumOrders: $scope.maxNumOrders,
+            	grubberyId: $scope.grubberyId,
+            	lastOrderDateTime: $scope.lastOrderDateTime            
+            }
+        }).then(function(response) {
+            console.log(response);
+        }, function(err) {
+            console.log(err);
+        });
+    }
+});
 
 /*Retrieves the ring details that the signed in user is a leader of */
 app.controller('DashboardCtrl', function DashboardCtrl ($scope, $http, $location) {

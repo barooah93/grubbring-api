@@ -55,7 +55,7 @@ app.use('/auth/facebook', facebookloginRoute);
 
 app.use('/api/ring', getRingsRoute);
 app.use('/api/dashboard', getDashboardRoute);
-// app.use('/api/activities', getActivitiesRoute);
+ app.use('/api/activities', getActivitiesRoute);
 
 app.use('/*', function(req, res) {
    res.render('index');

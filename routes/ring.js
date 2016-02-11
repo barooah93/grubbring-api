@@ -12,15 +12,18 @@ var authenticate = require('../servicesAuthenticate')
 
 // GET: pull all ring locations and details near the user
 //      if no rings found, send error code
-app.get('/', function(req,res){
+app.get('/:latitude/:longitude', function(req,res){
      authenticate.checkAuthentication(req, res, function (data) {
+
         /*
         Latitude and Longitude of user comes from front end and passed in the body of this http GET request
         For website - browser can get user's coordiates --> Example: http://www.w3schools.com/html/html5_geolocation.asp
         For Android/IOS - use mobiles geolocation api to get user's coordinates and pass to this api
         */
-        var userLat = req.query.latitude;
-        var userLong = req.query.longitude;
+        var userLat = req.params.latitude;
+        var userLong = req.params.longitude;
+        console.log(userLat)
+        console.log(userLong)
         //get user zipcode based on lat and log
         var userZipCode = gps.gps2zip(userLat, userLong).zip_code; // --> returns zipcode 07410 for Fair Lawn, NJ
         //find zipcodes within a certain radius (2 mile) of user's zipcode
@@ -35,26 +38,27 @@ app.get('/', function(req,res){
             }
             res.send(response);
         }
-        
-        // inject first zipcode into sql
-        var sql = "SELECT R.addr, R.city, R.state, R.name, U.firstName, U.lastName FROM tblRing R "+
-        "INNER JOIN tblUser U "+
-        "ON R.createdBy=U.userId "+
-        "WHERE zipcode = ? ";
-        var inserts = [zipcodesNearUser[0].toString()];
-        // inject the rest
-        for(var i=1;i<zipcodesNearUser.length;i++){
-            sql+="OR zipcode = ? ";
-            inserts.push(zipcodesNearUser[i].toString());
+        else{
+            // inject first zipcode into sql
+            var sql = "SELECT R.addr, R.city, R.state, R.name, U.firstName, U.lastName FROM tblRing R "+
+            "INNER JOIN tblUser U "+
+            "ON R.createdBy=U.userId "+
+            "WHERE zipcode = ? ";
+            var inserts = [zipcodesNearUser[0].toString()];
+            // inject the rest
+            for(var i=1;i<zipcodesNearUser.length;i++){
+                sql+="OR zipcode = ? ";
+                inserts.push(zipcodesNearUser[i].toString());
+            }
+            
+            sql = mysql.format(sql, inserts);
+            db.dbExecuteQuery(sql, res, function(result){
+                // overwrite description
+                result.description="Returned all rings";
+                res.send(result);
+            });
         }
-        
-        sql = mysql.format(sql, inserts);
-        db.dbExecuteQuery(sql, res, function(result){
-            // overwrite description
-            result.description="Returned all rings";
-            res.send(result);
-        });
-     });
+    });
 });
 //-------------------------END-------------------------------------------------------
 
