@@ -51,7 +51,8 @@ app.get('/', function(req,res){
 });
 
 //-------------------------START-----------------------------------------------------
-// POST: create an activity for a user - steph - incomplete
+// POST: create an activity for a user
+//steph - incomplete
 app.post('/createActivity', function(req,res) {
 	var sql = null;
 	
@@ -162,8 +163,40 @@ app.get('/viewActivity/:activityId', function(req,res) {
 
 //-------------------------START-----------------------------------------------------
 // GET: get details of selected order
+//steph - need to test
 app.get('/viewOrder/:orderId', function(req,res) {
-	
+	auth.checkAuthentication(req, res, function (data) {
+		var ordersSql = null;
+		var description = null;
+		var orderId = req.params.orderId;
+		ordersSql = "SELECT O.orderId, O.ringId, O.bringerUserId, O.maxNumOrders, O.grubberyId, O.lastOrderDateTime FROM tblOrder O WHERE O.orderId = ?;";
+		var inserts = [orderId];
+		ordersSql = mysql.format(ordersSql,inserts);
+		
+		db.dbExecuteQuery(ordersSql, res, function(ordersResult){
+			if(ordersResult.data.length == 0){
+				description = "Could not find an order with this ID.";
+				var errData = {
+					status: ordersResult.status,
+					description: description,
+					data: null
+				}
+				res.send(errData);
+			}
+			else {
+				description = "Returned order details for order " + orderId;
+				var data = {
+					status: 'Success',
+					description: description,
+					data: {
+						orders: ordersResult.data
+					}
+				};
+				res.send(data);
+			}
+			
+		});
+	});
 });
 //-------------------------end-----------------------------------------------------
 
