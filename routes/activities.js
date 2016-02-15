@@ -52,7 +52,7 @@ app.get('/', function(req,res){
 
 //-------------------------START-----------------------------------------------------
 // POST: create an activity for a user
-//steph - incomplete
+//steph - incomplete and need to test
 app.post('/createActivity', function(req,res) {
 	var sql = null;
 	
@@ -163,7 +163,7 @@ app.get('/viewActivity/:activityId', function(req,res) {
 
 //-------------------------START-----------------------------------------------------
 // GET: get details of selected order
-//steph - need to test
+//steph - tested
 app.get('/viewOrder/:orderId', function(req,res) {
 	auth.checkAuthentication(req, res, function (data) {
 		var ordersSql = null;
