@@ -29,16 +29,12 @@ app.get('/', function(req,res){
 	
 	var ringIds=[]; // array of ring ID's the user is a part of
 	
+	// check authentication of user
 	auth.checkAuthentication(req,res, function(data){
 
+		// retrieve userId
 		userId = req.user.userId; 
-		
-	 
-	    var query;
-	    
-	    // query = "SELECT tblOrder.orderId AS OrderID, tblOrder.ringId, tblOrder.grubberyId, tblOrder.bringerUserId, tblOrder.lastOrderDateTime, SUM(tblOrder.maxNumOrders - tblOrderUser.quantity) " +
-					// "AS remainingOrders FROM tblOrder, tblRingUser, tblOrderUser WHERE tblRingUser.userId = ? AND tblOrder.ringId = tblRingUser.ringId " +
-					// "AND tblOrderUser.orderId = tblOrder.orderId GROUP BY tblOrder.orderId ";
+
 					
 		/*
 		get rings a user is a part of
@@ -49,18 +45,28 @@ app.get('/', function(req,res){
 		var ringsSql = "SELECT ringId FROM tblRingUser WHERE userId=? AND status=1;"
 		var inserts = [userId];
 	    ringsSql = mysql.format(ringsSql, inserts);
+	    
+	    // execute query and get result object
 	    db.dbExecuteQuery(ringsSql, res, function(result){
 		    // push ring ids that this user owns to the ringIds array
 		    for(var i=0; i<result.data.length; i++){
 		        ringIds.push(result.data[i].ringId);
 		    }
 	   
-			/*assume we have an array of ringids*/
-			/*
+	   		/*
 			summing on O.order id sums the numerical value of the order ids. not the actual orderids so you need to do 
 			groupby order id!!
 			*/
-			query = "SELECT O.ringId, O.orderId, U.firstName, U.lastName, O.maxNumOrders, O.lastOrderDateTime, G.name as grubberyName, "+
+			if(ringIds.length <= 0){
+				var resultObj = {
+					status: "success",
+					description: "no rings associated with this user.",
+					data: null
+				}
+				res.send(resultObj);
+			}
+			
+			var activitiesSql = "SELECT O.ringId, O.orderId, U.firstName, U.lastName, O.maxNumOrders, O.lastOrderDateTime, G.name as grubberyName, "+
 					"G.addr as grubberyAddress, G.city as grubberyCity, (O.maxNumOrders-SUM(O.orderId)) as remainingOrders "+
 					"FROM tblUser U "+
 						"Inner Join tblOrder O ON "+
@@ -68,19 +74,19 @@ app.get('/', function(req,res){
 							"INNER JOIN tblGrubbery G ON "+
 							"G.grubberyId = O.grubberyId "+
 					"WHERE ";
-					
+			
 			// Concatenate sql statement if there is more than 1 ring to deal with
 		    for(var i=0; i<ringIds.length; i++){
-		        query+= "O.ringId = ? OR ";
+		        activitiesSql+= "O.ringId = ? OR ";
 		        inserts = [ringIds[i]];
-		        query = mysql.format(query,inserts);
+		        activitiesSql = mysql.format(activitiesSql,inserts);
 		    }
 		    // eliminate the extra 'OR ' and finish the sql statment
-		    query = query.substring(0,query.length - 4) + " GROUP BY O.orderId;";
+		    activitiesSql = activitiesSql.substring(0,activitiesSql.length - 4) + " GROUP BY O.orderId;";
 			var inserts = [userId];
-			query = mysql.format(query, inserts);
+			activitiesSql = mysql.format(activitiesSql, inserts);
 			
-			db.dbExecuteQuery(query, res, function(result){
+			db.dbExecuteQuery(activitiesSql, res, function(result){
 				
 				var resultObject;// resulting object
 				var status = "success";
