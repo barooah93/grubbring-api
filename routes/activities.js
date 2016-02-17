@@ -18,8 +18,6 @@ var user;
 2. POST Create activity where user will create order activity for certain ring
 3. GET Search activities - allows you to search current and expired activites that user initiated or was a part of
 4. GET View a specific activity's details by clicking on the activity panel on the screen
-5. GET View a specific order's details for a user selected
-6. Post Create order
     
 **/
 
@@ -27,31 +25,94 @@ var user;
 //FIELDS: ActivityId, Ring name, bringerId, max number of orders, remaining number of orders (indicates whether an activity is open or closed, with the "I'm IN!" button), and the last activity date/time
 app.get('/', function(req,res){
 	
-		auth.checkAuthentication(req,res, function(data){
-    		res.json(req.user);	
-    		
-    		if (res.status == 200){
-    		   user = req.user; 
-    		}
-    	});
-    	
-    var query;
-    
-    query = "SELECT tblOrder.orderId AS OrderID, tblOrder.ringId, tblOrder.grubberyId, tblOrder.bringerUserId, tblOrder.lastOrderDateTime, SUM(tblOrder.maxNumOrders - tblOrderUser.quantity) " +
-				"AS remainingOrders FROM tblOrder, tblRingUser, tblOrderUser WHERE tblRingUser.userId = '"+user+"' AND tblOrder.ringId = tblRingUser.ringId " +
-				"AND tblOrderUser.orderId = tblOrder.orderId GROUP BY tblOrder.orderId ";
-				
-				db.dbExecuteQuery(q, res, function(result){
-					for (var i = 0; i < result.data.length; i++){
-					    
-					}
+	var userId;	// user's ID
+	
+	var ringIds=[]; // array of ring ID's the user is a part of
+	
+	// check authentication of user
+	auth.checkAuthentication(req,res, function(data){
+
+		// retrieve userId
+		userId = req.user.userId; 
+
 					
-				});
-    	
+		/*
+		get rings a user is a part of
+			get all active/inactive activities in those rings
+		*/
+		
+		// Get rings associated with this userId
+		var ringsSql = "SELECT ringId FROM tblRingUser WHERE userId=? AND status=1;"
+		var inserts = [userId];
+	    ringsSql = mysql.format(ringsSql, inserts);
+	    
+	    // execute query and get result object
+	    db.dbExecuteQuery(ringsSql, res, function(result){
+		    // push ring ids that this user owns to the ringIds array
+		    for(var i=0; i<result.data.length; i++){
+		        ringIds.push(result.data[i].ringId);
+		    }
+	   
+	   		/*
+			summing on O.order id sums the numerical value of the order ids. not the actual orderids so you need to do 
+			groupby order id!!
+			*/
+			if(ringIds.length <= 0){
+				var resultObj = {
+					status: "success",
+					description: "no rings associated with this user.",
+					data: null
+				}
+				res.send(resultObj);
+			}
+			
+			var activitiesSql = "SELECT O.ringId, O.orderId, U.firstName, U.lastName, O.maxNumOrders, O.lastOrderDateTime, G.name as grubberyName, "+
+					"G.addr as grubberyAddress, G.city as grubberyCity, (O.maxNumOrders-SUM(O.orderId)) as remainingOrders "+
+					"FROM tblUser U "+
+						"Inner Join tblOrder O ON "+
+						"U.userId=O.bringerUserId "+
+							"INNER JOIN tblGrubbery G ON "+
+							"G.grubberyId = O.grubberyId "+
+					"WHERE ";
+			
+			// Concatenate sql statement if there is more than 1 ring to deal with
+		    for(var i=0; i<ringIds.length; i++){
+		        activitiesSql+= "O.ringId = ? OR ";
+		        inserts = [ringIds[i]];
+		        activitiesSql = mysql.format(activitiesSql,inserts);
+		    }
+		    // eliminate the extra 'OR ' and finish the sql statment
+		    activitiesSql = activitiesSql.substring(0,activitiesSql.length - 4) + " GROUP BY O.orderId;";
+			var inserts = [userId];
+			activitiesSql = mysql.format(activitiesSql, inserts);
+			
+			db.dbExecuteQuery(activitiesSql, res, function(result){
+				
+				var resultObject;// resulting object
+				var status = "success";
+				var description;
+				var data;
+				
+				if(result.data.length > 0){
+					description = "successfully pulled all activities associated with this user.";
+				}
+				else{
+					description = "there are no activities associated with this user.";
+				}
+				resultObject = {
+					status: status,
+					description: description,
+					data: result.data
+				};
+				res.send(resultObject);
+			});
+	    });
+	});	
 });
 
 //-------------------------START-----------------------------------------------------
-// POST: create an activity for a user - steph - incomplete
+// POST: create an activity for a user
+//steph - incomplete and need to test
 app.post('/createActivity', function(req,res) {
 	var sql = null;
 	
@@ -87,9 +148,14 @@ app.post('/createActivity', function(req,res) {
     - ring leader first name last name
 */
 // DO WE NEED THIS? FOR DISPLAYING ACTIVITIES 
-app.get('/searchActvities/:userId/:key', function(req,res) {
+app.get('/searchActvities/:key', function(req,res) {
 	// Check if user session is still valid
 	auth.checkAuthentication(req, res, function (data) {
+		
+		var userId = req.user.userId;
+		
+		res.json(userId + " " + req.params.key);
+				
 		var activitySql = null;
 		
 		
@@ -162,8 +228,40 @@ app.get('/viewActivity/:activityId', function(req,res) {
 
 //-------------------------START-----------------------------------------------------
 // GET: get details of selected order
+//steph - tested
 app.get('/viewOrder/:orderId', function(req,res) {
-	
+	auth.checkAuthentication(req, res, function (data) {
+		var ordersSql = null;
+		var description = null;
+		var orderId = req.params.orderId;
+		ordersSql = "SELECT O.orderId, O.ringId, O.bringerUserId, O.maxNumOrders, O.grubberyId, O.lastOrderDateTime FROM tblOrder O WHERE O.orderId = ?;";
+		var inserts = [orderId];
+		ordersSql = mysql.format(ordersSql,inserts);
+		
+		db.dbExecuteQuery(ordersSql, res, function(ordersResult){
+			if(ordersResult.data.length == 0){
+				description = "Could not find an order with this ID.";
+				var errData = {
+					status: ordersResult.status,
+					description: description,
+					data: null
+				}
+				res.send(errData);
+			}
+			else {
+				description = "Returned order details for order " + orderId;
+				var data = {
+					status: 'Success',
+					description: description,
+					data: {
+						orders: ordersResult.data
+					}
+				};
+				res.send(data);
+			}
+			
+		});
+	});
 });
 //-------------------------end-----------------------------------------------------
 

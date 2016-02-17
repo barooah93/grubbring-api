@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 var express = require('express');
 var app = express.Router();
 var debug = require('debug')('grubbring:profile');
@@ -59,3 +60,11 @@ app.get('/viewAllOrdersForActivity/:activityId', function(req,res) {
 
 
 module.exports = app;
+=======
+//tblOrder - activities table and tblOrderUser - orders within activites
+
+//1. get all orders related to a specific activity
+//2. get all orders related to all activities in a ring
+//3. post a new order to a specific activity
+//4. update order api call
+>>>>>>> fe0a3a408f4ed9077ae2f149db84c679636c904e
