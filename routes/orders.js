@@ -20,7 +20,7 @@ app.post('/createOrder',function(req,res){
 	    var sql = null;
 	    
 		var activityId = req.body.activityId; //activity Id
-		var userId = req.body.userId;
+		var userId = req.user.userId;
 		var orderedOn = req.body.orderedOn;
 		var itemOrdered = req.body.itemOrdered;
 		var quantity = req.body.quantity;
@@ -29,7 +29,7 @@ app.post('/createOrder',function(req,res){
 		var paymentMethod = req.body.paymentMethod;
 		var paymentStatus = req.body.paymentStatus;
 		
-		sql = "INSERT INTO tblOrderUser (orderId, userId, orderedOn, itemOrdered, quantity, comment, cost, paymentMethod, paymentStatus)" +
+		sql = "INSERT INTO tblOrderUser (activityId, userId, orderedOn, itemOrdered, quantity, addnComment, costOfItemOrdered, paymentMethod, paymentStatus)" +
 	"VALUES (?,?,?,?,?,?,?,?,?)";
 		
 		var inserts = [activityId, userId, orderedOn, itemOrdered, quantity, comment, cost, paymentMethod, paymentStatus];
@@ -42,7 +42,9 @@ app.post('/createOrder',function(req,res){
 				description: 'Order Created'
 			};
 
-            res.json(data);
+            res.json({
+                data: data
+            });
         });
 	});
 });
@@ -54,8 +56,8 @@ app.get('/viewAllOrdersForActivity/:activityId', function(req,res) {
         var activityId = req.params.activityId;
 		var userId = req.user.userId;
 
-        sql = "SELECT * FROM tblOrderUser where orderId = ? AND orderid IN ( " +
-			"SELECT orderId from tblOrderUser where userId = ? )";
+        sql = "SELECT * FROM tblOrderUser WHERE activityId = ? AND activityId IN ( " +
+			"SELECT activityId FROM tblOrderUser WHERE userId = ? )";
         
         var inserts = [activityId, userId];
 
@@ -68,27 +70,82 @@ app.get('/viewAllOrdersForActivity/:activityId', function(req,res) {
 				data: {
 					orders: result
 				}
-			}
+			};
+
+            res.json({
+                data: data
+            })
 		});
 	});
 });
 
-//TODO finish this
+
 app.get('/viewAllOrdersForRing/:ringId', function(req, res) {
 	authenticate.checkAuthentication(req, res, function(data) {
 		var sql = '';
 
-		//Select * FROM tblOrderUser WHERE orderId IN ( Select orderId from tblOrder WHERE ringId = 2 )
-		var userId = req.user.userId;
-		var ringId = req.params.ringId;
+        var ringId = req.params.ringId;
+        var userId = req.user.userId;
 
-		sql = '';
+        sql = 'SELECT * FROM tblOrderUser WHERE activityId IN ( ' +
+                'SELECT activityId FROM tblActivity WHERE ringId = ( ' +
+                    'SELECT ringId FROM tblRingUser WHERE userId = ? AND ringId = ? ) ) ';
+		var inserts = [userId, ringId];
+
+        sql = mysql.format(sql, inserts);
+
+		db.dbExecuteQuery(sql, res, function(result) {
+            var data = {
+                status: 'Success',
+                description: '',
+                data: {
+                    orders: result
+                }
+            };
+
+            res.json({
+                data: data
+            });
+        });
 	});
+});
+
+app.put('/updateOrder', function(req, res) {
+    authenticate.checkAuthentication(req,res,function(data){
+        var sql = null;
+
+        var activityId = req.body.activityId; //activity Id
+        var userId = req.user.userId;
+        var orderedOn = req.body.orderedOn;
+        var itemOrdered = req.body.itemOrdered;
+        var quantity = req.body.quantity;
+        var comment = req.body.comment;
+        var cost = req.body.cost;
+        var paymentMethod = req.body.paymentMethod;
+        var paymentStatus = req.body.paymentStatus;
+
+        sql = "UPDATE tblOrderUser SET orderedOn = ?, itemOrdered = ?, quantity = ?, addnComment = ?, costOfItemOrdered = ?, " +
+            "paymentMethod = ?, paymentStatus = ? WHERE activityId = ? AND userId = ?";
+
+        var inserts = [orderedOn, itemOrdered, quantity, comment, cost, paymentMethod, paymentStatus, activityId, userId];
+
+        sql = mysql.format(sql, inserts);
+
+        db.dbExecuteQuery(sql, res, function (result) {
+            var data = {
+                status: 'Success',
+                description: 'Order Updated'
+            };
+
+            res.json(data);
+        });
+    });
 });
 
 
 module.exports = app;
 
+//TODO future update - check to see if activity status is active/inactive (open/close)
 //tblOrder - activities table and tblOrderUser - orders within activites
 
 //1. get all orders related to a specific activity
