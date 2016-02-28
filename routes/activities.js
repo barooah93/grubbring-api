@@ -13,11 +13,12 @@ var user;
 
 /**
  * 
- * TODO:
 1. GET A list of activities (both active and expired) that the user either initiated or was a part of
 2. POST Create activity where user will create order activity for certain ring
 3. GET Search activities - allows you to search current and expired activites that user initiated or was a part of
 4. GET View a specific activity's details by clicking on the activity panel on the screen
+    
+    TODO: update tblOrder to tblActivity in SQL to reflect change in database
     
 **/
 
@@ -112,7 +113,7 @@ app.get('/', function(req,res){
 
 //-------------------------START-----------------------------------------------------
 // POST: create an activity for a user
-//steph - incomplete and need to test
+//steph -
 app.post('/createActivity', function(req,res) {
 	var sql = null;
 	
@@ -144,21 +145,50 @@ app.post('/createActivity', function(req,res) {
 /* Search fields:
     - grubbery name
     - ring name
-    - ring leader username
-    - ring leader first name last name
 */
-// DO WE NEED THIS? FOR DISPLAYING ACTIVITIES 
 app.get('/searchActvities/:key', function(req,res) {
 	// Check if user session is still valid
 	auth.checkAuthentication(req, res, function (data) {
-		
 		var userId = req.user.userId;
+		var key = req.params.key;
+		var grubberySql = null;
+		var ringNameSql = null;
 		
-		res.json(userId + " " + req.params.key);
-				
-		var activitySql = null;
-		
-		
+		grubberySql = "SELECT G.name as grubbery, R.name as ringName, U.firstName, U.lastName, "+
+			"A.maxNumOrders, A.lastOrderDateTime, A.activityId "+
+			"FROM tblGrubbery G "+
+				"INNER JOIN tblActivity A "+
+				"ON G.grubberyId = A.grubberyId "+
+				"INNER JOIN tblRing R "+
+				"ON R.ringId = A.ringId "+
+				"INNER JOIN tblUser U "+
+				"ON A.bringerUserId = U.userId "+
+			"WHERE G.name LIKE ? OR R.name LIKE ?;";
+			
+		var inserts = ["%"+key+"%","%"+key+"%"];
+    	grubberySql = mysql.format(grubberySql, inserts);
+			
+		db.dbExecuteQuery(grubberySql, res, function(activityResult){
+			var description = null;
+			if(activityResult.data.length == 0){
+				description = "Could not find an activity for your search on " + key + ".";
+				var errData = {
+					status: activityResult.status,
+					description: description,
+					data: null
+				}
+				res.send(errData);
+			}
+			else {
+				description = "Returned activity details";
+				var data = {
+					status: 'Success',
+					description: description,
+					data: activityResult.data
+				};
+				res.send(data);
+			}
+		});
 		
 	});
 });
@@ -223,47 +253,5 @@ app.get('/viewActivity/:activityId', function(req,res) {
 	});
 });
 //-------------------------end-----------------------------------------------------
-
-
-
-//-------------------------START-----------------------------------------------------
-// GET: get details of selected order
-//steph - tested
-app.get('/viewOrder/:orderId', function(req,res) {
-	auth.checkAuthentication(req, res, function (data) {
-		var ordersSql = null;
-		var description = null;
-		var orderId = req.params.orderId;
-		ordersSql = "SELECT O.orderId, O.ringId, O.bringerUserId, O.maxNumOrders, O.grubberyId, O.lastOrderDateTime FROM tblOrder O WHERE O.orderId = ?;";
-		var inserts = [orderId];
-		ordersSql = mysql.format(ordersSql,inserts);
-		
-		db.dbExecuteQuery(ordersSql, res, function(ordersResult){
-			if(ordersResult.data.length == 0){
-				description = "Could not find an order with this ID.";
-				var errData = {
-					status: ordersResult.status,
-					description: description,
-					data: null
-				}
-				res.send(errData);
-			}
-			else {
-				description = "Returned order details for order " + orderId;
-				var data = {
-					status: 'Success',
-					description: description,
-					data: {
-						orders: ordersResult.data
-					}
-				};
-				res.send(data);
-			}
-			
-		});
-	});
-});
-//-------------------------end-----------------------------------------------------
-
 
 module.exports = app;
