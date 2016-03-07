@@ -10,33 +10,23 @@ var mysql = require('mysql');
 /** variables **/
 var user;
 
-
 /**
  * 
 1. GET A list of activities (both active and expired) that the user either initiated or was a part of
 2. POST Create activity where user will create order activity for certain ring
 3. GET Search activities - allows you to search current and expired activites that user initiated or was a part of
 4. GET View a specific activity's details by clicking on the activity panel on the screen
-    
-    TODO: update tblOrder to tblActivity in SQL to reflect change in database
-    
-**/
+   **/
 
 //Gets a list of the activities (both active and expired) that the user initiated or was a part of. List will be from most active to least active
 //FIELDS: ActivityId, Ring name, bringerId, max number of orders, remaining number of orders (indicates whether an activity is open or closed, with the "I'm IN!" button), and the last activity date/time
 app.get('/', function(req,res){
-	
 	var userId;	// user's ID
-	
 	var ringIds=[]; // array of ring ID's the user is a part of
-	
 	// check authentication of user
 	auth.checkAuthentication(req,res, function(data){
-
 		// retrieve userId
 		userId = req.user.userId; 
-
-					
 		/*
 		get rings a user is a part of
 			get all active/inactive activities in those rings
@@ -55,7 +45,7 @@ app.get('/', function(req,res){
 		    }
 	   
 	   		/*
-			summing on O.order id sums the numerical value of the order ids. not the actual orderids so you need to do 
+			summing on A.order id sums the numerical value of the order ids. not the actual orderids so you need to do 
 			groupby order id!!
 			*/
 			if(ringIds.length <= 0){
@@ -67,23 +57,23 @@ app.get('/', function(req,res){
 				res.send(resultObj);
 			}
 			
-			var activitiesSql = "SELECT O.ringId, O.orderId, U.firstName, U.lastName, O.maxNumOrders, O.lastOrderDateTime, G.name as grubberyName, "+
-					"G.addr as grubberyAddress, G.city as grubberyCity, (O.maxNumOrders-SUM(O.orderId)) as remainingOrders "+
+			var activitiesSql = "SELECT A.ringId, A.activityId, U.firstName, U.lastName, A.maxNumOrders, A.lastOrderDateTime, G.name as grubberyName, "+
+					"G.addr as grubberyAddress, G.city as grubberyCity, (A.maxNumOrders-SUM(A.activityId)) as remainingOrders "+
 					"FROM tblUser U "+
-						"Inner Join tblOrder O ON "+
-						"U.userId=O.bringerUserId "+
+						"Inner Join tblActivity A ON "+
+						"U.userId=A.bringerUserId "+
 							"INNER JOIN tblGrubbery G ON "+
-							"G.grubberyId = O.grubberyId "+
+							"G.grubberyId = A.grubberyId "+
 					"WHERE ";
 			
 			// Concatenate sql statement if there is more than 1 ring to deal with
 		    for(var i=0; i<ringIds.length; i++){
-		        activitiesSql+= "O.ringId = ? OR ";
+		        activitiesSql+= "A.ringId = ? OR ";
 		        inserts = [ringIds[i]];
 		        activitiesSql = mysql.format(activitiesSql,inserts);
 		    }
 		    // eliminate the extra 'OR ' and finish the sql statment
-		    activitiesSql = activitiesSql.substring(0,activitiesSql.length - 4) + " GROUP BY O.orderId;";
+		    activitiesSql = activitiesSql.substring(0,activitiesSql.length - 4) + " GROUP BY A.activityId;";
 			var inserts = [userId];
 			activitiesSql = mysql.format(activitiesSql, inserts);
 			
@@ -113,7 +103,6 @@ app.get('/', function(req,res){
 
 //-------------------------START-----------------------------------------------------
 // POST: create an activity for a user
-//steph -
 app.post('/createActivity', function(req,res) {
 	var sql = null;
 	
@@ -122,7 +111,7 @@ app.post('/createActivity', function(req,res) {
 	var bringerUserId = req.body.bringerUserId;
 	var maxNumOrders = req.body.maxNumOrders;
 	var grubberyId = req.body.grubberyId;
-	var lastOrderDateTime = req.body.lastOrderDateTime; //TODO: get datetime format
+	var lastOrderDateTime = req.body.lastOrderDateTime;
 	
 	sql = "INSERT INTO tblOrder (orderId, ringId, bringerUserId, maxNumOrders, grubberyId, lastOrderDateTime)" + 
 	"VALUES ('NULL',?,?,?,?,?);";  
@@ -205,11 +194,11 @@ app.get('/viewActivity/:activityId', function(req,res) {
 		var ordersSql = null;
 		var description = null;
 		
-		activitySql = "SELECT G.name, G.addr, G.city, G.state, G.status, O.ringId, O.bringerUserId, O.maxNumOrders "+
+		activitySql = "SELECT G.name, G.addr, G.city, G.state, G.status, A.ringId, A.bringerUserId, A.maxNumOrders "+
 			"FROM "+
-					"tblGrubbery G INNER JOIN tblOrder O "+
-					"ON G.grubberyId = O.grubberyId "+
-					"WHERE O.orderId = ?";
+					"tblGrubbery G INNER JOIN tblActivity A "+
+					"ON G.grubberyId = A.grubberyId "+
+					"WHERE A.activityId = ?";
 		var inserts = [req.params.activityId];
 		activitySql = mysql.format(activitySql,inserts);
 		
@@ -227,7 +216,7 @@ app.get('/viewActivity/:activityId', function(req,res) {
 				ordersSql = "SELECT U.userName, U.firstName, U.lastName, OU.orderedOn, OU.itemOrdered, OU.quantity, OU.addnComment, OU.costOfItemOrdered "+
 					"FROM tblOrderUser OU INNER JOIN tblUser U "+
 					"ON OU.userId = U.userId "+
-					"WHERE orderId = ?";
+					"WHERE OU.activityId = ?";
 				ordersSql = mysql.format(ordersSql, inserts);
 				db.dbExecuteQuery(ordersSql, res, function(ordersResult){
 					if(ordersResult.data.length == 0){
