@@ -10,11 +10,9 @@ var authenticate = require('../servicesAuthenticate')
 
 //-------------------------START-----------------------------------------------------
 
-// GET: pull all ring locations and details near the user
-//      if no rings found, send error code
+// GET: pull all ring locations and details near the user. If no rings found, send error code
 app.get('/:latitude/:longitude', function(req,res){
      authenticate.checkAuthentication(req, res, function (data) {
-
         /*
         Latitude and Longitude of user comes from front end and passed in the body of this http GET request
         For website - browser can get user's coordiates --> Example: http://www.w3schools.com/html/html5_geolocation.asp
@@ -72,7 +70,6 @@ app.get('/subscribedRings/:userId', function(req, res) {
         var userId = req.params.userId;
         var ringsWithActivitiesSql = null;
         
-//yes i know this is crazy :(        
         /*
         The inner SELECT finds all rings a user is a part of and has activities
         The outer ring groups rings by ringId, counts the ringIds (to get number of activities for that ring, and sorts by numActivities
@@ -285,15 +282,15 @@ app.get('/search/:key', function(req,res) {
         // tokenize key for multiple word search
         tokenized = key.split(" ");
         
-        var sqlSelectStatement = "SELECT G.name AS grubbery, R.name, U.firstName, U.lastName FROM tblOrder O "+
+        var sqlSelectStatement = "SELECT G.name AS grubbery, R.name, U.firstName, U.lastName FROM tblActivity A "+
                 "INNER JOIN tblGrubbery G "+
-                "ON O.grubberyId = G.grubberyId "+
+                "ON A.grubberyId = G.grubberyId "+
                 "INNER JOIN tblRing R "+
-                "ON O.ringId = R.ringId "+
+                "ON A.ringId = R.ringId "+
                 "INNER JOIN tblUser U "+
-                "ON O.bringerUserId = U.userId "+
+                "ON A.bringerUserId = U.userId "+
                 "INNER JOIN tblOrderUser OU "+
-                "ON OU.orderId=O.orderId ";
+                "ON OU.activityId=A.activityId ";
                 
         // check the context of the search (each page might want to show results unique to that page)
         // if(context == "myActivities"){

@@ -104,27 +104,28 @@ app.get('/', function(req,res){
 //-------------------------START-----------------------------------------------------
 // POST: create an activity for a user
 app.post('/createActivity', function(req,res) {
-	var sql = null;
-	
-	var userId = req.body.userId;
-	var ringId = req.body.ringId;
-	var bringerUserId = req.body.bringerUserId;
-	var maxNumOrders = req.body.maxNumOrders;
-	var grubberyId = req.body.grubberyId;
-	var lastOrderDateTime = req.body.lastOrderDateTime;
-	
-	sql = "INSERT INTO tblOrder (orderId, ringId, bringerUserId, maxNumOrders, grubberyId, lastOrderDateTime)" + 
-	"VALUES ('NULL',?,?,?,?,?);";  
-	
-	var inserts = [ringId, bringerUserId, maxNumOrders, grubberyId, lastOrderDateTime];
-    sql = mysql.format(sql, inserts);
-            
-    db.dbExecuteQuery(sql, res, function(insertActivityResult){
-        
-        insertActivityResult.description="Added activity with id for user " + userId;
-        res.send(insertActivityResult); //what if this fails
-    });
-	
+	auth.checkAuthentication(req, res, function (data) {
+		var sql = null;
+		
+		var userId = req.body.userId;
+		var ringId = req.body.ringId;
+		var bringerUserId = req.body.bringerUserId;
+		var maxNumOrders = req.body.maxNumOrders;
+		var grubberyId = req.body.grubberyId;
+		var lastOrderDateTime = req.body.lastOrderDateTime;
+		
+		sql = "INSERT INTO tblOrder (orderId, ringId, bringerUserId, maxNumOrders, grubberyId, lastOrderDateTime)" + 
+		"VALUES ('NULL',?,?,?,?,?);";  
+		
+		var inserts = [ringId, bringerUserId, maxNumOrders, grubberyId, lastOrderDateTime];
+	    sql = mysql.format(sql, inserts);
+	            
+	    db.dbExecuteQuery(sql, res, function(insertActivityResult){
+	        
+	        insertActivityResult.description="Added activity with id for user " + userId;
+	        res.send(insertActivityResult); //what if this fails
+	    });
+	});
 });
 //-------------------------end-----------------------------------------------------
 
