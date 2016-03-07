@@ -436,6 +436,7 @@ app.controller('findRingsCtrl', function findRingsCtrl ($scope, $http, $location
 
 app.controller('ActivityCtrl', function ActivityCtrl($scope,$http,$location) {
     $scope.userId = "";
+    
     getUserDetails();
     
     function getUserDetails() {
@@ -451,7 +452,7 @@ app.controller('ActivityCtrl', function ActivityCtrl($scope,$http,$location) {
         });
     }
     
-    function createActivity() {
+    $scope.createActivity = function(){
         $http({
             method: 'POST',
             url: '/api/activities/createActivity',
@@ -465,10 +466,13 @@ app.controller('ActivityCtrl', function ActivityCtrl($scope,$http,$location) {
             }
         }).then(function(response) {
             console.log(response);
+            $location.path('/activities');
         }, function(err) {
             console.log(err);
+            $location.path('/activities');
         });
     }
+    
 });
 
 /*Retrieves the ring details that the signed in user is a leader of */

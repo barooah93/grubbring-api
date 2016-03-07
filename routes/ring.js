@@ -64,6 +64,8 @@ app.get('/:latitude/:longitude', function(req,res){
 // TODO: add promises?
 // TODO: if no rings show a map - rings near them - for the person to join and say that the user is in no rings
 
+//too confusing - redo
+
 /*Get rings a user is part of (leads or is in as a member of the ring) */
 app.get('/subscribedRings/:userId', function(req, res) {
     authenticate.checkAuthentication(req, res, function (data) {

@@ -20,75 +20,39 @@ var user;
 
 //Gets a list of the activities (both active and expired) that the user initiated or was a part of. List will be from most active to least active
 //FIELDS: ActivityId, Ring name, bringerId, max number of orders, remaining number of orders (indicates whether an activity is open or closed, with the "I'm IN!" button), and the last activity date/time
+
+//TODO: add status code, logging error handling
 app.get('/', function(req,res){
 	var userId;	// user's ID
-	var ringIds=[]; // array of ring ID's the user is a part of
 	// check authentication of user
 	auth.checkAuthentication(req,res, function(data){
 		// retrieve userId
 		userId = req.user.userId; 
-		/*
-		get rings a user is a part of
-			get all active/inactive activities in those rings
-		*/
 		
-		// Get rings associated with this userId
-		var ringsSql = "SELECT ringId FROM tblRingUser WHERE userId=? AND status=1;"
-		var inserts = [userId];
-	    ringsSql = mysql.format(ringsSql, inserts);
-	    
-	    // execute query and get result object
-	    db.dbExecuteQuery(ringsSql, res, function(result){
-		    // push ring ids that this user owns to the ringIds array
-		    for(var i=0; i<result.data.length; i++){
-		        ringIds.push(result.data[i].ringId);
-		    }
-	   
-	   		/*
-			summing on A.order id sums the numerical value of the order ids. not the actual orderids so you need to do 
-			groupby order id!!
-			*/
-			if(ringIds.length <= 0){
-				var resultObj = {
-					status: "success",
-					description: "no rings associated with this user.",
-					data: null
-				}
-				res.send(resultObj);
-			}
-			
+		/*TODO: check last ordertime > current order time*/
 			var activitiesSql = "SELECT A.ringId, A.activityId, U.firstName, U.lastName, A.maxNumOrders, A.lastOrderDateTime, G.name as grubberyName, "+
 					"G.addr as grubberyAddress, G.city as grubberyCity, (A.maxNumOrders-SUM(A.activityId)) as remainingOrders "+
-					"FROM tblUser U "+
-						"Inner Join tblActivity A ON "+
-						"U.userId=A.bringerUserId "+
-							"INNER JOIN tblGrubbery G ON "+
-							"G.grubberyId = A.grubberyId "+
-					"WHERE ";
-			
-			// Concatenate sql statement if there is more than 1 ring to deal with
-		    for(var i=0; i<ringIds.length; i++){
-		        activitiesSql+= "A.ringId = ? OR ";
-		        inserts = [ringIds[i]];
-		        activitiesSql = mysql.format(activitiesSql,inserts);
-		    }
-		    // eliminate the extra 'OR ' and finish the sql statment
-		    activitiesSql = activitiesSql.substring(0,activitiesSql.length - 4) + " GROUP BY A.activityId;";
+					"FROM tblUser U, tblGrubbery G, tblActivity A " +
+					"WHERE A.ringId IN (SELECT ringId FROM tblRingUser WHERE userId=? AND status=1) AND " +
+					"A.grubberyId = G.grubberyId AND " +
+					"U.userId = A.bringerUserId "+
+					"GROUP BY A.activityId;";
 			var inserts = [userId];
-			activitiesSql = mysql.format(activitiesSql, inserts);
-			
+	    	activitiesSql = mysql.format(activitiesSql, inserts);
+
 			db.dbExecuteQuery(activitiesSql, res, function(result){
-				
-				var resultObject;// resulting object
-				var status = "success";
+				var resultObject; // resulting object
+				var status = "";
 				var description;
 				var data;
 				
 				if(result.data.length > 0){
-					description = "successfully pulled all activities associated with this user.";
+					status="status code"
+					description = "Successfully pulled all activities associated with this user.";
 				}
 				else{
-					description = "there are no activities associated with this user.";
+					status="status code"
+					description = "No activities are associated with this user.";
 				}
 				resultObject = {
 					status: status,
@@ -98,15 +62,15 @@ app.get('/', function(req,res){
 				res.send(resultObject);
 			});
 	    });
-	});	
 });
 
 //-------------------------START-----------------------------------------------------
 // POST: create an activity for a user
+//TODO: add checking for malformed input from front end and error handling and logging, for successful runs
+//add these to transaction table
 app.post('/createActivity', function(req,res) {
 	auth.checkAuthentication(req, res, function (data) {
 		var sql = null;
-		
 		var userId = req.body.userId;
 		var ringId = req.body.ringId;
 		var bringerUserId = req.body.bringerUserId;
@@ -114,16 +78,15 @@ app.post('/createActivity', function(req,res) {
 		var grubberyId = req.body.grubberyId;
 		var lastOrderDateTime = req.body.lastOrderDateTime;
 		
-		sql = "INSERT INTO tblOrder (orderId, ringId, bringerUserId, maxNumOrders, grubberyId, lastOrderDateTime)" + 
-		"VALUES ('NULL',?,?,?,?,?);";  
+		sql = "INSERT INTO tblActivity (ringId, bringerUserId, maxNumOrders, grubberyId, lastOrderDateTime) " + 
+		"VALUES (?,?,?,?,?);";  
 		
 		var inserts = [ringId, bringerUserId, maxNumOrders, grubberyId, lastOrderDateTime];
 	    sql = mysql.format(sql, inserts);
 	            
 	    db.dbExecuteQuery(sql, res, function(insertActivityResult){
-	        
 	        insertActivityResult.description="Added activity with id for user " + userId;
-	        res.send(insertActivityResult); //what if this fails
+	        res.send(insertActivityResult);
 	    });
 	});
 });

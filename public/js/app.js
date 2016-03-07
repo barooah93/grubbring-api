@@ -40,6 +40,10 @@ app.config(['$routeProvider', '$locationProvider', function($routeProvider, $loc
             templateUrl: 'partials/find_rings.html',
             controller: 'findRingsCtrl'
         })
+        .when('/activities', {
+            templateUrl: 'partials/activities.html',
+            controller: 'ActivityCtrl'
+        })
         .when('/confirmation', {
             templateUrl: 'partials/confirmation.html',
             controller: 'ConfirmationCtrl'
