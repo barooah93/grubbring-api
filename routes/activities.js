@@ -103,8 +103,13 @@ app.post('/createActivity', function(req,res) {
 			glog.error("Activities.js: User did not enter a number for grubberyId in createActivity API");
 			/*TODO: skip db execute*/
 		}
-
 		
+		/*TODO: check if valid date format*/
+		
+		if(new Date(lastOrderDateTime).getTime() <= new Date().getTime()) {
+			glog.error("Activities.js: User did not enter a lastOrderDateTime greater than the current time in createActivity API");
+			/*TODO: skip db execute*/
+		}
 		
 		sql = "INSERT INTO tblActivity (ringId, bringerUserId, maxNumOrders, grubberyId, lastOrderDateTime) " + 
 		"VALUES (?,?,?,?,?);";  
@@ -192,58 +197,61 @@ app.get('/viewActivity/:activityId', function(req,res) {
 		var ordersSql = null;
 		var description = null;
 		
-		activitySql = "SELECT G.name, G.addr, G.city, G.state, G.status, A.ringId, A.bringerUserId, A.maxNumOrders "+
+		if(req.params.activityId.isNaN()) {
+			glog.error("Activities.js: User did not enter a number for activityId in viewActivity API");
+		} else {
+			activitySql = "SELECT G.name, G.addr, G.city, G.state, G.status, A.ringId, A.bringerUserId, A.maxNumOrders "+
 			"FROM "+
 					"tblGrubbery G INNER JOIN tblActivity A "+
 					"ON G.grubberyId = A.grubberyId "+
 					"WHERE A.activityId = ?";
-		var inserts = [req.params.activityId];
-		activitySql = mysql.format(activitySql,inserts);
-		
-		db.dbExecuteQuery(activitySql, res, function(activityResult){
-			if(activityResult.data.length == 0){
-				description = "Could not find an activity with this activityId " + req.params.activityId;
-				var errData = {
-					status: activityResult.status,
-					description: description,
-					data: null
+			var inserts = [req.params.activityId];
+			activitySql = mysql.format(activitySql,inserts);
+			
+			db.dbExecuteQuery(activitySql, res, function(activityResult){
+				if(activityResult.data.length == 0){
+					description = "Could not find an activity with this activityId " + req.params.activityId;
+					var errData = {
+						status: activityResult.status,
+						description: description,
+						data: null
+					}
+					
+					glog.log("Activities.js: Could no find an activity with this activityId " + req.params.activityId +
+					" so the user is unable to view details for this activity");
+					res.send(errData);
+				}
+				else{
+					ordersSql = "SELECT U.userName, U.firstName, U.lastName, OU.orderedOn, OU.itemOrdered, OU.quantity, OU.addnComment, OU.costOfItemOrdered "+
+						"FROM tblOrderUser OU INNER JOIN tblUser U "+
+						"ON OU.userId = U.userId "+
+						"WHERE OU.activityId = ?";
+					ordersSql = mysql.format(ordersSql, inserts);
+					db.dbExecuteQuery(ordersSql, res, function(ordersResult){
+						if(ordersResult.data.length == 0){
+							description = "No orders have been placed in this activity yet.";
+							glog.log("Activities.js: Viewing details for activity with activityId " + req.params.activityId +
+							", but no orders were created within this activity to show in the details");
+						}
+						else{
+							description = "Returned activity details and orders.";
+							glog.log("Activities.js: Viewing details for activity with activityId " + req.params.activityId + 
+							" and viewing details with its orders");
+						}
+						var data = {
+							status: 'Success',
+							description: description,
+							data: {
+								activity: activityResult.data[0],
+								orders: ordersResult.data
+							}
+						};
+						res.send(data);
+					});
 				}
 				
-				glog.log("Activities.js: Could no find an activity with this activityId " + req.params.activityId +
-				" so the user is unable to view details for this activity");
-				res.send(errData);
-			}
-			else{
-				ordersSql = "SELECT U.userName, U.firstName, U.lastName, OU.orderedOn, OU.itemOrdered, OU.quantity, OU.addnComment, OU.costOfItemOrdered "+
-					"FROM tblOrderUser OU INNER JOIN tblUser U "+
-					"ON OU.userId = U.userId "+
-					"WHERE OU.activityId = ?";
-				ordersSql = mysql.format(ordersSql, inserts);
-				db.dbExecuteQuery(ordersSql, res, function(ordersResult){
-					if(ordersResult.data.length == 0){
-						description = "No orders have been placed in this activity yet.";
-						glog.log("Activities.js: Viewing details for activity with activityId " + req.params.activityId +
-						", but no orders were created within this activity to show in the details");
-					}
-					else{
-						description = "Returned activity details and orders.";
-						glog.log("Activities.js: Viewing details for activity with activityId " + req.params.activityId + 
-						" and viewing details with its orders");
-					}
-					var data = {
-						status: 'Success',
-						description: description,
-						data: {
-							activity: activityResult.data[0],
-							orders: ordersResult.data
-						}
-					};
-					res.send(data);
-				});
-			}
-			
-		});
-		
+			});
+		}
 	});
 });
 //-------------------------end-----------------------------------------------------
