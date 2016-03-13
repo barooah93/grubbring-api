@@ -82,47 +82,50 @@ app.post('/createActivity', function(req,res) {
 		var maxNumOrders = req.body.maxNumOrders;
 		var grubberyId = req.body.grubberyId;
 		var lastOrderDateTime = req.body.lastOrderDateTime;
+		var malformedInput = false;
 		
 		if(userId.isNaN()) {
 			glog.error("Activities.js: User did not enter a number for userId in createActivity API");
-			/*TODO: skip db execute*/
+			malformedInput = true;
 		}
 		if(ringId.isNaN()) {
 			glog.error("Activities.js: User did not enter a number for ringId in createActivity API");
-			/*TODO: skip db execute*/
+			malformedInput = true;
 		}
 		if(bringerUserId.isNaN()) {
 			glog.error("Activities.js: User did not enter a number for bringerUserId in createActivity API");
-			/*TODO: skip db execute*/
+			malformedInput = true;
 		}
 		if(maxNumOrders.isNaN()) {
 			glog.error("Activities.js: User did not enter a number for maxNumOrders in createActivity API");
-			/*TODO: skip db execute*/
+			malformedInput = true;
 		}
 		if(grubberyId.isNaN()) {
 			glog.error("Activities.js: User did not enter a number for grubberyId in createActivity API");
-			/*TODO: skip db execute*/
+			malformedInput = true;
 		}
 		
 		/*TODO: check if valid date format*/
 		
 		if(new Date(lastOrderDateTime).getTime() <= new Date().getTime()) {
 			glog.error("Activities.js: User did not enter a lastOrderDateTime greater than the current time in createActivity API");
-			/*TODO: skip db execute*/
+			malformedInput = true;
 		}
 		
-		sql = "INSERT INTO tblActivity (ringId, bringerUserId, maxNumOrders, grubberyId, lastOrderDateTime) " + 
-		"VALUES (?,?,?,?,?);";  
-		
-		var inserts = [ringId, bringerUserId, maxNumOrders, grubberyId, lastOrderDateTime];
-	    sql = mysql.format(sql, inserts);
-	            
-	    db.dbExecuteQuery(sql, res, function(insertActivityResult){
-	        insertActivityResult.description="Added activity for userId " + userId;
-	        res.send(insertActivityResult);
-	        
-	        glog.log("Activities.js: Added activitiy for userId " + userId);
-	    });
+		if(!malformedInput) {
+			sql = "INSERT INTO tblActivity (ringId, bringerUserId, maxNumOrders, grubberyId, lastOrderDateTime) " + 
+			"VALUES (?,?,?,?,?);";  
+			
+			var inserts = [ringId, bringerUserId, maxNumOrders, grubberyId, lastOrderDateTime];
+		    sql = mysql.format(sql, inserts);
+		            
+		    db.dbExecuteQuery(sql, res, function(insertActivityResult){
+		        insertActivityResult.description="Added activity for userId " + userId;
+		        res.send(insertActivityResult);
+		        
+		        glog.log("Activities.js: Added activitiy for userId " + userId);
+		    });
+		}
 	});
 });
 //-------------------------end-----------------------------------------------------
