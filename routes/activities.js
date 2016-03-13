@@ -11,7 +11,7 @@ var mysql = require('mysql');
 var user;
 
 /**
- * 
+ * Activities API Overview:
 1. GET A list of activities (both active and expired) that the user either initiated or was a part of
 2. POST Create activity where user will create order activity for certain ring
 3. GET Search activities - allows you to search current and expired activites that user initiated or was a part of
@@ -49,10 +49,15 @@ app.get('/', function(req,res){
 				if(result.data.length > 0){
 					status="status code"
 					description = "Successfully pulled all activities associated with this user.";
+					
+					glog.log("Activities.js: Retrieved a list of activities (ordered by most active to least active) " +
+					"for userId " + userId + " that are active/expired which this user was a part of.");
 				}
 				else{
 					status="status code"
 					description = "No activities are associated with this user.";
+					
+					glog.log("Activities.js: No activities are associated with userId " + userId);
 				}
 				resultObject = {
 					status: status,
@@ -78,6 +83,29 @@ app.post('/createActivity', function(req,res) {
 		var grubberyId = req.body.grubberyId;
 		var lastOrderDateTime = req.body.lastOrderDateTime;
 		
+		if(userId.isNaN()) {
+			glog.error("Activities.js: User did not enter a number for userId in createActivity API");
+			/*TODO: skip db execute*/
+		}
+		if(ringId.isNaN()) {
+			glog.error("Activities.js: User did not enter a number for ringId in createActivity API");
+			/*TODO: skip db execute*/
+		}
+		if(bringerUserId.isNaN()) {
+			glog.error("Activities.js: User did not enter a number for bringerUserId in createActivity API");
+			/*TODO: skip db execute*/
+		}
+		if(maxNumOrders.isNaN()) {
+			glog.error("Activities.js: User did not enter a number for maxNumOrders in createActivity API");
+			/*TODO: skip db execute*/
+		}
+		if(grubberyId.isNaN()) {
+			glog.error("Activities.js: User did not enter a number for grubberyId in createActivity API");
+			/*TODO: skip db execute*/
+		}
+
+		
+		
 		sql = "INSERT INTO tblActivity (ringId, bringerUserId, maxNumOrders, grubberyId, lastOrderDateTime) " + 
 		"VALUES (?,?,?,?,?);";  
 		
@@ -85,8 +113,10 @@ app.post('/createActivity', function(req,res) {
 	    sql = mysql.format(sql, inserts);
 	            
 	    db.dbExecuteQuery(sql, res, function(insertActivityResult){
-	        insertActivityResult.description="Added activity with id for user " + userId;
+	        insertActivityResult.description="Added activity for userId " + userId;
 	        res.send(insertActivityResult);
+	        
+	        glog.log("Activities.js: Added activitiy for userId " + userId);
 	    });
 	});
 });
@@ -123,13 +153,15 @@ app.get('/searchActvities/:key', function(req,res) {
 			
 		db.dbExecuteQuery(grubberySql, res, function(activityResult){
 			var description = null;
-			if(activityResult.data.length == 0){
-				description = "Could not find an activity for your search on " + key + ".";
+			if(activityResult.data.length == 0) {
+				description = "Could not find an activity for your search on " + key;
 				var errData = {
 					status: activityResult.status,
 					description: description,
 					data: null
 				}
+				
+				glog.log("Activities.js: Could not find an activity for the search on " + key);
 				res.send(errData);
 			}
 			else {
@@ -139,6 +171,8 @@ app.get('/searchActvities/:key', function(req,res) {
 					description: description,
 					data: activityResult.data
 				};
+				
+				glog.log("Activities.js: Returned activity details for the search on " + key);
 				res.send(data);
 			}
 		});
@@ -168,12 +202,15 @@ app.get('/viewActivity/:activityId', function(req,res) {
 		
 		db.dbExecuteQuery(activitySql, res, function(activityResult){
 			if(activityResult.data.length == 0){
-				description = "Could not find an activity with this ID.";
+				description = "Could not find an activity with this activityId " + req.params.activityId;
 				var errData = {
 					status: activityResult.status,
 					description: description,
 					data: null
 				}
+				
+				glog.log("Activities.js: Could no find an activity with this activityId " + req.params.activityId +
+				" so the user is unable to view details for this activity");
 				res.send(errData);
 			}
 			else{
@@ -185,9 +222,13 @@ app.get('/viewActivity/:activityId', function(req,res) {
 				db.dbExecuteQuery(ordersSql, res, function(ordersResult){
 					if(ordersResult.data.length == 0){
 						description = "No orders have been placed in this activity yet.";
+						glog.log("Activities.js: Viewing details for activity with activityId " + req.params.activityId +
+						", but no orders were created within this activity to show in the details");
 					}
 					else{
 						description = "Returned activity details and orders.";
+						glog.log("Activities.js: Viewing details for activity with activityId " + req.params.activityId + 
+						" and viewing details with its orders");
 					}
 					var data = {
 						status: 'Success',
