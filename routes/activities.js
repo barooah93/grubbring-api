@@ -198,8 +198,6 @@ app.get('/viewActivity/:activityId', function(req,res) {
 		var ordersSql = null;
 		var description = null;
 		
-		console.log("activityid " + req.params.activityId);
-		
 		if(req.params.activityId.isNaN) {
 			glog.error("Activities.js: User did not enter a number for activityId in viewActivity API");
 		} else {
