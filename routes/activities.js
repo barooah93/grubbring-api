@@ -84,23 +84,23 @@ app.post('/createActivity', function(req,res) {
 		var lastOrderDateTime = req.body.lastOrderDateTime;
 		var malformedInput = false;
 		
-		if(userId.isNaN()) {
+		if(userId.isNaN) {
 			glog.error("Activities.js: User did not enter a number for userId in createActivity API");
 			malformedInput = true;
 		}
-		if(ringId.isNaN()) {
+		if(ringId.isNaN) {
 			glog.error("Activities.js: User did not enter a number for ringId in createActivity API");
 			malformedInput = true;
 		}
-		if(bringerUserId.isNaN()) {
+		if(bringerUserId.isNaN) {
 			glog.error("Activities.js: User did not enter a number for bringerUserId in createActivity API");
 			malformedInput = true;
 		}
-		if(maxNumOrders.isNaN()) {
+		if(maxNumOrders.isNaN) {
 			glog.error("Activities.js: User did not enter a number for maxNumOrders in createActivity API");
 			malformedInput = true;
 		}
-		if(grubberyId.isNaN()) {
+		if(grubberyId.isNaN) {
 			glog.error("Activities.js: User did not enter a number for grubberyId in createActivity API");
 			malformedInput = true;
 		}
@@ -140,10 +140,8 @@ app.post('/createActivity', function(req,res) {
 app.get('/searchActvities/:key', function(req,res) {
 	// Check if user session is still valid
 	auth.checkAuthentication(req, res, function (data) {
-		var userId = req.user.userId;
 		var key = req.params.key;
 		var grubberySql = null;
-		var ringNameSql = null;
 		
 		grubberySql = "SELECT G.name as grubbery, R.name as ringName, U.firstName, U.lastName, "+
 			"A.maxNumOrders, A.lastOrderDateTime, A.activityId "+
@@ -200,7 +198,9 @@ app.get('/viewActivity/:activityId', function(req,res) {
 		var ordersSql = null;
 		var description = null;
 		
-		if(req.params.activityId.isNaN()) {
+		console.log("activityid " + req.params.activityId);
+		
+		if(req.params.activityId.isNaN) {
 			glog.error("Activities.js: User did not enter a number for activityId in viewActivity API");
 		} else {
 			activitySql = "SELECT G.name, G.addr, G.city, G.state, G.status, A.ringId, A.bringerUserId, A.maxNumOrders "+
@@ -213,14 +213,14 @@ app.get('/viewActivity/:activityId', function(req,res) {
 			
 			db.dbExecuteQuery(activitySql, res, function(activityResult){
 				if(activityResult.data.length == 0){
-					description = "Could not find an activity with this activityId " + req.params.activityId;
+					description = "Could not find an activity with activityId " + req.params.activityId;
 					var errData = {
 						status: activityResult.status,
 						description: description,
 						data: null
 					}
 					
-					glog.log("Activities.js: Could no find an activity with this activityId " + req.params.activityId +
+					glog.log("Activities.js: Could no find an activity with activityId " + req.params.activityId +
 					" so the user is unable to view details for this activity");
 					res.send(errData);
 				}
