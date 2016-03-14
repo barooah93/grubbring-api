@@ -105,7 +105,7 @@ app.post('/createActivity', function(req,res) {
 			malformedInput = true;
 		}
 		
-		/*TODO: check if valid date format*/
+		/*TODO: check if valid date format - depends on how ui will let u input this*/
 		
 		if(new Date(lastOrderDateTime).getTime() <= new Date().getTime()) {
 			glog.error("Activities.js: User did not enter a lastOrderDateTime greater than the current time in createActivity API");
@@ -220,7 +220,7 @@ app.get('/viewActivity/:activityId', function(req,res) {
 						data: null
 					}
 					
-					glog.log("Activities.js: Could no find an activity with activityId " + req.params.activityId +
+					glog.log("Activities.js: Could not find an activity with activityId " + req.params.activityId +
 					" so the user is unable to view details for this activity");
 					res.send(errData);
 				}
