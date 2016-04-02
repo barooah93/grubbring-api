@@ -68,6 +68,10 @@ app.config(['$routeProvider', '$locationProvider', function($routeProvider, $loc
             templateUrl: 'partials/reset_password.html',
             controller: 'ResetPasswordCtrl'
         })
+        .when('/orders', {
+            templateUrl: 'partials/orderForm.html',
+            controller: 'OrdersCtrl'
+        })
         .otherwise({
             redirectTo: '/'
         });

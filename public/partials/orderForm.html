@@ -1,0 +1,40 @@
+<div class="container">
+    <h3 class="text-center">Create Order Form</h3>
+    <form ng-submit="createOrder()">
+        <!-- TODO remove activityId field, and take it from params or something-->
+        <div class="form-group">
+            <label>Activity Id</label>
+            <input type="number" class="form-control" placeholder="e.g. 1" ng-model="order.activityId" required>
+        </div>
+        <div class="form-group">
+            <label>Name of Item</label>
+            <input type="text" class="form-control" placeholder="e.g. Pizza" ng-model="order.itemOrdered" required>
+        </div>
+        <div class="form-group">
+            <label>Quantity</label>
+            <input type="number" class="form-control" placeholder="e.g. 2" ng-model="order.quantity" min="1" required>
+        </div>
+        <div class="form-group">
+            <label>Cost</label>
+            <input type="text" class="form-control" placeholder="e.g. 10.00" ng-model="order.cost" required>
+        </div>
+        <div class="form-group">
+            <label>Payment Method</label>
+            <!-- TODO what type of payment methods are there?-->
+            <select ng-model="order.paymentMethod" required>
+                <option value="0">Cash</option>
+                <option value="1">Credit</option>
+            </select>
+        </div>
+        <!-- TODO remove paymentStatus or give default value ?-->
+        <div class="form-group">
+            <label>Payment Status</label>
+            <input type="number" class="form-control" placeholder="e.g. 1 for true or 0 for false" ng-model="order.paymentStatus" min="0" max="1" required>
+        </div>
+        <div class="form-group">
+            <label>Comment</label>
+            <textarea class="form-control" placeholder="e.g. Extra cheese" ng-model="order.comment" required></textarea>
+        </div>
+        <button class="btn btn-primary" type="submit">Create Order</button>
+    </form>
+</div>
