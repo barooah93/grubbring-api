@@ -6,50 +6,55 @@
     <title>Welcome to Grubbring!</title>
 
 
-    <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css">
-    <link rel="stylesheet" href="bower_components/fullpage.js/jquery.fullPage.css">
-     <link rel="stylesheet" href="bower_components/font-awesome/css/font-awesome.min.css">
-    <link rel="stylesheet" href="bower_components/font-awesome/css/font-awesome.css">
+    <link rel="stylesheet" href="/bower_components/bootstrap/dist/css/bootstrap.css">
+    <link rel="stylesheet" href="/bower_components/fullpage.js/jquery.fullPage.css">
+    <link rel="stylesheet" href="/bower_components/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/bower_components/font-awesome/css/font-awesome.css">
     <!--<link rel="stylesheet" href="css/reset.css"> <!-- CSS reset -->
     <link rel="stylesheet" href="css/style.css">
 
     <!-- Google Maps API -->
     <script src="https://maps.googleapis.com/maps/api/js"></script>
-    <script src="bower_components/angular/angular.js"></script>
-    <script src="bower_components/angular-route/angular-route.js"></script>
-    <script src="bower_components/jquery/dist/jquery.min.js"></script>
-    
-    <script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
-    <script src="bower_components/angular-bootstrap/ui-bootstrap.js"></script>
+    <script src="/bower_components/angular/angular.js"></script>
+    <script src="/bower_components/angular-route/angular-route.js"></script>
+    <script src="/bower_components/jquery/dist/jquery.min.js"></script>
+
+    <script src="/bower_components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
+    <script src="/bower_components/angular-bootstrap/ui-bootstrap.js"></script>
     <script src="js/jquery-2.1.4.js"></script>
-    <script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
-    <script src="bower_components/fullpage.js/jquery.fullPage.min.js"></script>
+    <script src="/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="/bower_components/fullpage.js/jquery.fullPage.min.js"></script>
 
     <!--<script src="bower_components/bootstrap/dist/js/bootstrap.js"></script>-->
     <!--<script src="js/modernizr.js"></script>-->
-   
+
     <!--<script src="js/jquery.menu-aim.js"></script>-->
     <!--<script src="js/main.js"></script> -->
-    <script src="bower_components/jquery/dist/jquery.js"></script>
+    <script src="/bower_components/jquery/dist/jquery.js"></script>
     <!--<script src="bower_components/fullpage.js/jquery.fullPage.js"></script>-->
-    
+
     <script src="js/app.js"></script>
-    <script src="js/controllers.js"></script>
 
-    <!--<script src="js/controllers/LoginCtrl.js"></script>-->
-    <!--<script src="js/controllers/ProfileCtrl.js"></script>-->
-    <!--<script src="js/controllers/ConfirmCodeEmailCtrl.js"></script>-->
-    <!--<script src="js/controllers/RegistrationCtrl.js"></script>-->
-    <!--<script src="js/controllers/DashboardCtrl.js"></script>-->
-    <!--<script src="js/controllers/findRingsCtrl.js"></script>-->
-    <!--<script src="js/controllers/ConfirmationCtrl.js"></script>-->
-    <!--<script src="js/controllers/TemplateCtrl.js"></script>-->
-    <!--<script src="js/controllers/BeginPasswordResetCtrl.js"></script>-->
-    <!--<script src="js/controllers/ConfirmCodeResetCtrl.js"></script>-->
-    <!--<script src="js/controllers/ResetPasswordCtrl.js"></script>-->
+    <!-- Controllers -->
+    <!-- MainCtrl has to be first -->
+    <script src="js/controllers/MainCtrl.js"></script>
+    <script src="js/controllers/ActivityCtrl.js"></script>
+    <script src="js/controllers/BeginPasswordResetCtrl.js"></script>
+    <script src="js/controllers/BeginRegistrationCtrl.js"></script>
+    <script src="js/controllers/ConfirmationCtrl.js"></script>
+    <script src="js/controllers/ConfirmCodeEmailCtrl.js"></script>
+    <script src="js/controllers/ConfirmCodeResetCtrl.js"></script>
+    <script src="js/controllers/DashboardCtrl.js"></script>
+    <script src="js/controllers/findRingsCtrl.js"></script>
+    <script src="js/controllers/LoginCtrl.js"></script>
+    <script src="js/controllers/OrdersCtrl.js"></script>
+    <script src="js/controllers/ProfileCtrl.js"></script>
+    <script src="js/controllers/ResetPasswordCtrl.js"></script>
+    <script src="js/controllers/TemplateCtrl.js"></script>
 
+    <script src="js/services.js"></script>
 </head>
 <body ng-controller="MainCtrl">
-    <ng-view></ng-view>
+<ng-view></ng-view>
 </body>
 </html>
