@@ -30,6 +30,13 @@ app.post('/createOrder',function(req,res){
 		var paymentMethod = req.body.paymentMethod;
 		var paymentStatus = req.body.paymentStatus;
 
+        // Which fields are required?
+        //isNaN(activityId) ? glog.error('activityId is not a number or is undefined') : null;
+        //!itemOrdered ? glog.error('itemOrdered is undefined') : null;
+        //isNaN(quantity) ? glog.error('quantity is not a number or is undefined') : null;
+        //isNaN(cost) ? glog.error('cost is not a number or is undefined') : null;
+        //!paymentMethod ? glog.error('paymentMethod is undefined') : null;
+
 		sql = "INSERT INTO tblOrderUser (activityId, userId, orderedOn, itemOrdered, quantity, addnComment, costOfItemOrdered, paymentMethod, paymentStatus) " +
             "VALUES (?,?,?,?,?,?,?,?,?)";
 
