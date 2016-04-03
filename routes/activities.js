@@ -16,6 +16,15 @@ var user;
 2. POST Create activity where user will create order activity for certain ring
 3. GET Search activities - allows you to search current and expired activites that user initiated or was a part of
 4. GET View a specific activity's details by clicking on the activity panel on the screen
+TODO:
+5. POST Delete an activity
+6. POST Update an activities info
+
+1)refractor code to only allow user to acces HIS activities, rings, etc 
+2) add status codes
+3) Refactor the url - how we pass in the parameters - dont pass a user id obvi ;000
+4) go on google docs and add status codes
+
    **/
 
 //Gets a list of the activities (both active and expired) that the user initiated or was a part of. List will be from most active to least active
