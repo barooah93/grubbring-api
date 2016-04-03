@@ -471,77 +471,153 @@ app.controller('ActivityCtrl', function ActivityCtrl($scope,$http,$location) {
     }
 });
 
+
+
+
+
 /*Retrieves the ring details that the signed in user is a leader of */
 app.controller('DashboardCtrl', function DashboardCtrl ($scope, $http, $location) {
-    $scope.rings = null;
-    $scope.sortedCounts = null;
-    getUserDetails();
-
-    function getUserDetails() {
+    onLoad();
+    
+    function onLoad() {
         $http({
             method: 'GET',
-            url: '/api/profile'
+            url: '/api/dashboard'
         }).then(function (response) {
-            console.log(response);
-            $scope.userId = response.data.userId
-            getRingsUserIsPartOf();
-        }, function (err) {
-            console.log(err);
-            $location.path('/dashboard');
-        });
-    }
-
-    function getRingsUserIsPartOf() {
-        $http({
-            method: 'GET',
-            url: '/api/ring/subscribedRings/' + $scope.userId
-        }).then(function (response) {
-            console.log($scope.userId);
             
-            if(response.data.data == null) { //no rings call shivangs
-                //bring up the find rings api
-                $http({
-                    method: 'GET',
-                    url: '/api/ring'
-                }).then(function (response) {
-                    console.log(response);
-                    $scope.ringId = response.data.ringId //rings you can join
-                }, function (err) {
-                    console.log(err);
-                    $location.path('/dashboard');
-                });
-            } else {
-                $scope.rings = response.data.data.ringsWithActivities;
-                
-                $scope.ringsWithOrders = response.data.data.ringsWithOrders;
-                
-                /*For each ring with activities, find if there is a tie, if there is a tie put the ring that has more orders at an index
-                before the ring with less orders in the $scope.rings array*/
-                var unsortedList = $scope.rings;
-                var len = unsortedList.length;
-                //assign numOrders to each ring with activities, sort numOrders within numActivities using insertion sort
-                for(var i = 0; i < len; i++) {
-                    var tempRing = unsortedList[i];
-                    tempRing.numOrders = getNumOrders($scope.ringsWithOrders, tempRing.name);
-                    /*Check through the sorted part and compare with the 
-                     number in tmp. If large, shift the number*/
-                    for(var j = i-1; j>=0 && (unsortedList[j].numOrders < tempRing.numOrders) && unsortedList[j].numActivities == tempRing.numActivities; j--) {
-                        unsortedList[j+1] = unsortedList[j];
-                    }
-                    unsortedList[j+1] = tempRing;
-                }
-                
-                for(i = 0; i < response.data.data.ringsWithNoActivities.length; i++) {
-                   response.data.data.ringsWithNoActivities[i].numActivities = 0;
-                   response.data.data.ringsWithNoActivities[i].numOrders = 0;
-                   $scope.rings.push(response.data.data.ringsWithNoActivities[i]); 
-                }
+            for (var i=0; i< response.data.data.length; i++){
+                var numWord = toWords(response.data.data[i].remainingOrders);
+                console.log("hi this is num "+numWord);
+                response.data.data[i].RemainingOrders = numWord;
+                // $scope.activity = response.data.data[i];
+                // console.log("what is scope "+$scope.activity.firstName);
+               // $scope.user = response.data.data[i].firstName;
+                //$scope.grubbery = response.data.data[i].grubberyName;
+                //$scope.ordersLeft = numWord;
+                //$scope.ringName = response.data.data[i].ringName;
             }
+            
+            $scope.activities = response.data.data;
+            console.log($scope.activities[0].firstName);
+            
+            
         }, function (err) {
             console.log(err);
-            $location.path('/dashboard');
+            
         });
     }
+    
+//function to convert number to words
+  function toWords(n) {
+  if (n == 0) return 'zero';
+  var a = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
+  var b = ['', '', 'twenty', 'thirty', 'fourty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+  var g = ['', 'thousand', 'million', 'billion', 'trillion', 'quadrillion', 'quintillion', 'sextillion', 'septillion', 'octillion', 'nonillion'];
+  var grp = function grp(n) {
+    return ('000' + n).substr(-3);
+  };
+  var rem = function rem(n) {
+    return n.substr(0, n.length - 3);
+  };
+  var fmt = function fmt(_ref) {
+    var h = _ref[0];
+    var t = _ref[1];
+    var o = _ref[2];
+
+    return [Number(h) === 0 ? '' : a[h] + ' hundred ', Number(o) === 0 ? b[t] : b[t] && b[t] + '-' || '', a[t + o] || a[o]].join('');
+  };
+  var cons = function cons(xs) {
+    return function (x) {
+      return function (g) {
+        return x ? [x, g && ' ' + g || '', ' ', xs].join('') : xs;
+      };
+    };
+  };
+  var iter = function iter(str) {
+    return function (i) {
+      return function (x) {
+        return function (r) {
+          if (x === '000' && r.length === 0) return str;
+          return iter(cons(str)(fmt(x))(g[i]))(i + 1)(grp(r))(rem(r));
+        };
+      };
+    };
+  };
+  return iter('')(0)(grp(String(n)))(rem(String(n)));
+};
+    
+    // $scope.rings = null;
+    // $scope.sortedCounts = null;
+    // getUserDetails();
+
+    // function getUserDetails() {
+    //     $http({
+    //         method: 'GET',
+    //         url: '/api/profile'
+    //     }).then(function (response) {
+    //         console.log(response);
+    //         $scope.userId = response.data.userId
+    //         getRingsUserIsPartOf();
+    //     }, function (err) {
+    //         console.log(err);
+    //         $location.path('/dashboard');
+    //     });
+    // }
+
+    // function getRingsUserIsPartOf() {
+    //     $http({
+    //         method: 'GET',
+    //         url: '/api/ring/subscribedRings/' + $scope.userId
+    //     }).then(function (response) {
+    //         console.log($scope.userId);
+            
+    //         if(response.data.data == null) { //no rings call shivangs
+    //             //bring up the find rings api
+    //             $http({
+    //                 method: 'GET',
+    //                 url: '/api/ring'
+    //             }).then(function (response) {
+    //                 console.log(response);
+    //                 $scope.ringId = response.data.ringId //rings you can join
+    //             }, function (err) {
+    //                 console.log(err);
+    //                 $location.path('/dashboard');
+    //             });
+    //         } else {
+    //             $scope.rings = response.data.data.ringsWithActivities;
+                
+    //             $scope.ringsWithOrders = response.data.data.ringsWithOrders;
+                
+    //             /*For each ring with activities, find if there is a tie, if there is a tie put the ring that has more orders at an index
+    //             before the ring with less orders in the $scope.rings array*/
+    //             var unsortedList = $scope.rings;
+    //             var len = unsortedList.length;
+    //             //assign numOrders to each ring with activities, sort numOrders within numActivities using insertion sort
+    //             for(var i = 0; i < len; i++) {
+    //                 var tempRing = unsortedList[i];
+    //                 tempRing.numOrders = getNumOrders($scope.ringsWithOrders, tempRing.name);
+    //                 /*Check through the sorted part and compare with the 
+    //                  number in tmp. If large, shift the number*/
+    //                 for(var j = i-1; j>=0 && (unsortedList[j].numOrders < tempRing.numOrders) && unsortedList[j].numActivities == tempRing.numActivities; j--) {
+    //                     unsortedList[j+1] = unsortedList[j];
+    //                 }
+    //                 unsortedList[j+1] = tempRing;
+    //             }
+                
+    //             for(i = 0; i < response.data.data.ringsWithNoActivities.length; i++) {
+    //               response.data.data.ringsWithNoActivities[i].numActivities = 0;
+    //               response.data.data.ringsWithNoActivities[i].numOrders = 0;
+    //               $scope.rings.push(response.data.data.ringsWithNoActivities[i]); 
+    //             }
+    //         }
+    //     }, function (err) {
+    //         console.log(err);
+    //         $location.path('/dashboard');
+    //     });
+    // }
+    
+
+    
    
 });
 
