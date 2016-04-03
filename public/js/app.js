@@ -40,6 +40,10 @@ app.config(['$routeProvider', '$locationProvider', function($routeProvider, $loc
             templateUrl: 'partials/find_rings.html',
             controller: 'findRingsCtrl'
         })
+        .when('/activities', {
+            templateUrl: 'partials/activities.html',
+            controller: 'ActivityCtrl'
+        })
         .when('/confirmation', {
             templateUrl: 'partials/confirmation.html',
             controller: 'ConfirmationCtrl'
@@ -63,6 +67,10 @@ app.config(['$routeProvider', '$locationProvider', function($routeProvider, $loc
         .when('/reset_password', {
             templateUrl: 'partials/reset_password.html',
             controller: 'ResetPasswordCtrl'
+        })
+        .when('/orders', {
+            templateUrl: 'partials/orderForm.html',
+            controller: 'OrdersCtrl'
         })
         .otherwise({
             redirectTo: '/'

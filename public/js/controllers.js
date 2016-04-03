@@ -436,6 +436,7 @@ app.controller('findRingsCtrl', function findRingsCtrl ($scope, $http, $location
 
 app.controller('ActivityCtrl', function ActivityCtrl($scope,$http,$location) {
     $scope.userId = "";
+    
     getUserDetails();
     
     function getUserDetails() {
@@ -451,7 +452,7 @@ app.controller('ActivityCtrl', function ActivityCtrl($scope,$http,$location) {
         });
     }
     
-    function createActivity() {
+    $scope.createActivity = function(){
         $http({
             method: 'POST',
             url: '/api/activities/createActivity',
@@ -465,10 +466,13 @@ app.controller('ActivityCtrl', function ActivityCtrl($scope,$http,$location) {
             }
         }).then(function(response) {
             console.log(response);
+            $location.path('/activities');
         }, function(err) {
             console.log(err);
+            $location.path('/activities');
         });
     }
+    
 });
 
 
@@ -850,6 +854,25 @@ app.controller('ResetPasswordCtrl', function($scope, $http, $location, passEmail
         }, function(err) {
             console.log(err);
             alert('Email Address does not exist');
+        })
+    }
+});
+
+app.controller('OrdersCtrl', function($scope, $http) {
+
+    $scope.createOrder = function() {
+        if ($scope.order.paymentStatus != 0 && $scope.order.paymentStatus != 1) {
+            console.log('Payment Status can only be 1 (true) or 0 (false)');
+            return;
+        }
+        $http({
+            method: 'POST',
+            url: '/api/orders/createOrder',
+            data: $scope.order
+        }).then(function(response) {
+            console.log(response.data.description);
+        }, function(error) {
+            console.log(error);
         })
     }
 });

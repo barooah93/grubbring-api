@@ -10,95 +10,54 @@ var mysql = require('mysql');
 /** variables **/
 var user;
 
-
 /**
- * 
+ * Activities API Overview:
 1. GET A list of activities (both active and expired) that the user either initiated or was a part of
 2. POST Create activity where user will create order activity for certain ring
 3. GET Search activities - allows you to search current and expired activites that user initiated or was a part of
 4. GET View a specific activity's details by clicking on the activity panel on the screen
-    
-    TODO: update tblOrder to tblActivity in SQL to reflect change in database
-    
-**/
+   **/
 
 //Gets a list of the activities (both active and expired) that the user initiated or was a part of. List will be from most active to least active
 //FIELDS: ActivityId, Ring name, bringerId, max number of orders, remaining number of orders (indicates whether an activity is open or closed, with the "I'm IN!" button), and the last activity date/time
+
+//TODO: add status code, logging error handling
 app.get('/', function(req,res){
-	
 	var userId;	// user's ID
-	
-	var ringIds=[]; // array of ring ID's the user is a part of
-	
 	// check authentication of user
 	auth.checkAuthentication(req,res, function(data){
-
 		// retrieve userId
 		userId = req.user.userId; 
-
-					
-		/*
-		get rings a user is a part of
-			get all active/inactive activities in those rings
-		*/
 		
-		// Get rings associated with this userId
-		var ringsSql = "SELECT ringId FROM tblRingUser WHERE userId=? AND status=1;"
-		var inserts = [userId];
-	    ringsSql = mysql.format(ringsSql, inserts);
-	    
-	    // execute query and get result object
-	    db.dbExecuteQuery(ringsSql, res, function(result){
-		    // push ring ids that this user owns to the ringIds array
-		    for(var i=0; i<result.data.length; i++){
-		        ringIds.push(result.data[i].ringId);
-		    }
-	   
-	   		/*
-			summing on O.order id sums the numerical value of the order ids. not the actual orderids so you need to do 
-			groupby order id!!
-			*/
-			if(ringIds.length <= 0){
-				var resultObj = {
-					status: "success",
-					description: "no rings associated with this user.",
-					data: null
-				}
-				res.send(resultObj);
-			}
-			
-			var activitiesSql = "SELECT O.ringId, O.orderId, U.firstName, U.lastName, O.maxNumOrders, O.lastOrderDateTime, G.name as grubberyName, "+
-					"G.addr as grubberyAddress, G.city as grubberyCity, (O.maxNumOrders-SUM(O.orderId)) as remainingOrders "+
-					"FROM tblUser U "+
-						"Inner Join tblOrder O ON "+
-						"U.userId=O.bringerUserId "+
-							"INNER JOIN tblGrubbery G ON "+
-							"G.grubberyId = O.grubberyId "+
-					"WHERE ";
-			
-			// Concatenate sql statement if there is more than 1 ring to deal with
-		    for(var i=0; i<ringIds.length; i++){
-		        activitiesSql+= "O.ringId = ? OR ";
-		        inserts = [ringIds[i]];
-		        activitiesSql = mysql.format(activitiesSql,inserts);
-		    }
-		    // eliminate the extra 'OR ' and finish the sql statment
-		    activitiesSql = activitiesSql.substring(0,activitiesSql.length - 4) + " GROUP BY O.orderId;";
+		/*TODO: check last ordertime > current order time*/
+			var activitiesSql = "SELECT A.ringId, A.activityId, U.firstName, U.lastName, A.maxNumOrders, A.lastOrderDateTime, G.name as grubberyName, "+
+					"G.addr as grubberyAddress, G.city as grubberyCity, (A.maxNumOrders-SUM(A.activityId)) as remainingOrders "+
+					"FROM tblUser U, tblGrubbery G, tblActivity A " +
+					"WHERE A.ringId IN (SELECT ringId FROM tblRingUser WHERE userId=? AND status=1) AND " +
+					"A.grubberyId = G.grubberyId AND " +
+					"U.userId = A.bringerUserId "+
+					"GROUP BY A.activityId;";
 			var inserts = [userId];
-			activitiesSql = mysql.format(activitiesSql, inserts);
-			
+	    	activitiesSql = mysql.format(activitiesSql, inserts);
+
 			db.dbExecuteQuery(activitiesSql, res, function(result){
-				
-				var resultObject;// resulting object
-				var status = "success";
+				var resultObject; // resulting object
+				var status = "";
 				var description;
 				var data;
 				
 				if(result.data.length > 0){
-					description = "successfully pulled all activities associated with this user.";
+					status="status code"
+					description = "Successfully pulled all activities associated with this user.";
+					
+					glog.log("Activities.js: Retrieved a list of activities (ordered by most active to least active) " +
+					"for userId " + userId + " that are active/expired which this user was a part of.");
 				}
 				else{
-					description = "there are no activities associated with this user.";
+					status="status code"
+					description = "No activities are associated with this user.";
+					
+					glog.log("Activities.js: No activities are associated with userId " + userId);
 				}
 				resultObject = {
 					status: status,
@@ -108,34 +67,66 @@ app.get('/', function(req,res){
 				res.send(resultObject);
 			});
 	    });
-	});	
 });
 
 //-------------------------START-----------------------------------------------------
 // POST: create an activity for a user
-//steph -
+//TODO: add checking for malformed input from front end and error handling and logging, for successful runs
+//add these to transaction table
 app.post('/createActivity', function(req,res) {
-	var sql = null;
-	
-	var userId = req.body.userId;
-	var ringId = req.body.ringId;
-	var bringerUserId = req.body.bringerUserId;
-	var maxNumOrders = req.body.maxNumOrders;
-	var grubberyId = req.body.grubberyId;
-	var lastOrderDateTime = req.body.lastOrderDateTime; //TODO: get datetime format
-	
-	sql = "INSERT INTO tblOrder (orderId, ringId, bringerUserId, maxNumOrders, grubberyId, lastOrderDateTime)" + 
-	"VALUES ('NULL',?,?,?,?,?);";  
-	
-	var inserts = [ringId, bringerUserId, maxNumOrders, grubberyId, lastOrderDateTime];
-    sql = mysql.format(sql, inserts);
-            
-    db.dbExecuteQuery(sql, res, function(insertActivityResult){
-        
-        insertActivityResult.description="Added activity with id for user " + userId;
-        res.send(insertActivityResult); //what if this fails
-    });
-	
+	auth.checkAuthentication(req, res, function (data) {
+		var sql = null;
+		var userId = req.body.userId;
+		var ringId = req.body.ringId;
+		var bringerUserId = req.body.bringerUserId;
+		var maxNumOrders = req.body.maxNumOrders;
+		var grubberyId = req.body.grubberyId;
+		var lastOrderDateTime = req.body.lastOrderDateTime;
+		var malformedInput = false;
+		
+		if(userId.isNaN) {
+			glog.error("Activities.js: User did not enter a number for userId in createActivity API");
+			malformedInput = true;
+		}
+		if(ringId.isNaN) {
+			glog.error("Activities.js: User did not enter a number for ringId in createActivity API");
+			malformedInput = true;
+		}
+		if(bringerUserId.isNaN) {
+			glog.error("Activities.js: User did not enter a number for bringerUserId in createActivity API");
+			malformedInput = true;
+		}
+		if(maxNumOrders.isNaN) {
+			glog.error("Activities.js: User did not enter a number for maxNumOrders in createActivity API");
+			malformedInput = true;
+		}
+		if(grubberyId.isNaN) {
+			glog.error("Activities.js: User did not enter a number for grubberyId in createActivity API");
+			malformedInput = true;
+		}
+		
+		/*TODO: check if valid date format - depends on how ui will let u input this*/
+		
+		if(new Date(lastOrderDateTime).getTime() <= new Date().getTime()) {
+			glog.error("Activities.js: User did not enter a lastOrderDateTime greater than the current time in createActivity API");
+			malformedInput = true;
+		}
+		
+		if(!malformedInput) {
+			sql = "INSERT INTO tblActivity (ringId, bringerUserId, maxNumOrders, grubberyId, lastOrderDateTime) " + 
+			"VALUES (?,?,?,?,?);";  
+			
+			var inserts = [ringId, bringerUserId, maxNumOrders, grubberyId, lastOrderDateTime];
+		    sql = mysql.format(sql, inserts);
+		            
+		    db.dbExecuteQuery(sql, res, function(insertActivityResult){
+		        insertActivityResult.description="Added activity for userId " + userId;
+		        res.send(insertActivityResult);
+		        
+		        glog.log("Activities.js: Added activitiy for userId " + userId);
+		    });
+		}
+	});
 });
 //-------------------------end-----------------------------------------------------
 
@@ -149,10 +140,8 @@ app.post('/createActivity', function(req,res) {
 app.get('/searchActvities/:key', function(req,res) {
 	// Check if user session is still valid
 	auth.checkAuthentication(req, res, function (data) {
-		var userId = req.user.userId;
 		var key = req.params.key;
 		var grubberySql = null;
-		var ringNameSql = null;
 		
 		grubberySql = "SELECT G.name as grubbery, R.name as ringName, U.firstName, U.lastName, "+
 			"A.maxNumOrders, A.lastOrderDateTime, A.activityId "+
@@ -170,13 +159,15 @@ app.get('/searchActvities/:key', function(req,res) {
 			
 		db.dbExecuteQuery(grubberySql, res, function(activityResult){
 			var description = null;
-			if(activityResult.data.length == 0){
-				description = "Could not find an activity for your search on " + key + ".";
+			if(activityResult.data.length == 0) {
+				description = "Could not find an activity for your search on " + key;
 				var errData = {
 					status: activityResult.status,
 					description: description,
 					data: null
 				}
+				
+				glog.log("Activities.js: Could not find an activity for the search on " + key);
 				res.send(errData);
 			}
 			else {
@@ -186,6 +177,8 @@ app.get('/searchActvities/:key', function(req,res) {
 					description: description,
 					data: activityResult.data
 				};
+				
+				glog.log("Activities.js: Returned activity details for the search on " + key);
 				res.send(data);
 			}
 		});
@@ -205,51 +198,61 @@ app.get('/viewActivity/:activityId', function(req,res) {
 		var ordersSql = null;
 		var description = null;
 		
-		activitySql = "SELECT G.name, G.addr, G.city, G.state, G.status, O.ringId, O.bringerUserId, O.maxNumOrders "+
+		if(req.params.activityId.isNaN) {
+			glog.error("Activities.js: User did not enter a number for activityId in viewActivity API");
+		} else {
+			activitySql = "SELECT G.name, G.addr, G.city, G.state, G.status, A.ringId, A.bringerUserId, A.maxNumOrders "+
 			"FROM "+
-					"tblGrubbery G INNER JOIN tblOrder O "+
-					"ON G.grubberyId = O.grubberyId "+
-					"WHERE O.orderId = ?";
-		var inserts = [req.params.activityId];
-		activitySql = mysql.format(activitySql,inserts);
-		
-		db.dbExecuteQuery(activitySql, res, function(activityResult){
-			if(activityResult.data.length == 0){
-				description = "Could not find an activity with this ID.";
-				var errData = {
-					status: activityResult.status,
-					description: description,
-					data: null
-				}
-				res.send(errData);
-			}
-			else{
-				ordersSql = "SELECT U.userName, U.firstName, U.lastName, OU.orderedOn, OU.itemOrdered, OU.quantity, OU.addnComment, OU.costOfItemOrdered "+
-					"FROM tblOrderUser OU INNER JOIN tblUser U "+
-					"ON OU.userId = U.userId "+
-					"WHERE orderId = ?";
-				ordersSql = mysql.format(ordersSql, inserts);
-				db.dbExecuteQuery(ordersSql, res, function(ordersResult){
-					if(ordersResult.data.length == 0){
-						description = "No orders have been placed in this activity yet.";
-					}
-					else{
-						description = "Returned activity details and orders.";
-					}
-					var data = {
-						status: 'Success',
-						description: description,
-						data: {
-							activity: activityResult.data[0],
-							orders: ordersResult.data
-						}
-					};
-					res.send(data);
-				});
-			}
+					"tblGrubbery G INNER JOIN tblActivity A "+
+					"ON G.grubberyId = A.grubberyId "+
+					"WHERE A.activityId = ?";
+			var inserts = [req.params.activityId];
+			activitySql = mysql.format(activitySql,inserts);
 			
-		});
-		
+			db.dbExecuteQuery(activitySql, res, function(activityResult){
+				if(activityResult.data.length == 0){
+					description = "Could not find an activity with activityId " + req.params.activityId;
+					var errData = {
+						status: activityResult.status,
+						description: description,
+						data: null
+					}
+					
+					glog.log("Activities.js: Could not find an activity with activityId " + req.params.activityId +
+					" so the user is unable to view details for this activity");
+					res.send(errData);
+				}
+				else{
+					ordersSql = "SELECT U.userName, U.firstName, U.lastName, OU.orderedOn, OU.itemOrdered, OU.quantity, OU.addnComment, OU.costOfItemOrdered "+
+						"FROM tblOrderUser OU INNER JOIN tblUser U "+
+						"ON OU.userId = U.userId "+
+						"WHERE OU.activityId = ?";
+					ordersSql = mysql.format(ordersSql, inserts);
+					db.dbExecuteQuery(ordersSql, res, function(ordersResult){
+						if(ordersResult.data.length == 0){
+							description = "No orders have been placed in this activity yet.";
+							glog.log("Activities.js: Viewing details for activity with activityId " + req.params.activityId +
+							", but no orders were created within this activity to show in the details");
+						}
+						else{
+							description = "Returned activity details and orders.";
+							glog.log("Activities.js: Viewing details for activity with activityId " + req.params.activityId + 
+							" and viewing details with its orders");
+						}
+						var data = {
+							status: 'Success',
+							description: description,
+							data: {
+								activity: activityResult.data[0],
+								orders: ordersResult.data
+							}
+						};
+						res.send(data);
+					});
+				}
+				
+			});
+		}
 	});
 });
 //-------------------------end-----------------------------------------------------
