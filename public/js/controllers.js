@@ -395,8 +395,10 @@ app.controller('findRingsCtrl', function findRingsCtrl ($scope, $http, $location
         
         // decodes address into long and lat coordinates to add markers to the map
         function codeAddress(ring) {
+            console.log("entered codeaddr");
             geocoder.geocode( { 'address': ring.addr+' '+ring.city+', '+ring.state}, function(results, status) {
                 if (status == google.maps.GeocoderStatus.OK) {
+                    console.log("geocoder status ok");
                     var marker = new google.maps.Marker({
                         map: map,
                         position: results[0].geometry.location
@@ -404,6 +406,7 @@ app.controller('findRingsCtrl', function findRingsCtrl ($scope, $http, $location
                     // add tooltip giving info about the ring
                     marker.setTitle(ring.name+"\n"+ring.addr+"\n"+ring.firstName+" "+ring.lastName);
                 } else {
+                    console.log("geocoder status not ok");
                     alert("We could not find nearby locations successfully: " + status);
                 }
             });
@@ -416,7 +419,10 @@ app.controller('findRingsCtrl', function findRingsCtrl ($scope, $http, $location
             url: '/api/ring?latitude='+lat+'&longitude='+long
         }).then(function (response) {
             console.log(response);
+            console.log("len " + response.data.data.length);
             for (var i = 0; i < response.data.data.length; i++) {
+                console.log("len " + response.data.data.length);
+                console.log("ring: " + response.data.data[i]);
                 codeAddress(response.data.data[i]);
                 $scope.nearbyRings.push(response.data.data[i]);
             }
@@ -729,6 +735,7 @@ app.controller('TemplateCtrl', function($scope, $http, $location){
                         map: map,
                         position: results[0].geometry.location
                     });
+                    
                     // add tooltip giving info about the ring
                     marker.setTitle(ring.name+"\n"+ring.addr+"\n"+ring.firstName+" "+ring.lastName);
                 } else {
@@ -739,15 +746,18 @@ app.controller('TemplateCtrl', function($scope, $http, $location){
         }
     
         // get suggested rings to display to user
+        //TODO: review GET url - see ring.js and how it is there
         $http({
             method: 'GET',
-            url: '/api/ring?latitude='+lat+'&longitude='+long
+            url: '/api/ring/'+lat+"/"+long //?latitude='+lat+'&longitude='+long+"'"
         }).then(function (response) {
-            console.log(response);
-            for (var i = 0; i < response.data.data.length; i++) {
+            console.log(response.data.data[0]);
+            /*for (var i = 0; i < response.data.data.length; i++) {
                 codeAddress(response.data.data[i]);
                 $scope.nearbyRings.push(response.data.data[i]);
-            }
+            }*/
+             codeAddress(response.data.data[0]);
+              $scope.nearbyRings.push(response.data.data[0]);
 
         }, function (err) {
             console.log(err);

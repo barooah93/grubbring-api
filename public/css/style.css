@@ -565,12 +565,16 @@ Header
 }
 
 .container-left{
+  display:inline-block;
   background-color: white;
   width: 40%;
+  height: 80%;
 }
 
 .container-right{
-  margin-right: 40%;
+  margin-top: 2%;
+  display:inline-block;
+  margin-right: 10%;
   float: right;
 }
 
@@ -1236,7 +1240,7 @@ Sidebar
 
 /** GOOGLE MAPS **/
 #map {
-  width: 500px;
+  width: 580px;
   height: 400px;
 }
 

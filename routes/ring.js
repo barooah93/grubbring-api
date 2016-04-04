@@ -34,6 +34,7 @@ app.get('/:latitude/:longitude', function(req,res){
                 description: "No zipcodes returned for latitude: "+userLat+" longitude: "+userLong,
                 data: null
             }
+            
             res.send(response);
         }
         else{
