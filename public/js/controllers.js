@@ -744,9 +744,9 @@ app.controller('TemplateCtrl', function($scope, $http, $location){
             url: '/api/ring?latitude='+lat+'&longitude='+long
         }).then(function (response) {
             console.log(response);
-            for (var i = 0; i < response.data.length; i++) {
-                codeAddress(response.data[i]);
-                $scope.nearbyRings.push(response.data[i]);
+            for (var i = 0; i < response.data.data.length; i++) {
+                codeAddress(response.data.data[i]);
+                $scope.nearbyRings.push(response.data.data[i]);
             }
 
         }, function (err) {
