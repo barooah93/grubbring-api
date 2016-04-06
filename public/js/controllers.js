@@ -6,7 +6,7 @@
 var app = angular.module('controllers', []);
 
 app.controller('MainCtrl', function($scope) {
-    console.log("MainCtrl");
+
 });
 
 app.controller('LoginCtrl', function($scope, $http, $location, passEmailService) {
