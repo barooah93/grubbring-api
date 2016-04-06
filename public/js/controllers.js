@@ -960,7 +960,7 @@ app.controller('OrdersCtrl', function($scope, $http) {
 
     $scope.createOrder = function() {
         if ($scope.order.paymentStatus != 0 && $scope.order.paymentStatus != 1) {
-            console.log('Payment Status can only be 1 (true) or 0 (false)');
+            console.log('Payment Status can only be 1 for true or 0 for false');
             return;
         }
         $http({
