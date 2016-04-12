@@ -35,6 +35,26 @@ angular.module('grubbring.controllers').controller('ActivityCtrl', function Acti
             console.log(err);
             $location.path('/activities');
         });
+    };
+
+    $scope.updateActivity = function() {
+        $http({
+            method: 'POST',
+            url: '/api/activities/updateActivity',
+            data: {
+                maxNumOrders: $scope.maxNumOrders,
+                lastOrderDateTime: $scope.lastOrderDateTime,
+                bringerUserId: $scope.bringerUserId,
+                grubberyId: $scope.grubberyId,
+                activityId: $scope.activityId
+            }
+        }).then(function(response) {
+            console.log(response);
+            $location.path('/activities');
+        }, function(err) {
+            console.log(err);
+            $location.path('/activities');
+        });
     }
 
 });
