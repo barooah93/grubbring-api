@@ -20,8 +20,8 @@ app.get('/:latitude/:longitude', function(req,res){
         */
         var userLat = req.params.latitude;
         var userLong = req.params.longitude;
-        console.log(userLat)
-        console.log(userLong)
+        console.log(userLat);
+        console.log(userLong);
         //get user zipcode based on lat and log
         var userZipCode = gps.gps2zip(userLat, userLong).zip_code; // --> returns zipcode 07410 for Fair Lawn, NJ
         //find zipcodes within a certain radius (2 mile) of user's zipcode
@@ -34,6 +34,7 @@ app.get('/:latitude/:longitude', function(req,res){
                 description: "No zipcodes returned for latitude: "+userLat+" longitude: "+userLong,
                 data: null
             }
+            
             res.send(response);
         }
         else{

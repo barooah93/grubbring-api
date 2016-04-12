@@ -1,6 +1,6 @@
 @import url(https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,300,200);
 @import url(https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,300,600);
-
+@import url(https://fonts.googleapis.com/css?family=Roboto);
 
 
 html{
@@ -49,7 +49,7 @@ html{
   width: 70%;
 }
 
-.dashboard-feed p{
+.dashboard-feed .content{
   font-family: 'Source Sans Pro', sans-serif;
   font-weight: 300;
   font-size: 22px;
@@ -516,8 +516,66 @@ Header
 @media only screen and (min-width: 768px) {
   .cd-main-header {
     position: fixed;
-    height: 55px;
+    height: 105px;
   }
+}
+
+.dashboard-container{
+  width: 1220px;
+  height: 630px;
+  background-color: #eaeaea;
+  margin-left: 107px;
+  margin-top: 20px;
+  box-shadow: 2px 2px 2px 2px rgba(0, 0, 0, 0.2);
+  border-radius: 5px;
+}
+
+.vline{
+  border-left: 1px solid #bdbdbd;
+  margin-left: 40%;
+  
+  height: 60px;
+}
+
+.glyphicon.glyphicon-option-vertical{
+  font-size: 19px;
+  font-weight: 100;
+  /*padding-top: 1.5%;*/
+  margin-top: -40px;
+  padding-left: 37%;
+  color: #777777;
+  position: absolute;
+  /*cursor: pointer;*/
+}
+
+/* span:hover{*/
+/*  border-radius: 50%;*/
+/*  background-color: #a8a8a8;*/
+/*  cursor: pointer;*/
+  
+/*}*/
+
+
+.dashboard-header{
+  border-bottom: 1px solid #e1e3e4;
+  height: 59px;
+  margin-right: 20px;
+  width: 100%;
+  
+}
+
+.container-left{
+  display:inline-block;
+  background-color: white;
+  width: 40%;
+  height: 80%;
+}
+
+.container-right{
+  margin-top: 2%;
+  display:inline-block;
+  margin-right: 10%;
+  float: right;
 }
 
 .cd-logo {
@@ -1155,21 +1213,34 @@ Sidebar
 }
 /** For the dropdown part of the Account menu on the search bar **/
 
+/*.dropdown-menu{*/
+/*  margin-top: -3px;*/
+/*  margin-right: -2px;*/
+/*}*/
+/*.dropdown-menu > li > a {*/
+/*color: white;*/
+/*}*/
+
+/*.dropdown-menu > li > a:hover{*/
+/*  background: none;*/
+/*}*/
+
 .dropdown-menu{
-  margin-top: -3px;
-  margin-right: -2px;
-}
-.dropdown-menu > li > a {
-color: white;
+  margin-left: 24%;
+  -webkit-box-shadow: 0px 3px 16px -6px rgba(168,168,168,1);
+  -moz-box-shadow: 0px 3px 16px -6px rgba(168,168,168,1);
+  box-shadow: 0px 3px 16px -6px rgba(168,168,168,1);
+  
 }
 
-.dropdown-menu > li > a:hover{
-  background: none;
+
+.dropdown-menu a{
+  font-family: 'roboto', sans-serif;
 }
 
 /** GOOGLE MAPS **/
 #map {
-  width: 500px;
+  width: 580px;
   height: 400px;
 }
 

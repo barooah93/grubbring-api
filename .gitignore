@@ -32,3 +32,6 @@ node_modules
 
 # Bower Components
 bower_components/
+
+# Metadata file for OSX Finder
+.DS_Store

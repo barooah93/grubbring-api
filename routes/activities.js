@@ -16,6 +16,15 @@ var user;
 2. POST Create activity where user will create order activity for certain ring
 3. GET Search activities - allows you to search current and expired activites that user initiated or was a part of
 4. GET View a specific activity's details by clicking on the activity panel on the screen
+5. POST Delete an activity
+6. POST Update an activities info
+
+TODO:
+1)refractor code to only allow user to acces HIS activities, rings, etc 
+2) add status codes
+3) Refactor the url - how we pass in the parameters - dont pass a user id obvi ;000
+4) go on google docs and add status codes
+
    **/
 
 //Gets a list of the activities (both active and expired) that the user initiated or was a part of. List will be from most active to least active
@@ -69,6 +78,108 @@ app.get('/', function(req,res){
 	    });
 });
 
+//-------------------------START--------------------------------------------------
+// DELETE: delete an activity
+app.delete('/deleteActivity/:activityId', function(req,res) {
+	auth.checkAuthentication(req, res, function (data) {
+		var sql = null;
+		var activityId = req.params.key;
+		var userId = req.user.userId;
+				
+		if(activityId.isNaN) {
+			glog.error("Activities.js: Not a valid activityId to deleteActivity");
+		} else {
+			//TODO: error checking - should we have a separate query to see if the user is allowed to delete the activity - 
+			//should we show the error message or not***
+			
+			sql = "DELETE FROM tblActivity A " + 
+			"WHERE A.activityId = ? " + 
+			"AND A.bringerUserId = ?;"; //TODO: why does the bringeruserid the one that owns the ring?? **TODAY
+			var inserts = [activityId, userId];
+		    sql = mysql.format(sql, inserts);
+			
+			db.dbExecuteQuery(sql, res, function(deleteActivityResult){
+		        deleteActivityResult.description="Deleted activity for activityId " + activityId;
+		        
+		        res.send(deleteActivityResult);
+		        
+		        glog.log(deleteActivityResult.description);
+		    });
+		}
+		
+	});
+});
+
+//-------------------------------START-----------------------------------------------
+//POST: update an activity's info
+app.post('/updateActivity', function(req,res) { //assuming the grubbringer can be anyone
+	/*maxorders
+	lastorderdatetime
+	bringeruserid???
+	grubberyId*/
+	auth.checkAuthentication(req, res, function (data) {
+		var sql = null;
+		var userId = req.user.userId;
+		
+		var activityId = req.body.activityId;
+		var maxNumOrders = req.body.maxNumOrders;
+		var lastOrderDateTime = req.body.lastOrderDateTime;
+		var bringerUserId = req.body.bringerUserId;
+		var grubberyId = req.body.grubberyId;
+		
+		var isMoreThanOneUpdate = false;
+		var inserts = [];
+		
+		sql = "UPDATE tblActivity A " + 
+		"SET "; 
+		
+		if(maxNumOrders != null) {
+			sql += "A.maxNumOrders = ?";
+			isMoreThanOneUpdate = true;
+			inserts.push(maxNumOrders);
+		}
+		if(lastOrderDateTime != null) {
+			if(isMoreThanOneUpdate) {
+				sql += ",";
+			}
+			sql += "A.lastOrderDateTime = ?";
+			isMoreThanOneUpdate = true;
+			inserts.push(lastOrderDateTime);
+		}
+		if(bringerUserId != null) {
+			if(isMoreThanOneUpdate) {
+				sql += ",";
+			}
+			sql += "A.bringerUserId = ?";
+			isMoreThanOneUpdate = true;
+			inserts.push(bringerUserId);
+		}
+		if(grubberyId != null) {
+			if(isMoreThanOneUpdate) {
+				sql += ",";
+			}
+			sql += "A.grubberyId = ?";
+			inserts.push(grubberyId);
+		}
+		
+		sql += " WHERE A.activityId = ?;";
+		inserts.push(activityId);
+		
+		sql = mysql.format(sql, inserts);
+		console.log("activity api update activity: " + sql);
+		
+		db.dbExecuteQuery(sql, res, function(updateActivityResult){
+	        updateActivityResult.description="Updated activity for activityId " + activityId;
+	        
+	        res.send(updateActivityResult);
+	        glog.log(updateActivityResult.description);
+		});
+		
+	});
+});
+
+//
+
 //-------------------------START-----------------------------------------------------
 // POST: create an activity for a user
 //TODO: add checking for malformed input from front end and error handling and logging, for successful runs
@@ -76,9 +187,9 @@ app.get('/', function(req,res){
 app.post('/createActivity', function(req,res) {
 	auth.checkAuthentication(req, res, function (data) {
 		var sql = null;
-		var userId = req.body.userId;
+		var userId = req.user.userId;
 		var ringId = req.body.ringId;
-		var bringerUserId = req.body.bringerUserId;
+//		var bringerUserId = req.body.bringerUserId;
 		var maxNumOrders = req.body.maxNumOrders;
 		var grubberyId = req.body.grubberyId;
 		var lastOrderDateTime = req.body.lastOrderDateTime;
@@ -92,10 +203,10 @@ app.post('/createActivity', function(req,res) {
 			glog.error("Activities.js: User did not enter a number for ringId in createActivity API");
 			malformedInput = true;
 		}
-		if(bringerUserId.isNaN) {
+/*		if(bringerUserId.isNaN) {
 			glog.error("Activities.js: User did not enter a number for bringerUserId in createActivity API");
 			malformedInput = true;
-		}
+		}*/
 		if(maxNumOrders.isNaN) {
 			glog.error("Activities.js: User did not enter a number for maxNumOrders in createActivity API");
 			malformedInput = true;
@@ -116,7 +227,8 @@ app.post('/createActivity', function(req,res) {
 			sql = "INSERT INTO tblActivity (ringId, bringerUserId, maxNumOrders, grubberyId, lastOrderDateTime) " + 
 			"VALUES (?,?,?,?,?);";  
 			
-			var inserts = [ringId, bringerUserId, maxNumOrders, grubberyId, lastOrderDateTime];
+			//var inserts = [ringId, bringerUserId, maxNumOrders, grubberyId, lastOrderDateTime];
+			var inserts = [ringId, userId, maxNumOrders, grubberyId, lastOrderDateTime];
 		    sql = mysql.format(sql, inserts);
 		            
 		    db.dbExecuteQuery(sql, res, function(insertActivityResult){

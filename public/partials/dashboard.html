@@ -5,14 +5,15 @@ http://stackoverflow.com/questions/21021951/directive-template-unique-ids-for-el
 <ng-include src=" 'partials/template.html' "></ng-include>
 
 <div class="dashboard-feed">
+  <div ng-repeat="a in activities">
   <img src=images/icon-1.png></img>
   <div class="vertical-line"></div>
-  <p>Brandon posted an activity in BDUBZ4LIFE. There are seven open orders and 24 minutes and 10 seconds left to join!<br/><a class="join-activity-link" href="#">I'M IN!</a> | 
-  <a class="decline-activity-link" href="#">I'LL PASS</a></p>
-  
-  
+  <div class="content">{{a.firstName}} posted an activity for <a href="#">{{a.grubberyName}}</a> in <a href="#">{{a.ringName}}</a>. There are {{a.RemainingOrders}} open orders and 24 minutes and 10 seconds left to join!<br/><a class="join-activity-link" href="#">I'M IN!</a> | 
+  <a class="decline-activity-link" href="#">I'LL PASS</a>
+  </br>
+  </div>
 </div>
-
+</div>
 
 <!-- Will keep as necessary -->
 
