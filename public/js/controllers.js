@@ -479,6 +479,26 @@ app.controller('ActivityCtrl', function ActivityCtrl($scope,$http,$location) {
         });
     }
     
+    $scope.updateActivity = function() {
+        $http({
+            method: 'POST',
+            url: '/api/activities/updateActivity',
+            data: {
+                maxNumOrders: $scope.maxNumOrders,
+                lastOrderDateTime: $scope.lastOrderDateTime,
+                bringerUserId: $scope.bringerUserId,
+            	grubberyId: $scope.grubberyId,
+            	activityId: $scope.activityId
+            }
+        }).then(function(response) {
+            console.log(response);
+            $location.path('/activities');
+        }, function(err) {
+            console.log(err);
+            $location.path('/activities');
+        });
+    }
+    
 });
 
 
