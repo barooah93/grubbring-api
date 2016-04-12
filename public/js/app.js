@@ -3,7 +3,8 @@
  */
 /*global angular */
 var app = angular.module('grubbring', [
-    'controllers',
+    'grubbring.controllers',
+    'grubbring.services',
     'ngRoute',
     'ui.bootstrap'
 ]);
