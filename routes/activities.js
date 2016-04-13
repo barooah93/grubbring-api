@@ -89,12 +89,15 @@ app.delete('/deleteActivity/:activityId', function(req,res) {
 		if(activityId.isNaN) {
 			glog.error("Activities.js: Not a valid activityId to deleteActivity");
 		} else {
+			
+			// TODO: Delete all orders associated with this activity (physical)
+			
 			//TODO: error checking - should we have a separate query to see if the user is allowed to delete the activity - 
 			//should we show the error message or not***
 			
 			sql = "DELETE FROM tblActivity A " + 
 			"WHERE A.activityId = ? " + 
-			"AND A.bringerUserId = ?;"; //TODO: why does the bringeruserid the one that owns the ring?? **TODAY
+			"AND A.bringerUserId = ?;"; 
 			var inserts = [activityId, userId];
 		    sql = mysql.format(sql, inserts);
 			
@@ -112,20 +115,19 @@ app.delete('/deleteActivity/:activityId', function(req,res) {
 
 //-------------------------------START-----------------------------------------------
 //POST: update an activity's info
-app.post('/updateActivity', function(req,res) { //assuming the grubbringer can be anyone
+app.post('/updateActivity/:activityId', function(req,res) { //assuming the grubbringer can be anyone
 	/*maxorders
 	lastorderdatetime
-	bringeruserid???
-	grubberyId*/
+	bringeruserid???*/
+	
 	auth.checkAuthentication(req, res, function (data) {
 		var sql = null;
 		var userId = req.user.userId;
 		
-		var activityId = req.body.activityId;
+		var activityId = req.params.activityId;
 		var maxNumOrders = req.body.maxNumOrders;
 		var lastOrderDateTime = req.body.lastOrderDateTime;
-		var bringerUserId = req.body.bringerUserId;
-		var grubberyId = req.body.grubberyId;
+//		var bringerUserId = req.body.bringerUserId;		**Future enhancement
 		
 		var isMoreThanOneUpdate = false;
 		var inserts = [];
@@ -146,27 +148,19 @@ app.post('/updateActivity', function(req,res) { //assuming the grubbringer can b
 			isMoreThanOneUpdate = true;
 			inserts.push(lastOrderDateTime);
 		}
-		if(bringerUserId != null) {
-			if(isMoreThanOneUpdate) {
-				sql += ",";
-			}
-			sql += "A.bringerUserId = ?";
-			isMoreThanOneUpdate = true;
-			inserts.push(bringerUserId);
-		}
-		if(grubberyId != null) {
-			if(isMoreThanOneUpdate) {
-				sql += ",";
-			}
-			sql += "A.grubberyId = ?";
-			inserts.push(grubberyId);
-		}
+		// if(bringerUserId != null) {
+		// 	if(isMoreThanOneUpdate) {
+		// 		sql += ",";
+		// 	}
+		// 	sql += "A.bringerUserId = ?";
+		// 	isMoreThanOneUpdate = true;
+		// 	inserts.push(bringerUserId);
+		// }
 		
 		sql += " WHERE A.activityId = ?;";
 		inserts.push(activityId);
 		
 		sql = mysql.format(sql, inserts);
-		console.log("activity api update activity: " + sql);
 		
 		db.dbExecuteQuery(sql, res, function(updateActivityResult){
 	        updateActivityResult.description="Updated activity for activityId " + activityId;

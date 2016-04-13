@@ -70,7 +70,7 @@ app.get('/:latitude/:longitude', function(req,res){
 /*Get rings a user is part of (leads or is in as a member of the ring) */
 app.get('/subscribedRings/:userId', function(req, res) {
     authenticate.checkAuthentication(req, res, function (data) {
-        var userId = req.params.userId;
+        var userId = req.user.userId;
         var ringsWithActivitiesSql = null;
         
         /*
