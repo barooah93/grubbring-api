@@ -520,31 +520,16 @@ Header
   }
 }
 
-.dashboard-container{
-  width: 1220px;
-  height: 630px;
-  background-color: #eaeaea;
-  margin-left: 107px;
-  margin-top: 20px;
-  box-shadow: 2px 2px 2px 2px rgba(0, 0, 0, 0.2);
-  border-radius: 5px;
-}
 
-.vline{
-  border-left: 1px solid #bdbdbd;
-  margin-left: 40%;
-  
-  height: 60px;
-}
 
 .glyphicon.glyphicon-option-vertical{
-  font-size: 19px;
+  position:relative;
+  font-size: 25px;
   font-weight: 100;
-  /*padding-top: 1.5%;*/
-  margin-top: -40px;
-  padding-left: 37%;
+  padding-top: 4%;
   color: #777777;
-  position: absolute;
+  margin-right: 5px;
+  float:right;
   /*cursor: pointer;*/
 }
 
@@ -555,27 +540,50 @@ Header
   
 /*}*/
 
+.dashboard-container{
+  position:absolute;
+  width: 1220px;
+  height: 630px;
+  background-color: #eaeaea;
+  margin-left: 107px;
+  margin-top: 20px;
+  box-shadow: 2px 2px 2px 2px rgba(0, 0, 0, 0.2);
+  border-radius: 5px;
+}
+
+.vline{
+  border-left: 2px solid #bdbdbd;
+  margin-left: 99%;
+  height: 100%;
+}
 
 .dashboard-header{
   border-bottom: 1px solid #e1e3e4;
-  height: 59px;
-  margin-right: 20px;
+  height: 10%;
   width: 100%;
   
 }
 
-.container-left{
-  display:inline-block;
-  background-color: white;
-  width: 40%;
-  height: 80%;
+.dashboard-menu-container {
+  border-right-color: #bdbdbd;
+  border-right-style: solid;
+  position:absolute;
+  width: 35%;
+  height: 10%;
 }
 
-.container-right{
-  margin-top: 2%;
-  display:inline-block;
-  margin-right: 10%;
-  float: right;
+.dashboard-search-container{
+  position:relative;
+  width: 65%;
+}
+
+.dashboard-left-container{
+  background-color: white;
+  width: 35%;
+}
+
+.dashboard-right-container{
+  width: 65%;
 }
 
 .cd-logo {
@@ -1226,7 +1234,9 @@ Sidebar
 /*}*/
 
 .dropdown-menu{
-  margin-left: 24%;
+   margin-top:-10%;
+   position:relative;
+   margin-left:63%;
   -webkit-box-shadow: 0px 3px 16px -6px rgba(168,168,168,1);
   -moz-box-shadow: 0px 3px 16px -6px rgba(168,168,168,1);
   box-shadow: 0px 3px 16px -6px rgba(168,168,168,1);
@@ -1235,13 +1245,16 @@ Sidebar
 
 
 .dropdown-menu a{
+  position:relative;
   font-family: 'roboto', sans-serif;
 }
 
 /** GOOGLE MAPS **/
 #map {
-  width: 580px;
-  height: 400px;
+  /*width: 580px;
+  height: 400px;*/
+  width: 100%;
+  height: 100%;
 }
 
 
