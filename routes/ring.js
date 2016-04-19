@@ -68,7 +68,7 @@ app.get('/:latitude/:longitude', function(req,res){
 //too confusing - redo
 
 /*Get rings a user is part of (leads or is in as a member of the ring) */
-app.get('/subscribedRings/:userId', function(req, res) {
+app.get('/subscribedRings', function(req, res) {
     authenticate.checkAuthentication(req, res, function (data) {
         var userId = req.user.userId;
         var ringsWithActivitiesSql = null;
@@ -162,10 +162,10 @@ app.get('/subscribedRings/:userId', function(req, res) {
 //-------------------------START-----------------------------------------------------
 // POST: request to join the ring
 // ex: https://grubbring-api-barooah93.c9.io/api/ring/join/234/429
-app.post('/join/:ringId/:userId', function(req,res){
+app.post('/join/:ringId', function(req,res){
     authenticate.checkAuthentication(req, res, function (data) {
         var ringId = req.params.ringId;
-        var userId = req.params.userId;
+        var userId = req.user.userId;
         var userRole = 1; // 0 means leader, 1 means grubbling
         var userStatus = 0; // user status for pending=0, approved=1, declined=2, and banned=3
         
@@ -194,7 +194,7 @@ app.post('/join/:ringId/:userId', function(req,res){
 //          service will also notify user of ring leader's decision
 
 //assuming pending = 0, approved = 1, declined = 2, banned = 3
-app.put('/join/:ringId/:userId/:handleRequest', function(req,res){
+app.put('/join/:ringId/:handleRequest', function(req,res){
     authenticate.checkAuthentication(req, res, function (data) {
         var pending = 0;
         var approved = 1;
@@ -202,7 +202,7 @@ app.put('/join/:ringId/:userId/:handleRequest', function(req,res){
         var banned = 3;
         
         var changeStatusTo = req.params.handleRequest; //boolean
-        var userId = req.params.userId;
+        var userId = req.user.userId;
         var ringId = req.params.ringId;
         var sql = "";
         
@@ -227,9 +227,9 @@ app.put('/join/:ringId/:userId/:handleRequest', function(req,res){
 
 //-------------------------START-----------------------------------------------------
 // GET: leader get notification if someone is trying join ring
-app.get('/notifyLeader/:userId', function(req,res){
+app.get('/notifyLeader', function(req,res){
     authenticate.checkAuthentication(req, res, function (data) {
-        var leaderId = req.params.userId;
+        var leaderId = req.user.userId;
         var ringIds=[];
         var sql=null;
         
@@ -274,7 +274,6 @@ app.get('/search/:key', function(req,res) {
         var userSql=null;
         var description = "";
         var context = req.query.context;
-        var userId = req.query.userId;
         var key = req.params.key; // is already url decoded
         var tokenized = [];
         var firstName = null;

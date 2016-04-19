@@ -4,20 +4,7 @@ angular.module('grubbring.controllers').controller('DashboardCtrl', function Das
     $scope.sortedCounts = null;
     getUserDetails();
     
-    function getUserDetails() {
-        $http({
-            method: 'GET',
-            url: '/api/profile'
-        }).then(function(response) {
-            console.log(response);
-            $scope.userId = response.data.userId
-            //getRingsUserIsPartOf();
-        }, function(err) {
-            console.log(err);
-            $location.path('/dashboard');
-        });
-    }
-    
+
     // array containing rings near person's location
     $scope.nearbyRings = [];
 
@@ -25,23 +12,27 @@ angular.module('grubbring.controllers').controller('DashboardCtrl', function Das
     var mapCanvas = document.getElementById('map');
     var zoomLevel = 15;
 
-    // Use this if customizing popup when hovering over marker --------------------------------
-    // // div box for marker
-    // var popup = $('#popup');
-
-    // // intialize popup for markers
-    // popup.hide();
-    // popup.css('background-color', 'white');
-    // popup.css('position','absolute');
-    // popup.css('z-index',2);
-    // --------------------------------------------------------------
-
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(successFunction, errorFunction);
     }
     else {
         alert('It seems like Geolocation, which is required for this page, is not enabled in your browser.');
     }
+    
+    // Retrieve user details
+    function getUserDetails() {
+        $http({
+            method: 'GET',
+            url: '/api/profile'
+        }).then(function(response) {
+            console.log(response.data.userId);
+            $scope.userId = response.data.userId;
+        }, function(err) {
+            console.log(err);
+            $location.path('/dashboard');
+        });
+    }
+    
 
     // if successfully received long and lat
     function successFunction(position) {
@@ -82,7 +73,7 @@ angular.module('grubbring.controllers').controller('DashboardCtrl', function Das
         // get suggested rings to display to user
         $http({
             method: 'GET',
-            url: '/api/ring?latitude=' + lat + '&longitude=' + long
+            url: '/api/ring/'+lat +'/' + long
         }).then(function(response) {
             console.log("users lat long " + lat + " " + long);
             console.log(response.data.data);
