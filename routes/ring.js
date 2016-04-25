@@ -49,11 +49,15 @@ app.get('/:latitude/:longitude', function(req,res){
                 sql+="OR zipcode = ? ";
                 inserts.push(zipcodesNearUser[i].toString());
             }
+            sql = sql + ";";
             
             sql = mysql.format(sql, inserts);
+            console.log("the sql statement for ring with lat long: " + sql);
+            
             db.dbExecuteQuery(sql, res, function(result){
                 // overwrite description
                 result.description="Returned all rings";
+                console.log(result);
                 res.send(result);
             });
         }
