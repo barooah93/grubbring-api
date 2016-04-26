@@ -5,62 +5,26 @@ var gps = require('gps2zip');
 var zipcodes = require('zipcodes');
 var glog = require('../glog.js')('ring');
 var db = require('../dbexecute');
+var locationUtils = require('../Utilities/locationUtils');
 var mysql = require('mysql');
 var authenticate = require('../servicesAuthenticate')
 
 //-------------------------START-----------------------------------------------------
 
 // GET: pull all ring locations and details near the user. If no rings found, send error code
-app.get('/:latitude/:longitude', function(req,res){
+app.get('/', function(req,res){
      authenticate.checkAuthentication(req, res, function (data) {
         /*
         Latitude and Longitude of user comes from front end and passed in the body of this http GET request
         For website - browser can get user's coordiates --> Example: http://www.w3schools.com/html/html5_geolocation.asp
         For Android/IOS - use mobiles geolocation api to get user's coordinates and pass to this api
         */
-        var userLat = req.params.latitude;
-        var userLong = req.params.longitude;
-        console.log(userLat);
-        console.log(userLong);
-        //get user zipcode based on lat and log
-        var userZipCode = gps.gps2zip(userLat, userLong).zip_code; // --> returns zipcode 07410 for Fair Lawn, NJ
-        //find zipcodes within a certain radius (2 mile) of user's zipcode
-        var zipcodesNearUser = zipcodes.radius(userZipCode, 1);
-        // Check if zipcodes were returned
-        if(!zipcodesNearUser.length>0){
-            glog.error("No zipcodes returned for latitude: "+userLat+" longitude: "+userLong);
-            var response = {
-                status: "error",
-                description: "No zipcodes returned for latitude: "+userLat+" longitude: "+userLong,
-                data: null
-            }
-            
-            res.send(response);
-        }
-        else{
-            // inject first zipcode into sql
-            var sql = "SELECT R.addr, R.city, R.state, R.name, U.firstName, U.lastName FROM tblRing R "+
-            "INNER JOIN tblUser U "+
-            "ON R.createdBy=U.userId "+
-            "WHERE zipcode = ? ";
-            var inserts = [zipcodesNearUser[0].toString()];
-            // inject the rest
-            for(var i=1;i<zipcodesNearUser.length;i++){
-                sql+="OR zipcode = ? ";
-                inserts.push(zipcodesNearUser[i].toString());
-            }
-            sql = sql + ";";
-            
-            sql = mysql.format(sql, inserts);
-            console.log("the sql statement for ring with lat long: " + sql);
-            
-            db.dbExecuteQuery(sql, res, function(result){
-                // overwrite description
-                result.description="Returned all rings";
-                console.log(result);
-                res.send(result);
-            });
-        }
+        var userLat = req.query.latitude;
+        var userLong = req.query.longitude;
+        locationUtils.getRingsNearLocation(userLat, userLong, 1, res, function(result){
+            res.send(result);
+        });
+
     });
 });
 //-------------------------END-------------------------------------------------------
@@ -285,64 +249,120 @@ app.get('/search/:key', function(req,res) {
         var tokenizedSearch="";
         var inserts =[];
         
+        // Result objects
+        var grubberyObject = null;
+        var activityObject = null;
+        var ringObject = null;
+        
+        // user's lat and long for finding grubberies near them
+        var userLat = req.query.latitude;
+        var userLong = req.query.longitude;
+        var radius = req.query.radius;
+        
+        // Set defaults
+        if(radius == null){
+            radius = 2;
+        }
+        if(userLat == null){
+            // TODO:
+        }
+        if(userLong == null){
+            // TODO:
+        }
+        
         // tokenize key for multiple word search
         tokenized = key.split(" ");
         
-        var sqlSelectStatement = "SELECT G.name AS grubbery, R.name, U.firstName, U.lastName FROM tblActivity A "+
-                "INNER JOIN tblGrubbery G "+
-                "ON A.grubberyId = G.grubberyId "+
-                "INNER JOIN tblRing R "+
-                "ON A.ringId = R.ringId "+
-                "INNER JOIN tblUser U "+
-                "ON A.bringerUserId = U.userId "+
-                "INNER JOIN tblOrderUser OU "+
-                "ON OU.activityId=A.activityId ";
-                
-        // check the context of the search (each page might want to show results unique to that page)
-        // if(context == "myActivities"){
+        if(context == "dashboard"){
+            locationUtils.getGrubberiesNearLocation(userLat, userLong, radius, res, function(result){
+                // Loop through grubberies and find matches for the key
+                var isMatched;
+                var filteredArray =[];
+                if(result.data == null){
+                } else{
+                    for(var i=0; i<result.data.length; i++){
+                        
+                        // Initialize flag to true
+                        isMatched = true;
+                        
+                        // Loop through each word in search
+                        for(var j=0; j<tokenized.length; j++){
+                           if(result.data[i].grubbery.toLowerCase().indexOf(tokenized[j].toLowerCase()) == -1){
+                               isMatched = false;
+                           }
+                        }
+                        if(isMatched){
+                            filteredArray.push(result.data[i]);
+                        }
+                        
+                    }
+                    grubberyObject = {
+                        status: "success",
+                        description: "Grubberies near user and found in search",
+                        data: filteredArray
+                    };
+                    
+                    console.log(grubberyObject);
+                }
+            });
             
-        //     grubberySql = sqlSelectStatement+"WHERE G.name LIKE ? AND U.userId = ?;";
-            
-        //     inserts = ["%"+key+"%",userId];
-        //     grubberySql = mysql.format(grubberySql,inserts);
-        //     glog.log(grubberySql);
-        //     //execute
-        //     db.dbExecuteQuery(grubberySql,res, function(grubberyResult){
-        //         // TODO: tokenize multiple word search
-        //         ringSql =sqlSelectStatement+"WHERE R.name LIKE ? AND U.userId = ?;";
+            // var grubberySql = "SELECT G.name AS grubbery, G.addr, G.city, G.state, G.zipcode FROM tblGrubbery G ";
+                // "INNER JOIN tblGrubbery G "+
+                // "ON A.grubberyId = G.grubberyId "+
+                // "INNER JOIN tblRing R "+
+                // "ON A.ringId = R.ringId "+
+                // "INNER JOIN tblUser U "+
+                // "ON A.bringerUserId = U.userId "+
+                // "INNER JOIN tblOrderUser OU "+
+                // "ON OU.activityId=A.activityId ";
                 
-        //         inserts = ["%"+key+"%", userId];
-        //         ringSql = mysql.format(ringSql,inserts);
-        //         // execute
-        //         db.dbExecuteQuery(ringSql,res, function(ringResult){
-        //             userSql = sqlSelectStatement+"WHERE (U.username LIKE ? "+
-        //                         "OR (U.firstName LIKE ? AND U.lastName LIKE ?) "+
-        //                         "OR (U.lastName LIKE ? AND U.firstName LIKE ?)) AND U.userId = ?;";
+        }
+                
+       // check the context of the search (each page might want to show results unique to that page)
+        if(context == "myActivities"){
+            
+            grubberySql = sqlSelectStatement+"WHERE G.name LIKE ? AND U.userId = ?;";
+            
+            inserts = ["%"+key+"%",userId];
+            grubberySql = mysql.format(grubberySql,inserts);
+            glog.log(grubberySql);
+            //execute
+            db.dbExecuteQuery(grubberySql,res, function(grubberyResult){
+                // TODO: tokenize multiple word search
+                ringSql =sqlSelectStatement+"WHERE R.name LIKE ? AND U.userId = ?;";
+                
+                inserts = ["%"+key+"%", userId];
+                ringSql = mysql.format(ringSql,inserts);
+                // execute
+                db.dbExecuteQuery(ringSql,res, function(ringResult){
+                    userSql = sqlSelectStatement+"WHERE (U.username LIKE ? "+
+                                "OR (U.firstName LIKE ? AND U.lastName LIKE ?) "+
+                                "OR (U.lastName LIKE ? AND U.firstName LIKE ?)) AND U.userId = ?;";
                             
-        //             inserts = ["%"+key +"%", "%"+tokenized[0]+"%", "%"+tokenized[1]+"%","%"+tokenized[0]+"%", "%"+tokenized[1]+"%",userId];
-        //             userSql = mysql.format(userSql,inserts); 
-        //             // execute
-        //             db.dbExecuteQuery(userSql,res, function(userResult){
-        //                 if(userResult.data.length ==0 && ringResult.data.length == 0 && grubberyResult.data.length == 0){
-        //                     description = "Could not match the search criteria with anything in our database.";
-        //                 }
-        //                 else{
-        //                     description = "Returned matching searches";
-        //                 }
-        //                 var data = {
-        //                     status:'Success', 
-        //                     description: description, 
-        //                     data: {
-        //                         grubberies:grubberyResult.data,
-        //                         rings:ringResult.data,
-        //                         users:userResult.data
-        //                     }
-        //                 };
-        //                 res.send(data);
-        //             });
-        //         });
-        //     });
-        // }
+                    inserts = ["%"+key +"%", "%"+tokenized[0]+"%", "%"+tokenized[1]+"%","%"+tokenized[0]+"%", "%"+tokenized[1]+"%",userId];
+                    userSql = mysql.format(userSql,inserts); 
+                    // execute
+                    db.dbExecuteQuery(userSql,res, function(userResult){
+                        if(userResult.data.length ==0 && ringResult.data.length == 0 && grubberyResult.data.length == 0){
+                            description = "Could not match the search criteria with anything in our database.";
+                        }
+                        else{
+                            description = "Returned matching searches";
+                        }
+                        var data = {
+                            status:'Success', 
+                            description: description, 
+                            data: {
+                                grubberies:grubberyResult.data,
+                                rings:ringResult.data,
+                                users:userResult.data
+                            }
+                        };
+                        res.send(data);
+                    });
+                });
+            });
+        }
         if(context == "findRings"){
 
             inserts = [key,"%"+key+"%"];

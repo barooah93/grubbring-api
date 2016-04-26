@@ -73,7 +73,7 @@ angular.module('grubbring.controllers').controller('DashboardCtrl', function Das
         // get suggested rings to display to user
         $http({
             method: 'GET',
-            url: '/api/ring/'+lat +'/' + long
+            url: '/api/ring?latitude='+lat +'&longitude=' + long
         }).then(function(response) {
             console.log("users lat long " + lat + " " + long);
             console.log(response.data.data);
