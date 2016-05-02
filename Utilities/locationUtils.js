@@ -80,6 +80,8 @@ module.exports = {
             db.dbExecuteQuery(sql, res, function(result){
                 // overwrite description
                 result.description="Returned all grubberies";
+                
+                console.log("result from nearest grubberies: " + result.toString());
                 callback(result);
             });
         }

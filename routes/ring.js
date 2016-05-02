@@ -274,10 +274,11 @@ app.get('/search/:key', function(req,res) {
         tokenized = key.split(" ");
         
         if(context == "dashboard"){
+            //search on grubberies
             locationUtils.getGrubberiesNearLocation(userLat, userLong, radius, res, function(result){
                 // Loop through grubberies and find matches for the key
                 var isMatched;
-                var filteredArray =[];
+                var filteredArray =[]; //contains grubberies near location AND satisfy search
                 if(result.data == null){
                 } else{
                     for(var i=0; i<result.data.length; i++){
@@ -305,6 +306,42 @@ app.get('/search/:key', function(req,res) {
                     console.log(grubberyObject);
                 }
             });
+            
+            //search on rings
+            locationUtils.getRingsNearLocation(userLat, userLong, radius, res, function(result){
+                // Loop through rings and find matches for the key
+                var isMatched;
+                var filteredArray =[]; //contains rings near location AND satisfy search
+                if(result.data == null){
+                } else{
+                    for(var i=0; i<result.data.length; i++){
+                        
+                        // Initialize flag to true
+                        isMatched = true;
+                        
+                        // Loop through each word in search
+                        for(var j=0; j<tokenized.length; j++){
+                           if(result.data[i].name.toLowerCase().indexOf(tokenized[j].toLowerCase()) == -1){
+                               isMatched = false;
+                           }
+                        }
+                        if(isMatched){
+                            filteredArray.push(result.data[i]);
+                        }
+                        
+                    }
+                    ringObject = {
+                        status: "success",
+                        description: "Rings near user and found in search",
+                        data: filteredArray
+                    };
+                    
+                    console.log(ringObject);
+                }
+            });
+            
+            
+            
             
             // var grubberySql = "SELECT G.name AS grubbery, G.addr, G.city, G.state, G.zipcode FROM tblGrubbery G ";
                 // "INNER JOIN tblGrubbery G "+
