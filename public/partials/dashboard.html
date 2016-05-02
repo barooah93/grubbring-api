@@ -6,10 +6,10 @@ http://stackoverflow.com/questions/21021951/directive-template-unique-ids-for-el
 <!--<ng-include src=" 'partials/template.html' "></ng-include>-->
 
 <!-- Overlay message-->
-<div class="dashboard-bg-overlay">
+<div class="dashboard-bg-overlay" ng-show="showOverlay">
       <div class="dashboard-message-overlay">
       <p>This is a test message</p>
-      <button>OK</button>
+      <button ng-click="redirectToFindRings()">OK</button>
       </div>
 </div>
 
