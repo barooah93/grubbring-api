@@ -241,6 +241,25 @@ app.get('/notifyLeader', function(req,res){
 */
 // ex: https://grubbring-api-barooah93.c9.io/api/ring/search/leaderName/my%20home%20ring
 // wildcard search
+
+/* Stephs Plan
+
+Contextual Search Based Off Page User is On:
+
+save original settings (if user backspaces out from the search show original) - future
+
+if find rings: (purpose: find rings closest to your location)
+    if user enters ring name: 
+        return ( rings nearest user location || rings nearest location entered by user on UI) AND ( rings that satisfy the search params )
+    else if user enters zip (is numeric and satisfies zip format):
+        center map on the zip code entered in search
+        return ( rings nearest zip )
+
+if dashboard: (purpose: shows the rings you are in and your activities)
+    if user enters in search bar:
+        return ( rings that satisfy search AND grubberies that satisfy search )
+*/
+
 // TODO: tokenize spaces/ url encoding. Use sql 'in'
 app.get('/search/:key', function(req,res) {
     authenticate.checkAuthentication(req, res, function (data) {
@@ -254,9 +273,7 @@ app.get('/search/:key', function(req,res) {
         var tokenized = [];
         var firstName = null;
         var lastName = null;
-        var tokenizedSearch="";
-        var inserts =[];
-        
+
         // Result objects
         var grubberyObject = null;
         var activityObject = null;
@@ -267,27 +284,96 @@ app.get('/search/:key', function(req,res) {
         var userLong = req.query.longitude;
         var radius = req.query.radius;
         
-        // Set defaults
-        if(radius == null){
+        // set default lat long radius
+/*        if(radius == null){
             radius = 2;
         }
-        if(userLat == null){
-            // TODO:
+        if(userLat == null){ //optum lat
+            userLat = 40.7265190;
         }
-        if(userLong == null){
-            // TODO:
-        }
+        if(userLong == null){ //optum long
+            userLong = -74.5441180;
+        }*/
         
         // tokenize key for multiple word search
         tokenized = key.split(" ");
-        
-        if(context == "dashboard"){
-            //search on grubberies
+    
+            var tokenizedSearch="";
+            var inserts = [];
+            
+            // tokenize the search to look for each word in ring name
+            for(var i=0;i<tokenized.length;i++){
+                // check if last word in key
+                if(i == tokenized.length-1) {
+                    tokenizedSearch += "R.name LIKE ?";
+                }
+                else{
+                    tokenizedSearch += "R.name LIKE ? AND "
+                }
+                inserts.push("%"+tokenized[i]+"%");
+            }
+            ringSql = "SELECT R.name, R.ringId, R.addr, R.city, R.state, R.zipcode FROM tblRing R WHERE ("+tokenizedSearch+" AND R.ringStatus=1);";
+            ringSql = mysql.format(ringSql, inserts);
+            db.dbExecuteQuery(ringSql,res, function(ringResult){
+                var tokenizedSearch="";
+                var inserts = [];
+                
+                // tokenize the search to look for each word in ring name
+                for(var i=0;i<tokenized.length;i++){
+                    // check if last word in key
+                    if(i == tokenized.length-1) {
+                        tokenizedSearch += "G.name LIKE ?";
+                    }
+                    else{
+                        tokenizedSearch += "G.name LIKE ? AND "
+                    }
+                    inserts.push("%"+tokenized[i]+"%");
+                }
+                
+                grubberySql = "SELECT G.name, G.grubberyId, G.addr, G.city, G.state FROM tblGrubbery G WHERE "+tokenizedSearch+";";
+                grubberySql = mysql.format(grubberySql,inserts);
+                console.log(grubberySql);
+                //execute
+                db.dbExecuteQuery(grubberySql,res, function(grubberyResult){
+                    if(ringResult.data.length == 0 && grubberyResult.data.length == 0){
+                        description = "Could not match the search criteria with anything in our database.";
+                    }
+                    else{
+                        description = "Returned matching searches";
+                    }
+                    var data = {
+                        status:'Success', 
+                        description: description, 
+                        data: {
+                            grubberies:grubberyResult.data,
+                            rings:ringResult.data
+                        }
+                    }
+                    if(context == "dashboard") {
+                        res.send(data);
+                    }
+                    if(context == "findRings") {
+                         if(userLat != null && userLong != null){ //sort by location
+                            var sortedRings = locationUtils.getSortedRingsByZip(ringResult.data, userLat, userLong);
+                            data.data.rings = sortedRings;
+                            res.send(data);
+                        }
+                    }
+                });
+            });
+            
+            
+/*            //search on grubberies
             locationUtils.getGrubberiesNearLocation(userLat, userLong, radius, res, function(result){
                 // Loop through grubberies and find matches for the key
                 var isMatched;
                 var filteredArray =[]; //contains grubberies near location AND satisfy search
                 if(result.data == null){
+                    grubberyObject = {
+                        status: "success",
+                        description: "No grubberies near user that are found in search",
+                        data: null
+                    };
                 } else{
                     for(var i=0; i<result.data.length; i++){
                         
@@ -321,6 +407,11 @@ app.get('/search/:key', function(req,res) {
                 var isMatched;
                 var filteredArray =[]; //contains rings near location AND satisfy search
                 if(result.data == null){
+                    ringObject = {
+                        status: "success",
+                        description: "No rings near user and that are found in search",
+                        data: null
+                    };
                 } else{
                     for(var i=0; i<result.data.length; i++){
                         
@@ -347,10 +438,7 @@ app.get('/search/:key', function(req,res) {
                     console.log(ringObject);
                 }
             });
-            
-            
-            
-            
+  */
             // var grubberySql = "SELECT G.name AS grubbery, G.addr, G.city, G.state, G.zipcode FROM tblGrubbery G ";
                 // "INNER JOIN tblGrubbery G "+
                 // "ON A.grubberyId = G.grubberyId "+
@@ -361,10 +449,59 @@ app.get('/search/:key', function(req,res) {
                 // "INNER JOIN tblOrderUser OU "+
                 // "ON OU.activityId=A.activityId ";
                 
-        }
-                
+/*        }*/
+/*        if(context == "findRings") {
+            //search on rings
+            locationUtils.getRingsNearLocation(userLat, userLong, radius, res, function(result){
+                // Loop through rings and find matches for the key
+                var isMatched;
+                var filteredArray =[]; //contains rings near location AND satisfy search
+                if(result.data == null){
+                    ringObject = {
+                        status: "success",
+                        description: "No rings near user and that are found in search",
+                        data: null
+                    };
+                } else {
+                    for(var i=0; i<result.data.length; i++){
+                        
+                        // Initialize flag to true
+                        isMatched = true;
+                        
+                        // Loop through each word in search
+                        for(var j=0; j<tokenized.length; j++){
+                           if(result.data[i].name.toLowerCase().indexOf(tokenized[j].toLowerCase()) == -1){
+                               isMatched = false;
+                           }
+                        }
+                        if(isMatched){
+                            filteredArray.push(result.data[i]);
+                        }
+                        
+                    }
+                    ringObject = {
+                        status: "success",
+                        description: "Rings near user and found in search",
+                        data: filteredArray
+                    };
+                    
+                    console.log(ringObject);
+                }
+                //search on zips
+                for(var tokenIndex = 0; tokenIndex<tokenized.length; tokenIndex++) {
+                    if(locationUtils.isValidUSZip(tokenized[i])) {
+                        //its a zip code
+                        if(ringObject.data == null) {
+                            //return rings nearest zip
+                            
+                        }
+                    }
+                }
+            });
+
+        }  */     
        // check the context of the search (each page might want to show results unique to that page)
-        if(context == "myActivities"){
+/*        if(context == "myActivities"){
             
             grubberySql = sqlSelectStatement+"WHERE G.name LIKE ? AND U.userId = ?;";
             
@@ -468,7 +605,7 @@ app.get('/search/:key', function(req,res) {
                     res.send(data);
                 });
             });
-        }
+        }*/
     });
     
 });
