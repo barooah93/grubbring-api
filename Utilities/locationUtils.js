@@ -5,6 +5,31 @@ var db = require('../dbexecute');
 var glog = require('../glog.js')('locationUtils');
 
 module.exports = {    
+
+    getSortedRingsByZip: function(ringObjectArray, userLat, userLong) {
+        var userZipCode = gps.gps2zip(userLat, userLong).zip_code; 
+        var unsortedList = ringObjectArray;
+        var len = unsortedList.length;
+        
+        //sort rings by distance from userZipCode using insertion sort
+        for (var i = 0; i < len; i++) {
+            var currRing = unsortedList[i];
+            var currDist = zipcodes.distance(currRing.zipcode, userZipCode); //In Miles
+            /*Check through the sorted list and compare with the unsorted ring if smaller, move the unsorted to the beginning of the list*/
+            for (var j = i - 1; j >= 0 && (zipcodes.distance(unsortedList[j].zipcode,userZipCode) > currDist); j--) {
+                /*console.log("compareTo: " + unsortedList[] + " " + )*/
+                unsortedList[j + 1] = unsortedList[j];
+            }
+            unsortedList[j + 1] = currRing;
+        }
+        
+        return unsortedList;
+    },
+    
+    isValidUSZip: function(zip) {
+        //TODO: check if zip is in range of us zip code numbers
+        return /(^\d{5}$)|(^\d{5}-\d{4}$)/.test(zip);
+    },
     
     getRingsNearLocation: function(lat, long, radius, res, callback){
          //get zipcode based on lat and log
