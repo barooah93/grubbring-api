@@ -38,7 +38,7 @@ if dashboard: (purpose: shows the rings you are in and your activities)
         return ( rings that satisfy search AND grubberies that satisfy search )
 */
 
-// TODO: tokenize spaces/ url encoding. Use sql 'in'
+// ex: https://grubbring-api-barooah93.c9users.io/api/search/chip?context=dashboard&latitude=40%2E8804088&longitude=-74%2E6744209
 app.get('/:key', function(req,res) {
     authenticate.checkAuthentication(req, res, function (data) {
         var ringSql = null; // sql statement to find key in ringIds or ring names
@@ -90,7 +90,8 @@ app.get('/:key', function(req,res) {
                 }
                 inserts.push("%"+tokenized[i]+"%");
             }
-            ringSql = "SELECT R.name, R.ringId, R.addr, R.city, R.state, R.zipcode FROM tblRing R WHERE ("+tokenizedSearch+" AND R.ringStatus=1);";
+            ringSql = "SELECT R.name, R.ringId, R.addr, R.city, R.state, R.zipcode FROM tblRing R "+
+                "WHERE ("+tokenizedSearch+" AND R.ringStatus=1);";
             ringSql = mysql.format(ringSql, inserts);
             db.dbExecuteQuery(ringSql,res, function(ringResult){
                 var tokenizedSearch="";
@@ -127,15 +128,16 @@ app.get('/:key', function(req,res) {
                             rings:ringResult.data
                         }
                     }
-                    if(context == "dashboard") {
-                        res.send(data);
-                    }
+                    
                     if(context == "findRings") {
                          if(userLat != null && userLong != null){ //sort by location
                             var sortedRings = locationUtils.getSortedRingsByZip(ringResult.data, userLat, userLong);
                             data.data.rings = sortedRings;
                             res.send(data);
                         }
+                    }
+                    else {
+                        res.send(data);
                     }
                 });
             });
