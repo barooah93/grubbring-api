@@ -248,16 +248,16 @@ Contextual Search Based Off Page User is On:
 
 save original settings (if user backspaces out from the search show original) - future
 
+if dashboard: (purpose: shows the rings you are in and your activities)
+    if user enters in search bar:
+        return ( rings that satisfy search AND grubberies that satisfy search )
+        
 if find rings: (purpose: find rings closest to your location)
     if user enters ring name: 
         return ( rings nearest user location || rings nearest location entered by user on UI) AND ( rings that satisfy the search params )
     else if user enters zip (is numeric and satisfies zip format):
         center map on the zip code entered in search
         return ( rings nearest zip )
-
-if dashboard: (purpose: shows the rings you are in and your activities)
-    if user enters in search bar:
-        return ( rings that satisfy search AND grubberies that satisfy search )
 */
 
 // TODO: tokenize spaces/ url encoding. Use sql 'in'
@@ -332,7 +332,6 @@ app.get('/search/:key', function(req,res) {
                 
                 grubberySql = "SELECT G.name, G.grubberyId, G.addr, G.city, G.state FROM tblGrubbery G WHERE "+tokenizedSearch+";";
                 grubberySql = mysql.format(grubberySql,inserts);
-                console.log(grubberySql);
                 //execute
                 db.dbExecuteQuery(grubberySql,res, function(grubberyResult){
                     if(ringResult.data.length == 0 && grubberyResult.data.length == 0){
