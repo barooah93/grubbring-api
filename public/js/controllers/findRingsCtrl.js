@@ -6,7 +6,7 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
     
 
     // array containing rings near person's location
-    $scope.nearbyRings = [];
+    $scope.listItems = [];
 
     // initialize map canvas
     var mapCanvas = document.getElementById('map');
@@ -36,16 +36,17 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
 
     // if successfully received long and lat, find rings and display markers on map
     function successFunction(position) {
+         
         // get client coordinates
-        var lat = position.coords.latitude;
-        var long = position.coords.longitude;
+        $scope.lat = position.coords.latitude;
+        $scope.long = position.coords.longitude;
 
         // initialize geocoder for finding long and lat of an address
         var geocoder = new google.maps.Geocoder();
 
         // initialize options for map
         var mapOptions = {
-            center: new google.maps.LatLng(lat, long),
+            center: new google.maps.LatLng($scope.lat, $scope.long),
             zoom: zoomLevel,
             mapTypeId: google.maps.MapTypeId.ROADMAP
         }
@@ -56,14 +57,21 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
         // get suggested rings to display to user
         $http({
             method: 'GET',
-            url: '/api/ring?latitude='+lat +'&longitude=' + long
+            url: '/api/ring?latitude='+$scope.lat +'&longitude=' + $scope.long
         }).then(function(response) {
-            console.log("users lat long " + lat + " " + long);
+            
+            // Clear list of items
+            $scope.listItems = [];
+            $scope.nearbyRingsList = [];
+        
+            console.log("users lat long " + $scope.lat + " " + $scope.long);
             console.log(response.data.data);
             if(response.data.data != null) {
                 for (var i = 0; i < response.data.data.length; i++) {
                     codeAddress(response.data.data[i]);
-                    $scope.nearbyRings.push(response.data.data[i]);
+                    response.data.data[i].isRing = true;
+                    $scope.nearbyRingsList.push(response.data.data[i]);
+                    $scope.listItems = $scope.nearbyRingsList;
                 }
             } else {
                 console.log("response.data.data is null - no rings in the area for user " + $scope.userId);
@@ -91,10 +99,60 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
 
         }
     }
+    
+    // Event listener for search input change
+    $scope.onSearchTextChanged = function(){
+        
+        // Error check search text
+        if($scope.searchText != null && $scope.searchText != ""){
+        
+            // Make http request to get search results
+            $http({
+                method: 'GET',
+                url: '/api/search/'+$scope.searchText+'?context=findRings&latitude='+$scope.lat +'&longitude=' + $scope.long
+            }).then(function(response) {
+                
+                 // Clear list of items
+                $scope.listItems = [];
+                
+                console.log(response.data.data);
+                if(response.data.data != null) {
+                    // Loop through grubberies array, set isGrubbery property, and add to the list to be displayed
+                    for(var j=0; j< response.data.data.grubberies.length; j++){
+                        response.data.data.grubberies[j].isGrubbery = true;
+                        $scope.listItems.push(response.data.data.grubberies[j]);
+                    }
+                    
+                    // Loop through rings array, set isRing property, and add to the list to be displayed
+                    for(var k=0; k< response.data.data.rings.length; k++){
+                        response.data.data.rings[k].isRing = true;
+                        $scope.listItems.push(response.data.data.rings[k]);
+                    }
+                    console.log($scope.listItems);
+                } else {
+                    console.log("response.data.data is null - no rings or grubberies found in search results");
+                    
+                }
+    
+            }, function(err) {
+                console.log(err);
+            });
+        }
+        else {
+            console.log("No text, repopulate list");
+            // Reset list
+            $scope.listItems = $scope.nearbyRingsList;
+        }
+    }
 
+    // TODO: render something useful to user
     function errorFunction(position) {
         console.log('Error!');
     }
+    
+
+
+
 
     function getRingsUserIsPartOf() { /*broken*/
         $http({

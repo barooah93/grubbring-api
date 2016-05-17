@@ -18,22 +18,26 @@ http://stackoverflow.com/questions/21021951/directive-template-unique-ids-for-el
               </ul>
         </td>
         <td class="dashboard-search-container">
-          <p>Search</p>
+            <form class="navbar-form navbar-left" role="search">
+              <div class="form-group">
+                <input type="text" ng-model="searchText" ng-change="onSearchTextChanged()" id="searchBox" class="form-control" placeholder="Search">
+              </div>
+                <button type="submit" class="btn btn-default"><span class="glyphicon glyphicon-search"></span></button>
+            </form>
         </td>
       </tr>
       <tr class="dashboard-content">
         <td class="dashboard-left-container">
           <div id="mapList" style="background-color:white; opacity:0.4; z-index:-1;"></div>
             <div id="mapList">
-               <div class="panel-group" ng-repeat="ring in nearbyRings" style="margin-bottom:0px">
+               <div class="panel-group" ng-repeat="item in listItems" style="margin-bottom:0px">
                   <div class="panel panel-default" >
-                    <div class="panel-heading" data-toggle="collapse" data-target="#ring-desc_{{::$id}}">
+                    <div class="panel-heading" data-target="#ring-desc_{{::$id}}">
                       <h4 class="panel-title">
-                        <img ng-src="../images/default_ring_0.png" style="float:left;" width="50" height="50"/>
+                          <img ng-if="item.isRing" ng-src="../images/default_ring_0.png" style="float:left;" width="50" height="50"/>
+                          <img ng-if="item.isGrubbery" ng-src="../images/default_ring_1.png" style="float:left;" width="50" height="50"/>
                           <div class="ring-panel-title-text">
-                            <b>{{ ring.name }}</b>
-                            <span style="float:right;" class="glyphicon glyphicon-chevron-down down-icon"></span>
-                            <br>{{ring.firstName}} {{ring.lastName}}
+                            <b>{{ item.name }}</b>
                           </div>
                       </h4>
                     </div>
@@ -45,8 +49,6 @@ http://stackoverflow.com/questions/21021951/directive-template-unique-ids-for-el
                   </div>
                 </div> 
             </div>
-            
-            <span class="badge">100</span>
 
         </td>
         <td class="dashboard-right-container">
