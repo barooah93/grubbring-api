@@ -7,6 +7,7 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
 
     // array containing rings near person's location
     $scope.listItems = [];
+    $scope.isClear = false;    // flag to help with async updating of the list
 
     // initialize map canvas
     var mapCanvas = document.getElementById('map');
@@ -105,30 +106,34 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
         
         // Error check search text
         if($scope.searchText != null && $scope.searchText != ""){
-        
+            
+            $scope.isClear = false;
+            
             // Make http request to get search results
             $http({
                 method: 'GET',
                 url: '/api/search/'+$scope.searchText+'?context=findRings&latitude='+$scope.lat +'&longitude=' + $scope.long
             }).then(function(response) {
                 
-                 // Clear list of items
-                $scope.listItems = [];
-                
-                console.log(response.data.data);
                 if(response.data.data != null) {
-                    // Loop through grubberies array, set isGrubbery property, and add to the list to be displayed
-                    for(var j=0; j< response.data.data.grubberies.length; j++){
-                        response.data.data.grubberies[j].isGrubbery = true;
-                        $scope.listItems.push(response.data.data.grubberies[j]);
+                    if(!$scope.isClear){
+                        
+                        // Clear list of items
+                        $scope.listItems = [];
+                        
+                        // Loop through grubberies array, set isGrubbery property, and add to the list to be displayed
+                        for(var j=0; j< response.data.data.grubberies.length; j++){
+                            response.data.data.grubberies[j].isGrubbery = true;
+                            $scope.listItems.push(response.data.data.grubberies[j]);
+                        }
+                        
+                        // Loop through rings array, set isRing property, and add to the list to be displayed
+                        for(var k=0; k< response.data.data.rings.length; k++){
+                            response.data.data.rings[k].isRing = true;
+                            $scope.listItems.push(response.data.data.rings[k]);
+                        }
+                        console.log($scope.listItems);
                     }
-                    
-                    // Loop through rings array, set isRing property, and add to the list to be displayed
-                    for(var k=0; k< response.data.data.rings.length; k++){
-                        response.data.data.rings[k].isRing = true;
-                        $scope.listItems.push(response.data.data.rings[k]);
-                    }
-                    console.log($scope.listItems);
                 } else {
                     console.log("response.data.data is null - no rings or grubberies found in search results");
                     
@@ -141,7 +146,9 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
         else {
             console.log("No text, repopulate list");
             // Reset list
+            $scope.isClear = true;
             $scope.listItems = $scope.nearbyRingsList;
+            
         }
     }
 
