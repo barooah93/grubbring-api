@@ -21,6 +21,7 @@ var getRingsRoute = require('./routes/ring');
 var getDashboardRoute = require("./routes/dashboard");
 var getActivitiesRoute = require("./routes/activities");
 var getOrdersRoute = require('./routes/orders');
+var getSearchRoute = require('./routes/search');
 
 //var connectAccountsRoute = require('./routes/connectAccounts');
 
@@ -58,6 +59,7 @@ app.use('/api/ring', getRingsRoute);
 app.use('/api/dashboard', getDashboardRoute);
 app.use('/api/activities', getActivitiesRoute);
 app.use('/api/orders', getOrdersRoute);
+app.use('/api/search', getSearchRoute);
 
 app.use('/*', function(req, res) {
    res.render('index');

@@ -7,11 +7,16 @@ http://stackoverflow.com/questions/21021951/directive-template-unique-ids-for-el
 
 <!-- Overlay message-->
 <div class="dashboard-bg-overlay" ng-show="showOverlay">
-      <div class="dashboard-message-overlay">
-      <p>This is a test message</p>
-      <button ng-click="redirectToFindRings()">OK</button>
-      </div>
+<div class="popup">
+  <h2>Welcome to Grubbring!</h2>
+		<div class="content">
+			You're not part of any rings yet! Click "Join Rings" to get started!
+			<button class="btn btn-primary" ng-click="redirectToFindRings()">Join Rings</button>
+		</div>
+		
+	</div>
 </div>
+
 
 
 <header class="cd-main-header">
@@ -34,9 +39,10 @@ http://stackoverflow.com/questions/21021951/directive-template-unique-ids-for-el
       </tr>
       <tr class="dashboard-content">
         <td class="dashboard-left-container">
-          
+          <p>NO RINGS!</p>
         </td>
         <td class="dashboard-right-container">
+          <p>NO ACTIVITIES!</p>
         </td>
       </tr>
     </table>
