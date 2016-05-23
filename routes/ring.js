@@ -9,6 +9,7 @@ var locationUtils = require('../Utilities/locationUtils');
 var mysql = require('mysql');
 var authenticate = require('../servicesAuthenticate')
 
+
 //-------------------------START-----------------------------------------------------
 
 // GET: pull all ring locations and details near the user. If no rings found, send error code
