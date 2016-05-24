@@ -8,7 +8,7 @@ var db = require('../dbexecute');
 var locationUtils = require('../Utilities/locationUtils');
 var mysql = require('mysql');
 var authenticate = require('../servicesAuthenticate')
-
+var statusCodes = require('../Constants/StatusCodesBackend');
 
 //-------------------------START-----------------------------------------------------
 
@@ -242,7 +242,7 @@ var getPendingUsersFromRingIds = function(ringIds,res, callback){
     
     // Check if there are any rings in the array
     if(ringIds.length == 0){
-        callback({status:"success", description:"There are no active rings that this user is a leader of.", data:null});
+        callback({status:statusCodes.USER_NOT_LEADER_TO_ANY_RINGS, description:"There are no active rings that this user is a leader of.", data:null});
     }
     else{
         // Now check if other userIds associated with those rings have a pending status

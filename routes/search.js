@@ -8,6 +8,7 @@ var db = require('../dbexecute');
 var locationUtils = require('../Utilities/locationUtils');
 var mysql = require('mysql');
 var authenticate = require('../servicesAuthenticate')
+var statusCodes = require('../Constants/StatusCodesBackend');
 
 //-------------------------START-----------------------------------------------------
 // GET: get ring details for searched ring

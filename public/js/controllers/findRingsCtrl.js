@@ -66,7 +66,7 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
             $scope.nearbyRingsList = [];
         
             console.log("users lat long " + $scope.lat + " " + $scope.long);
-            console.log(response.data.data);
+            console.log(response.data);
             if(response.data.data != null) {
                 for (var i = 0; i < response.data.data.length; i++) {
                     codeAddress(response.data.data[i]);

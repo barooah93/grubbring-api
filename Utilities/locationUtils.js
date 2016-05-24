@@ -3,6 +3,7 @@ var zipcodes = require('zipcodes');
 var mysql = require('mysql');
 var db = require('../dbexecute');
 var glog = require('../glog.js')('locationUtils');
+var statusCodes = require('../Constants/StatusCodesBackend');
 
 module.exports = {    
 
@@ -17,7 +18,6 @@ module.exports = {
             var currDist = zipcodes.distance(currRing.zipcode, userZipCode); //In Miles
             /*Check through the sorted list and compare with the unsorted ring if smaller, move the unsorted to the beginning of the list*/
             for (var j = i - 1; j >= 0 && (zipcodes.distance(unsortedList[j].zipcode,userZipCode) > currDist); j--) {
-                /*console.log("compareTo: " + unsortedList[] + " " + )*/
                 unsortedList[j + 1] = unsortedList[j];
             }
             unsortedList[j + 1] = currRing;
@@ -40,7 +40,7 @@ module.exports = {
         if(!zipcodesNearUser.length>0){
             glog.error("No zipcodes returned for latitude: "+lat+" longitude: "+long);
             var response = {
-                status: "error",
+                status: statusCodes.RETRIEVE_USER_LOCATION_FAIL,
                 description: "No zipcodes returned for latitude: "+lat+" longitude: "+long,
                 data: null
             }
@@ -62,10 +62,10 @@ module.exports = {
             sql = sql + ";";
             
             sql = mysql.format(sql, inserts);
-            console.log("the sql statement for ring with lat long: " + sql);
             
             db.dbExecuteQuery(sql, res, function(result){
                 // overwrite description
+                result.status=statusCodes.RETURNED_RINGS_NEAR_USER_SUCCESS;
                 result.description="Returned all rings";
                 callback(result);
             });
@@ -81,7 +81,7 @@ module.exports = {
         if(!zipcodesNearUser.length>0){
             glog.error("No zipcodes returned for latitude: "+lat+" longitude: "+long);
             var response = {
-                status: "error",
+                status: statusCodes.RETRIEVE_USER_LOCATION_FAIL,
                 description: "No zipcodes returned for latitude: "+lat+" longitude: "+long,
                 data: null
             }
@@ -104,9 +104,8 @@ module.exports = {
             
             db.dbExecuteQuery(sql, res, function(result){
                 // overwrite description
+                result.status= statusCodes.RETURNED_GRUBBERIES_NEAR_USER_SUCCESS;
                 result.description="Returned all grubberies";
-                
-                console.log("result from nearest grubberies: " + result.toString());
                 callback(result);
             });
         }
