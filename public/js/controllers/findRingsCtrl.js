@@ -1,14 +1,12 @@
-angular.module('grubbring.controllers').controller('findRingsCtrl', function findRingsCtrl($scope, $http, $location) {
+angular.module('grubbring.controllers').controller('findRingsCtrl', function findRingsCtrl($scope, $http, $location, StatusCodes) {
 
     $scope.rings = null;
     $scope.sortedCounts = null;
     getUserDetails();
     
-
     // array containing rings near person's location
     $scope.listItems = [];
     $scope.isClear = false;    // flag to help with async updating of the list
-
     // initialize map canvas
     var mapCanvas = document.getElementById('map');
     var zoomLevel = 15; // TODO: hardcoded for now
@@ -72,7 +70,6 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
                     $scope.listItems = $scope.nearbyRingsList;
                 }
             } else {
-                console.log("response.data.data is null - no rings in the area for user " + $scope.userId);
                 // TODO: display message to user to prompt them to be first to create a ring in their area
             }
 
@@ -129,7 +126,6 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
                             response.data.data.rings[k].isRing = true;
                             $scope.listItems.push(response.data.data.rings[k]);
                         }
-                        console.log($scope.listItems);
                     }
                 } else {
                     console.log("response.data.data is null - no rings or grubberies found in search results");
