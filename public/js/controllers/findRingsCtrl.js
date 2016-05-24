@@ -20,7 +20,6 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
             method: 'GET',
             url: '/api/profile'
         }).then(function(response) {
-            console.log(response.data.userId);
             $scope.userId = response.data.userId;
                 if (navigator.geolocation) {
                     navigator.geolocation.getCurrentPosition(successFunction, errorFunction);
@@ -65,8 +64,6 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
             $scope.listItems = [];
             $scope.nearbyRingsList = [];
         
-            console.log("users lat long " + $scope.lat + " " + $scope.long);
-            console.log(response.data);
             if(response.data.data != null) {
                 for (var i = 0; i < response.data.data.length; i++) {
                     codeAddress(response.data.data[i]);
@@ -144,7 +141,6 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
             });
         }
         else {
-            console.log("No text, repopulate list");
             // Reset list
             $scope.isClear = true;
             $scope.listItems = $scope.nearbyRingsList;
@@ -166,7 +162,6 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
             method: 'GET',
             url: '/api/ring/subscribedRings/' + $scope.userId
         }).then(function(response) {
-            console.log($scope.userId);
 
             if (response.data.data == null) { //no rings call shivangs
                 //bring up the find rings api
@@ -174,7 +169,6 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
                     method: 'GET',
                     url: '/api/ring'
                 }).then(function(response) {
-                    console.log(response);
                     $scope.ringId = response.data.ringId //rings you can join
                 }, function(err) {
                     console.log(err);

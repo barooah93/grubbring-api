@@ -14,7 +14,7 @@ define('CREATE_RING_FAIL','00009'); // Failed to create a new ring
 define('DELETE_RING_SUCCESS','10007'); // Successfully deleted a ring
 define('DELETE_RING_FAIL','00005'); // Did not return any results for ring search
 define('USER_NOT_SUBSCRIBED_TO_RINGS','00007'); // User is not subscribed to any rings (will return map of rings near that person)
-define('USER_NOT_LEADER_TO_ANY_RINGS','00006'); // User is not subscribed to any rings (will return map of rings near that person)
+define('USER_NOT_LEADER_TO_ANY_RINGS','00006'); // User is not leader to any rings
 //----------------------------------------------------------
 
 // --------------- Activities API Status Codes -------------
@@ -40,8 +40,13 @@ define('UPDATE_ORDER_SUCCESS','14003'); // Order has been updated successfully
 define('DELETE_ORDER_SUCCESS','14005'); // Successfully deleted an order
 //----------------------------------------------------------
 
+// --------------- Search API Status Codes -----------------
+define('SEARCH_RESULTS_FOUND','15001'); // Successfully returned search results
+define('SEARCH_RESULTS_NOT_FOUND','15002'); // Search criteria did not match anything in our database
+//----------------------------------------------------------
+
 // --------------- Other API Status Codes ----------------
-define('RETURNED_RINGS_NEAR_USER_SUCCESS','15001'); // Successfully returned rings near user
-define('RETRIEVE_USER_LOCATION_FAIL','15002'); // Failed to retrieve user's location
-define('RETURNED_GRUBBERIES_NEAR_USER_SUCCESS','15003'); // Successfully returned grubberies near user
+define('RETURNED_RINGS_NEAR_USER_SUCCESS','16001'); // Successfully returned rings near user
+define('RETRIEVE_USER_LOCATION_FAIL','16002'); // Failed to retrieve user's location
+define('RETURNED_GRUBBERIES_NEAR_USER_SUCCESS','16003'); // Successfully returned grubberies near user
 //----------------------------------------------------------

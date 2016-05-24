@@ -46,13 +46,14 @@ app.get('/:key', function(req,res) {
         var leaderSql = null; // sql statement to find key in leaderId or leader name
         var grubberySql=null;
         var userSql=null;
+        var status = "";
         var description = "";
         var context = req.query.context;
         var key = req.params.key; // is already url decoded
         var tokenized = [];
         var firstName = null;
         var lastName = null;
-
+        
         // Result objects
         var grubberyObject = null;
         var activityObject = null;
@@ -116,13 +117,15 @@ app.get('/:key', function(req,res) {
                 //execute
                 db.dbExecuteQuery(grubberySql,res, function(grubberyResult){
                     if(ringResult.data.length == 0 && grubberyResult.data.length == 0){
+                        status = statusCodes.SEARCH_RESULTS_NOT_FOUND;
                         description = "Could not match the search criteria with anything in our database.";
                     }
                     else{
+                        status = statusCodes.SEARCH_RESULTS_FOUND;
                         description = "Returned matching searches";
                     }
                     var data = {
-                        status:'Success', 
+                        status: status, 
                         description: description, 
                         data: {
                             grubberies:grubberyResult.data,
