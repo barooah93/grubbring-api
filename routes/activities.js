@@ -97,11 +97,7 @@ app.delete('/deleteActivity/:activityId', function(req,res) {
 			
 			sql = "DELETE FROM tblActivity A " + 
 			"WHERE A.activityId = ? " + 
-<<<<<<< HEAD
-			"AND A.bringerUserId = ?;"; //TODO: why does the bringeruserid the one that owns the ring?? 
-=======
-			"AND A.bringerUserId = ?;"; 
->>>>>>> e86d5e2d9e6ffbae7cbe3b97d7c0ad9a1ee6b2ce
+			"AND A.bringerUserId = ?;"; //TODO: why does the bringeruserid the one that owns the ring??
 			var inserts = [activityId, userId];
 		    sql = mysql.format(sql, inserts);
 			
