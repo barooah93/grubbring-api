@@ -1,5 +1,7 @@
 var pool = require('./config/dbconnection.js').pool;
 var glog = require('./glog.js')('dbexecute');
+var statusCodes = require('./Utilities/StatusCodesBackend');
+
 module.exports = {
 
 // Function: Establish connection to database and execute the given query
@@ -16,19 +18,19 @@ module.exports = {
 	    pool.getConnection(function(err,connection){
 			if(err){
 				glog.log(err);
-				resultObject = {status:"error", description:"Cannot connect to database", data:err};
+				resultObject = {status:statusCodes.DATABASE_CONNECTION_FAIL, description:"Cannot connect to database", data:err};
 				res.send(resultObject);
 	//			callback(err,resultObject);
 			}else if(connection && 'query' in connection){
 				connection.query(query,function(err, rows, fields){
 				    if(err){
 				        glog.log(err);
-				        resultObject = {status:"error", description:"Cannot execute query", data:err};
+				        resultObject = {status:statusCodes.EXECUTED_QUERY_FAIL, description:"Cannot execute query", data:err};
 	//			        callback(err, resultObject);
 				        res.send(resultObject);
 				    }
 				    else{
-				        resultObject = {status:"success", description:"Executed query", data:rows};
+				        resultObject = {status:statusCodes.EXECUTED_QUERY_SUCCESS, description:"Executed query", data:rows};
 				        callback(resultObject);
 				    }
 				});

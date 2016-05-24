@@ -8,7 +8,7 @@ var db = require('../dbexecute');
 var locationUtils = require('../Utilities/locationUtils');
 var mysql = require('mysql');
 var authenticate = require('../servicesAuthenticate')
-var statusCodes = require('../Constants/StatusCodesBackend');
+var statusCodes = require('../Utilities/StatusCodesBackend');
 
 //-------------------------START-----------------------------------------------------
 // GET: get ring details for searched ring
@@ -113,7 +113,6 @@ app.get('/:key', function(req,res) {
                 
                 grubberySql = "SELECT G.name, G.grubberyId, G.addr, G.city, G.state FROM tblGrubbery G WHERE "+tokenizedSearch+";";
                 grubberySql = mysql.format(grubberySql,inserts);
-                console.log(grubberySql);
                 //execute
                 db.dbExecuteQuery(grubberySql,res, function(grubberyResult){
                     if(ringResult.data.length == 0 && grubberyResult.data.length == 0){

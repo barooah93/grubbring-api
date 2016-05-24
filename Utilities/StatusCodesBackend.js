@@ -49,4 +49,7 @@ define('SEARCH_RESULTS_NOT_FOUND','15002'); // Search criteria did not match any
 define('RETURNED_RINGS_NEAR_USER_SUCCESS','16001'); // Successfully returned rings near user
 define('RETRIEVE_USER_LOCATION_FAIL','16002'); // Failed to retrieve user's location
 define('RETURNED_GRUBBERIES_NEAR_USER_SUCCESS','16003'); // Successfully returned grubberies near user
+define('EXECUTED_QUERY_SUCCESS','16004'); // Successfully executed query
+define('EXECUTED_QUERY_FAIL','16005'); // Cannot execute query
+define('DATABASE_CONNECTION_FAIL','16006'); // Cannot connect to database
 //----------------------------------------------------------

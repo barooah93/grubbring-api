@@ -3,7 +3,7 @@ var zipcodes = require('zipcodes');
 var mysql = require('mysql');
 var db = require('../dbexecute');
 var glog = require('../glog.js')('locationUtils');
-var statusCodes = require('../Constants/StatusCodesBackend');
+var statusCodes = require('../Utilities/StatusCodesBackend');
 
 module.exports = {    
 

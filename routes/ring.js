@@ -8,7 +8,7 @@ var db = require('../dbexecute');
 var locationUtils = require('../Utilities/locationUtils');
 var mysql = require('mysql');
 var authenticate = require('../servicesAuthenticate')
-var statusCodes = require('../Constants/StatusCodesBackend');
+var statusCodes = require('../Utilities/StatusCodesBackend');
 
 //-------------------------START-----------------------------------------------------
 
