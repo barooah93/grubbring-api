@@ -5,9 +5,11 @@
 var app = angular.module('grubbring', [
     'grubbring.controllers',
     'grubbring.services',
+    'grubbring.statusCodes',
     'ngRoute',
     'ui.bootstrap'
 ]);
+
 
 app.config(['$routeProvider', '$locationProvider', function($routeProvider, $locationProvider) {
     $locationProvider.html5Mode(true);
@@ -77,4 +79,3 @@ app.config(['$routeProvider', '$locationProvider', function($routeProvider, $loc
             redirectTo: '/'
         });
 }]);
-

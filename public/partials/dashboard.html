@@ -2,8 +2,85 @@
 Explanation of {{::$id}}
 http://stackoverflow.com/questions/21021951/directive-template-unique-ids-for-elements
 -->
-<ng-include src=" 'partials/template.html' "></ng-include>
 
+<!--<ng-include src=" 'partials/template.html' "></ng-include>-->
+
+<!-- Overlay message-->
+<div class="dashboard-bg-overlay" ng-show="showOverlay">
+<div class="popup">
+  <h2>Welcome to Grubbring!</h2>
+		<div class="content">
+			You're not part of any rings yet! Click "Join Rings" to get started!
+			<button class="btn btn-primary" ng-click="redirectToFindRings()">Join Rings</button>
+		</div>
+		
+	</div>
+</div>
+
+
+
+<header class="cd-main-header">
+    <table class="dashboard-container">
+      <tr class="dashboard-header">
+        <td class="dashboard-menu-container">
+              <span class="glyphicon glyphicon-option-vertical" aria-hidden="true"  data-toggle="dropdown" aria-haspopup="true"></span>
+              <ul class="dropdown-menu">
+                  <li><a href="#">My Rings</a></li>
+                  <li><a href="#">Activities</a></li>
+                  <li><a href="#">Profile</a></li>
+                  <li><a href="#">Settings</a></li>
+                  <!--<li role="separator" class="divider"></li>-->
+                  <li><a href="#">Logout</a></li>
+              </ul>
+        </td>
+        <td class="dashboard-search-container">
+          <p>Search</p>
+        </td>
+      </tr>
+      <tr class="dashboard-content">
+        <td class="dashboard-left-container">
+          <p>NO RINGS!</p>
+        </td>
+        <td class="dashboard-right-container">
+          <p>NO ACTIVITIES!</p>
+        </td>
+      </tr>
+    </table>
+</header>
+
+<!--
+<table id="mapContainerTable">
+              <tr>
+                <td>
+                  <div id="map"></div>
+                </td>
+                <td>
+                  <div id="mapList" style="background-color:white; opacity:0.4; z-index:-1;"></div>
+                  <div id="mapList">
+                     <div class="panel-group" ng-repeat="ring in nearbyRings" style="margin-bottom:0px">
+                        <div class="panel panel-default" >
+                          <div class="panel-heading" data-toggle="collapse" data-target="#ring-desc_{{::$id}}">
+                            <h4 class="panel-title">
+                              <img ng-src="../images/default_ring_0.png" style="float:left;" width="50" height="50"/>
+                                <div class="ring-panel-title-text">
+                                  <b>{{ ring.name }}</b>
+                                  <span style="float:right;" class="glyphicon glyphicon-chevron-down down-icon"></span>
+                                  <br>{{ring.firstName}} {{ring.lastName}}
+                                </div>
+                            </h4>
+                          </div>
+                            <div id="ring-desc_{{::$id}}" class="panel-collapse collapse">
+                              <div class="panel-body">
+                                {{ ring.addr }}
+                              </div>
+                            </div>
+                        </div>
+                      </div> 
+                  </div>
+                </td>
+              </tr>
+            </table>-->
+<!--
 <div class="dashboard-feed">
   <div ng-repeat="a in activities">
   <img src=images/icon-1.png></img>
@@ -14,6 +91,7 @@ http://stackoverflow.com/questions/21021951/directive-template-unique-ids-for-el
   </div>
 </div>
 </div>
+-->
 
 <!-- Will keep as necessary -->
 

@@ -1,42 +1,50 @@
-angular.module('grubbring.controllers').controller('findRingsCtrl', function findRingsCtrl($scope, $http, $location) {
+angular.module('grubbring.controllers').controller('findRingsCtrl', function findRingsCtrl($scope, $http, $location, StatusCodes) {
 
+    $scope.rings = null;
+    $scope.sortedCounts = null;
+    getUserDetails();
+    
     // array containing rings near person's location
-    $scope.nearbyRings = [];
-
+    $scope.listItems = [];
+    $scope.isClear = false;    // flag to help with async updating of the list
     // initialize map canvas
     var mapCanvas = document.getElementById('map');
-    var zoomLevel = 15;
+    var zoomLevel = 15; // TODO: hardcoded for now
 
-    // Use this if customizing popup when hovering over marker --------------------------------
-    // // div box for marker
-    // var popup = $('#popup');
-
-    // // intialize popup for markers
-    // popup.hide();
-    // popup.css('background-color', 'white');
-    // popup.css('position','absolute');
-    // popup.css('z-index',2);
-    // --------------------------------------------------------------
-
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(successFunction, errorFunction);
+    
+    // Retrieve user details
+    function getUserDetails() {
+        $http({
+            method: 'GET',
+            url: '/api/profile'
+        }).then(function(response) {
+            $scope.userId = response.data.userId;
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(successFunction, errorFunction);
+                }
+                else {
+                    alert('It seems like Geolocation, which is required for this page, is not enabled in your browser.');
+                }
+        }, function(err) {
+            console.log("Couldn't get user details:");
+            console.log(err);
+        });
     }
-    else {
-        alert('It seems like Geolocation, which is required for this page, is not enabled in your browser.');
-    }
+    
 
-    // if successfully received long and lat
+    // if successfully received long and lat, find rings and display markers on map
     function successFunction(position) {
+         
         // get client coordinates
-        var lat = position.coords.latitude;
-        var long = position.coords.longitude;
+        $scope.lat = position.coords.latitude;
+        $scope.long = position.coords.longitude;
 
         // initialize geocoder for finding long and lat of an address
         var geocoder = new google.maps.Geocoder();
 
         // initialize options for map
         var mapOptions = {
-            center: new google.maps.LatLng(lat, long),
+            center: new google.maps.LatLng($scope.lat, $scope.long),
             zoom: zoomLevel,
             mapTypeId: google.maps.MapTypeId.ROADMAP
         }
@@ -44,6 +52,31 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
         // initialize google map object onto div mapCanvas with specified options
         var map = new google.maps.Map(mapCanvas, mapOptions);
 
+        // get suggested rings to display to user
+        $http({
+            method: 'GET',
+            url: '/api/ring?latitude='+$scope.lat +'&longitude=' + $scope.long
+        }).then(function(response) {
+            
+            // Clear list of items
+            $scope.listItems = [];
+            $scope.nearbyRingsList = [];
+        
+            if(response.data.data != null) {
+                for (var i = 0; i < response.data.data.length; i++) {
+                    codeAddress(response.data.data[i]);
+                    response.data.data[i].isRing = true;
+                    $scope.nearbyRingsList.push(response.data.data[i]);
+                    $scope.listItems = $scope.nearbyRingsList;
+                }
+            } else {
+                // TODO: display message to user to prompt them to be first to create a ring in their area
+            }
+
+        }, function(err) {
+            console.log(err);
+        });
+        
         // decodes address into long and lat coordinates to add markers to the map
         function codeAddress(ring) {
             geocoder.geocode({'address': ring.addr + ' ' + ring.city + ', ' + ring.state}, function(results, status) {
@@ -60,25 +93,122 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
             });
 
         }
-
-        // get suggested rings to display to user
-        $http({
-            method: 'GET',
-            url: '/api/ring?latitude=' + lat + '&longitude=' + long
-        }).then(function(response) {
-            console.log(response);
-            for (var i = 0; i < response.data.data.length; i++) {
-                codeAddress(response.data.data[i]);
-                $scope.nearbyRings.push(response.data.data[i]);
-            }
-
-        }, function(err) {
-            console.log(err);
-        });
+    }
+    
+    // Event listener for search input change
+    $scope.onSearchTextChanged = function(){
+        
+        // Error check search text
+        if($scope.searchText != null && $scope.searchText != ""){
+            
+            $scope.isClear = false;
+            
+            // Make http request to get search results
+            $http({
+                method: 'GET',
+                url: '/api/search/'+$scope.searchText+'?context=findRings&latitude='+$scope.lat +'&longitude=' + $scope.long
+            }).then(function(response) {
+                
+                if(response.data.data != null) {
+                    if(!$scope.isClear){
+                        
+                        // Clear list of items
+                        $scope.listItems = [];
+                        
+                        // Loop through grubberies array, set isGrubbery property, and add to the list to be displayed
+                        for(var j=0; j< response.data.data.grubberies.length; j++){
+                            response.data.data.grubberies[j].isGrubbery = true;
+                            $scope.listItems.push(response.data.data.grubberies[j]);
+                        }
+                        
+                        // Loop through rings array, set isRing property, and add to the list to be displayed
+                        for(var k=0; k< response.data.data.rings.length; k++){
+                            response.data.data.rings[k].isRing = true;
+                            $scope.listItems.push(response.data.data.rings[k]);
+                        }
+                    }
+                } else {
+                    console.log("response.data.data is null - no rings or grubberies found in search results");
+                    
+                }
+    
+            }, function(err) {
+                console.log(err);
+            });
+        }
+        else {
+            // Reset list
+            $scope.isClear = true;
+            $scope.listItems = $scope.nearbyRingsList;
+            
+        }
     }
 
+    // TODO: render something useful to user
     function errorFunction(position) {
         console.log('Error!');
     }
+    
+
+
+
+
+    function getRingsUserIsPartOf() { /*broken*/
+        $http({
+            method: 'GET',
+            url: '/api/ring/subscribedRings/' + $scope.userId
+        }).then(function(response) {
+
+            if (response.data.data == null) { //no rings call shivangs
+                //bring up the find rings api
+                $http({
+                    method: 'GET',
+                    url: '/api/ring'
+                }).then(function(response) {
+                    $scope.ringId = response.data.ringId //rings you can join
+                }, function(err) {
+                    console.log(err);
+                    $location.path('/dashboard');
+                });
+            } else {
+                $scope.rings = response.data.data.ringsWithActivities;
+
+                $scope.ringsWithOrders = response.data.data.ringsWithOrders;
+
+                /*For each ring with activities, find if there is a tie, if there is a tie put the ring that has more orders at an index
+                 before the ring with less orders in the $scope.rings array*/
+                var unsortedList = $scope.rings;
+                var len = unsortedList.length;
+                //assign numOrders to each ring with activities, sort numOrders within numActivities using insertion sort
+                for (var i = 0; i < len; i++) {
+                    var tempRing = unsortedList[i];
+                    tempRing.numOrders = getNumOrders($scope.ringsWithOrders, tempRing.name);
+                    /*Check through the sorted part and compare with the
+                     number in tmp. If large, shift the number*/
+                    for (var j = i - 1; j >= 0 && (unsortedList[j].numOrders < tempRing.numOrders) && unsortedList[j].numActivities == tempRing.numActivities; j--) {
+                        unsortedList[j + 1] = unsortedList[j];
+                    }
+                    unsortedList[j + 1] = tempRing;
+                }
+
+                for (i = 0; i < response.data.data.ringsWithNoActivities.length; i++) {
+                    response.data.data.ringsWithNoActivities[i].numActivities = 0;
+                    response.data.data.ringsWithNoActivities[i].numOrders = 0;
+                    $scope.rings.push(response.data.data.ringsWithNoActivities[i]);
+                }
+            }
+        }, function(err) {
+            console.log(err);
+            $location.path('/dashboard');
+        });
+    }
+    function getNumOrders(ringsWithOrders, ringName) {
+        for(var i = 0; i < ringsWithOrders.length; i++){
+            if(ringsWithOrders[i].name == ringName) {
+                return ringsWithOrders[i].numOrders;
+            }
+        }
+    }
+
 
 });
