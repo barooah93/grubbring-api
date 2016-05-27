@@ -1,7 +1,9 @@
 angular.module('grubbring.controllers').controller('findRingsCtrl', function findRingsCtrl($scope, $http, $location, StatusCodes) {
-
+    
     $scope.rings = null;
     $scope.sortedCounts = null;
+    
+    
     getUserDetails();
     
     // array containing rings near person's location
@@ -15,9 +17,12 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
     var mapCanvas = document.getElementById('map');
     var zoomLevel = 15; // TODO: hardcoded for now
 
+
     
     // Retrieve user details
     function getUserDetails() {
+        // Show spinner
+        showHideLoadingSpinner();
         $http({
             method: 'GET',
             url: '/api/profile'
@@ -73,8 +78,11 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
                     $scope.nearbyRingsList.push(response.data.data[i]);
                     $scope.listItems = $scope.nearbyRingsList;
                 }
+                // Show spinner
+                showHideLoadingSpinner();
             } else {
                 // TODO: display message to user to prompt them to be first to create a ring in their area
+                $scope.showLoader=false;
             }
 
         }, function(err) {
@@ -259,12 +267,23 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
             $location.path('/dashboard');
         });
     }
+    
     function getNumOrders(ringsWithOrders, ringName) {
         for(var i = 0; i < ringsWithOrders.length; i++){
             if(ringsWithOrders[i].name == ringName) {
                 return ringsWithOrders[i].numOrders;
             }
         }
+    }
+    
+    function showHideLoadingSpinner(){
+        if($scope.listItems == null || $scope.listItems.length == 0){
+            $scope.showLoader=true;
+        }
+        else{
+            $scope.showLoader=false;
+        }
+        
     }
 
 
