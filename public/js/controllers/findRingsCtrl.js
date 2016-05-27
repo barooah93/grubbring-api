@@ -6,7 +6,11 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
     
     // array containing rings near person's location
     $scope.listItems = [];
-    $scope.isClear = false;    // flag to help with async updating of the list
+    $scope.searchResults = [];
+    
+    $scope.isClear = false;    // flag to help with async clearing of list
+    $scope.isWaitingOnSearchAPI = false; // flag to help with async updating of the list
+    
     // initialize map canvas
     var mapCanvas = document.getElementById('map');
     var zoomLevel = 15; // TODO: hardcoded for now
@@ -98,43 +102,68 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
     // Event listener for search input change
     $scope.onSearchTextChanged = function(){
         
+        var amountOfKeysToCallAPI = 2;
+        
         // Error check search text
-        if($scope.searchText != null && $scope.searchText != ""){
+        if($scope.searchText != null && $scope.searchText != "" && $scope.searchText.length >= amountOfKeysToCallAPI){
             
-            $scope.isClear = false;
-            
-            // Make http request to get search results
-            $http({
-                method: 'GET',
-                url: '/api/search/'+$scope.searchText+'?context=findRings&latitude='+$scope.lat +'&longitude=' + $scope.long
-            }).then(function(response) {
+            // Only make api call if text is a certain amount of letters
+            if($scope.searchText.length == amountOfKeysToCallAPI){
                 
-                if(response.data.data != null) {
-                    if(!$scope.isClear){
-                        
-                        // Clear list of items
-                        $scope.listItems = [];
-                        
-                        // Loop through grubberies array, set isGrubbery property, and add to the list to be displayed
-                        for(var j=0; j< response.data.data.grubberies.length; j++){
-                            response.data.data.grubberies[j].isGrubbery = true;
-                            $scope.listItems.push(response.data.data.grubberies[j]);
-                        }
-                        
-                        // Loop through rings array, set isRing property, and add to the list to be displayed
-                        for(var k=0; k< response.data.data.rings.length; k++){
-                            response.data.data.rings[k].isRing = true;
-                            $scope.listItems.push(response.data.data.rings[k]);
-                        }
-                    }
-                } else {
-                    console.log("response.data.data is null - no rings or grubberies found in search results");
+                $scope.searchResults = [];
                     
-                }
+                $scope.isClear = false;
+                
+                // Make http request to get search results
+                $http({
+                    method: 'GET',
+                    url: '/api/search/'+$scope.searchText+'?context=findRings&latitude='+$scope.lat +'&longitude=' + $scope.long
+                }).then(function(response) {
+                    
+                    if(response.data.data != null) {
+                        if(!$scope.isClear){
+                            
+                            // Clear list of items
+                            $scope.listItems = [];
+                            $scope.searchResults = [];
+                            
+                            // Loop through grubberies array, set isGrubbery property, and add to the list to be displayed
+                            for(var j=0; j< response.data.data.grubberies.length; j++){
+                                response.data.data.grubberies[j].isGrubbery = true;
+                                $scope.listItems.push(response.data.data.grubberies[j]);
+                                $scope.searchResults.push(response.data.data.grubberies[j]);
+                            }
+                            
+                            // Loop through rings array, set isRing property, and add to the list to be displayed
+                            for(var k=0; k< response.data.data.rings.length; k++){
+                                response.data.data.rings[k].isRing = true;
+                                $scope.listItems.push(response.data.data.rings[k]);
+                                $scope.searchResults.push(response.data.data.rings[k]);
+                            }
+                            
+                             // Response finished, if more letters were typed while waiting, execute search
+                            if($scope.isWaitingOnSearchAPI){
+                                searchThroughCache();
+                                 $scope.isWaitingOnSearchAPI = false;
+                            }
+                        }
+                    } else {
+                        console.log("response.data.data is null - no rings or grubberies found in search results");
+                        
+                    }
     
-            }, function(err) {
-                console.log(err);
-            });
+                }, function(err) {
+                    console.log(err);
+                });
+            }
+            else if($scope.searchText.length > amountOfKeysToCallAPI) { 
+                // Check if cache has data, if so search through it, else set async bool to true
+                if($scope.searchResults.length > 0){
+                    searchThroughCache();
+                }else{
+                    $scope.isWaitingOnSearchAPI = true;
+                }
+            }
         }
         else {
             // Reset list
@@ -143,6 +172,34 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
             
         }
     }
+    
+    // Filters list with found search keys from cache
+    function searchThroughCache(){
+        // Clear what's in current list
+        $scope.listItems = [];
+        
+        // Replace multiple spaces with a single space and any tabs, endline symbols, etc.
+        var cleanedSearchText = $scope.searchText.replace(/\s\s+/g, ' ');
+        var searchWords = cleanedSearchText.split(" ");
+        
+        // Loop through cached search results
+        for(var i=0; i<$scope.searchResults.length; i++){
+            var foundAllWords = true;
+            // Loop through each search word and set boolean to false if one of the words or letters doesnt match
+            for(var j=0; j<searchWords.length; j++){
+                if($scope.searchResults[i].name.toLowerCase().indexOf(searchWords[j].toLowerCase()) < 0){
+                    foundAllWords = false;
+                }
+            }
+            
+            // Push to list if all words and letters were found
+            if(foundAllWords){
+                 $scope.listItems.push($scope.searchResults[i]);
+            }
+        }
+    
+    }
+
 
     // TODO: render something useful to user
     function errorFunction(position) {

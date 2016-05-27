@@ -32,7 +32,7 @@ http://stackoverflow.com/questions/21021951/directive-template-unique-ids-for-el
         <td class="dashboard-left-container">
           <div id="mapList" style="background-color:white; opacity:0.4; z-index:-1;"></div>
             <div id="mapList">
-               <div class="panel-group" ng-repeat="item in listItems" style="margin-bottom:0px">
+               <div class="panel-group" ng-repeat="item in listItems track by $index" style="margin-bottom:0px">
                   <div class="panel panel-default" >
                     <div class="panel-heading" data-target="#ring-desc_{{::$id}}">
                       <h4 class="panel-title">
