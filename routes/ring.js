@@ -156,8 +156,15 @@ app.post('/join/:ringId', function(req,res){
          sql = mysql.format(sql, inserts);
             
         db.dbExecuteQuery(sql, res, function(result){
-            // overwrite description
-            result.description="Added userId " + userId + " with pending status to ringId " + ringId;
+            if(result.status == statusCodes.EXECUTED_QUERY_SUCCESS){
+                // overwrite status and description
+                result.status = statusCodes.REQUEST_TO_JOIN_RING_SUCCESS;
+                result.description="Added userId " + userId + " with pending status to ringId " + ringId;
+                
+            } else {
+                result.status = statusCodes.REQUEST_TO_JOIN_RING_FAIL;
+                result.description="Failed to add userId " + userId + " with pending status to ringId " + ringId;
+            }
             res.send(result);
         });
     
@@ -194,7 +201,11 @@ app.put('/join/:ringId/:handleRequest', function(req,res){
             res.send(sql);// TODO: handle error
         }
         db.dbExecuteQuery(sql, res, function(result){
-            result.description="Updated userId: "+userId+" to status code: "+changeStatusTo;
+            if(result.status==statusCodes.EXECUTED_QUERY_SUCCESS){
+                // Overwrite status and description
+                result.status=statusCodes.UPDATE_USER_ACCESS_TO_RING_SUCCESS;
+                result.description="Updated userId: "+userId+" to status code: "+changeStatusTo;
+            } 
             res.send(result);
         });
     });
@@ -225,6 +236,7 @@ app.get('/notifyLeader', function(req,res){
             getPendingUsersFromRingIds(ringIds, res, function(result){
                 res.send(result);
             });
+            
         });
     });
 
@@ -264,6 +276,7 @@ var getPendingUsersFromRingIds = function(ringIds,res, callback){
         // connect to db and execute sql
         db.dbExecuteQuery(sql,res,function(result){
             if(result.data.length == 0){
+                result.status=statusCodes.NO_PENDING_USER_REQUESTS;
                 result.description = "There are no pending users.";
             }
             else{
