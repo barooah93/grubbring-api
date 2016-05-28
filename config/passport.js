@@ -7,6 +7,7 @@ var debug = require('debug')('grubbring:passport');
 var db = require('../dbexecute');
 var mysql = require('mysql');
 var emailServices = require('../emailServices');
+var statusCodes = require('../Utilities/StatusCodesBackend');
 
 module.exports = function(passport){
 
@@ -42,6 +43,7 @@ module.exports = function(passport){
 				var db_loginAttempts = result.data[0].loginAttempts;
 				var db_email = result.data[0].emailAddr;
 				
+				//login valid CODE - LOGIN_SUCCESS
 				if(emailAddress === db_email && encrypt.validatePassword(password,db_password) && db_status === "active"){
 						sql = "UPDATE tblUser SET loginAttempts=? WHERE emailAddr=?;";
 						inserts = [3,emailAddress];
@@ -53,9 +55,9 @@ module.exports = function(passport){
 						
 						done(null, result.data[0]); 
 				}
-				else{
+				else{ // login fail 
 					db_loginAttempts--;
-					if(db_loginAttempts == 0){
+					if(db_loginAttempts == 0){ //login fail CODE - LOGIN_FAIL_INVALID_PASSWORD_ACCOUNT_LOCKED
 						//send email saying account is locked
 						var newEmailObj = {
                         	emailAddress: db_email,
@@ -73,7 +75,7 @@ module.exports = function(passport){
 						
 						done(result.data[0]); 
 					}
-					else{
+					else{ //login fail CODE - LOGIN_FAIL_INVALID_PASSWORD_ACCOUNT_ACTIVE
 						if(db_loginAttempts < 0){
 							db_loginAttempts = 0;
 						}
@@ -91,7 +93,7 @@ module.exports = function(passport){
 					
 				}
 				
-		    }else{
+		    }else{//login fail CODE - LOGIN_FAIL_USERNAME_DOESNT_EXIST
 		    	console.log(emailAddress);
 		    	done(result.data[0]); //username doesn't exist
 		    }
