@@ -31,6 +31,8 @@ define('PASSWORD_RESET_SUCCESS','12003'); // Password has been successfully rese
 define('ACCESS_CODE_VALIDATION_SUCCESS','12007'); // Access code for registered user has been successfully validated
 define('UPDATE_USER_PROFILE_SUCCESS','13001'); // Successfully updated user profile page
 define('UPDATE_USER_PROFILE_FAIL','00012'); // Error updating user profile page (email, userid, phone number, etc)
+define('LOGIN_ATTEMPTS_SUCCESS','12005'); // Success of login attempts api
+define('LOGIN_ATTEMPTS_FAIL','00013'); // Success of login attempts api
 //----------------------------------------------------------
 
 // --------------- Orders API Status Codes -----------------
