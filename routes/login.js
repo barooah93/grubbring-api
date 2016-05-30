@@ -2,6 +2,7 @@ var express = require('express');
 var app = express.Router();
 var passport = require('passport');
 var glog = require('../glog.js')('login');
+var statusCodes = require('../Utilities/StatusCodesBackend');
 
 //binds node's passport library with our custom authentication written in passport.js
 require('../config/passport.js')(passport);
@@ -23,7 +24,7 @@ app.post('/', passport.authenticate('local-login'), function(req,res){
 	glog.log(req.method + ' ' + req.url);
 	if(req.user != null){
 		res.status(200);
-		res.json(req.user);
+		res.json({status:statusCodes.LOGIN_SUCCESS,data:req.user});
 	}
 });
 
