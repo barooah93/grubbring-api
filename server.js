@@ -1,6 +1,16 @@
 var express = require('express');
 var app = express();
 //var http = require('http').Server(app);
+var fs = require('fs');
+var https = require('https');
+
+var options = {
+    key  : fs.readFileSync('server.key'),
+    cert : fs.readFileSync('server.crt')
+};
+https.createServer(options, app).listen(process.env.PORT, function () {
+    console.log('Started at ' + process.env.PORT);
+});
 
 var bodyParser = require('body-parser');
 var cookieParser = require('cookie-parser');
@@ -71,7 +81,7 @@ app.use('/*', function(req, res) {
 //http.listen(process.env.PORT, process.env.IP, function(){
 //	console.log("Connected & Listen to port", process.env.PORT);
 //});
-app.listen(process.env.PORT, process.env.IP, function() {
-	debug('Connected & listening to port ' + process.env.PORT);
-	console.log("Connected & listening to port ", process.env.PORT);
-})
+//app.listen(process.env.PORT, process.env.IP, function() {
+//	debug('Connected & listening to port ' + process.env.PORT);
+//	console.log("Connected & listening to port ", process.env.PORT);
+//})
