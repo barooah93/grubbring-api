@@ -3,13 +3,15 @@ angular.module('grubbring.controllers').controller('BeginPasswordResetCtrl', fun
     $scope.isSubmitDisabled = true;
     $scope.headerMsg = "Forgot your password?";
     $scope.dirMsg = "Enter your email address or phone number to begin the process to reset your password.";
-    $scope.$watch('email', function() {
+    
+    $scope.onTextChanged = function(){
         if ($scope.email.length > 0) {
             $scope.isSubmitDisabled = false;
         } else {
             $scope.isSubmitDisabled = true;
         }
-    });
+    }
+    
     $scope.submit = function() {
         email = $scope.email;
         $http({
