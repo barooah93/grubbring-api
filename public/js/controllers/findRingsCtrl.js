@@ -76,16 +76,16 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
                 
                 // Clear list of items
                 $scope.listItems = [];
-                var nearbyRingsList = [];
+                $scope.nearbyRingsList = [];
             
                 if(response.data.data != null) {
                     for (var i = 0; i < response.data.data.length; i++) {
                         placeRingMarkerOnMap(response.data.data[i]);
                         response.data.data[i].isRing = true;
-                        nearbyRingsList.push(response.data.data[i]);
+                        $scope.nearbyRingsList.push(response.data.data[i]);
                         
                     }
-                    $scope.listItems = nearbyRingsList;
+                    $scope.listItems = $scope.nearbyRingsList;
                     
                     // Now load grubberies to map and list
                     getNearbyGrubberies(lat, long);
