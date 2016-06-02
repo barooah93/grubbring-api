@@ -3,6 +3,8 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
     $scope.rings = null;
     $scope.sortedCounts = null;
     
+    // initialize geocoder for finding long and lat of an address
+    var geocoder = new google.maps.Geocoder();
     
     getUserDetails();
     
@@ -15,7 +17,8 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
     
     // initialize map canvas
     var mapCanvas = document.getElementById('map');
-    var zoomLevel = 15; // TODO: hardcoded for now
+    var defaultZoomLevel = 15; // TODO: hardcoded for now
+
 
 
     
@@ -28,12 +31,12 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
             url: '/api/profile'
         }).then(function(response) {
             $scope.userId = response.data.userId;
-                if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(successFunction, errorFunction);
-                }
-                else {
-                    alert('It seems like Geolocation, which is required for this page, is not enabled in your browser.');
-                }
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(successFunction, errorFunction);
+            }
+            else {
+                alert('It seems like Geolocation, which is required for this page, is not enabled in your browser.');
+            }
         }, function(err) {
             console.log("Couldn't get user details:");
             console.log(err);
@@ -47,19 +50,20 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
         // get client coordinates
         $scope.lat = position.coords.latitude;
         $scope.long = position.coords.longitude;
-
-        // initialize geocoder for finding long and lat of an address
-        var geocoder = new google.maps.Geocoder();
+        
 
         // initialize options for map
         var mapOptions = {
             center: new google.maps.LatLng($scope.lat, $scope.long),
-            zoom: zoomLevel,
+            zoom: defaultZoomLevel,
             mapTypeId: google.maps.MapTypeId.ROADMAP
         }
 
         // initialize google map object onto div mapCanvas with specified options
         var map = new google.maps.Map(mapCanvas, mapOptions);
+        
+        // Place user marker on map
+        placeUserMarkerOnMap($scope.lat, $scope.long);
 
         // get suggested rings to display to user
         $http({
@@ -73,7 +77,7 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
         
             if(response.data.data != null) {
                 for (var i = 0; i < response.data.data.length; i++) {
-                    codeAddress(response.data.data[i]);
+                    placeRingMarkerOnMap(response.data.data[i]);
                     response.data.data[i].isRing = true;
                     $scope.nearbyRingsList.push(response.data.data[i]);
                     $scope.listItems = $scope.nearbyRingsList;
@@ -89,14 +93,18 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
             console.log(err);
         });
         
-        // decodes address into long and lat coordinates to add markers to the map
-        function codeAddress(ring) {
+// ---------------------- Google Map Markers ---------------------------------------------------------------------------
+        
+        // decodes address into long and lat coordinates to add ring markers to the map
+        function placeRingMarkerOnMap(ring) {
             geocoder.geocode({'address': ring.addr + ' ' + ring.city + ', ' + ring.state}, function(results, status) {
                 if (status == google.maps.GeocoderStatus.OK) {
                     var marker = new google.maps.Marker({
                         map: map,
                         position: results[0].geometry.location
                     });
+                    // Set marker icon color
+                    marker.setIcon('http://maps.google.com/mapfiles/ms/icons/red-dot.png');
                     // add tooltip giving info about the ring
                     marker.setTitle(ring.name + "\n" + ring.addr + "\n" + ring.firstName + " " + ring.lastName);
                 } else {
@@ -105,8 +113,34 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
             });
 
         }
+        
+        // decodes address into long and lat coordinates to add markers to the map
+        function placeUserMarkerOnMap(lat, long) {
+            var latlng =  {lat: lat, lng: long};
+            var marker = new google.maps.Marker({
+                map: map,
+                position: latlng
+            });
+            // Set marker icon color
+            marker.setIcon('http://maps.google.com/mapfiles/ms/icons/blue-dot.png');
+            marker.setTitle("You are here!");
+            // add tooltip giving info about the ring
+            // geocoder.geocode({'location': latlng}, function(results, status) {
+            //     if (status === google.maps.GeocoderStatus.OK) {
+            //         if (results[1]) {
+            //             marker.setTitle(results[1]);
+            //         }
+            //         console.log(results[1]);
+            //         console.log(results[0]);
+            //     }
+            // });
+
+        }
     }
     
+// ---------------------- Google Map Markers End ---------------------------------------------------------------------------
+    
+// ----------------------- Search Algorithm ----------------------------------------------------------------------------
     // Event listener for search input change
     $scope.onSearchTextChanged = function(){
         
@@ -207,6 +241,8 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
         }
     
     }
+    
+// ----------------------- Search Algorithm End ----------------------------------------------------------------------------
 
 
     // TODO: render something useful to user
