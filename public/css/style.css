@@ -522,9 +522,9 @@ Header
 
 
 
-.glyphicon.glyphicon-option-vertical{
+.glyphicon.glyphicon-menu-hamburger{
   position:relative;
-  font-size: 25px;
+  font-size: 23px;
   font-weight: 100;
   padding-top: 4%;
   color: #777777;
@@ -797,6 +797,7 @@ Header
   -ms-appearance: none;
   -o-appearance: none;
   appearance: none;
+  border-left: 1px solid black;
 }
 .cd-search input:focus {
   outline: none;
@@ -812,6 +813,7 @@ Header
   .cd-search.is-hidden {
     /* reset style */
     opacity: 1;
+    margin-left: 0px;
   }
   .cd-search::before {
     background-position: 0 -16px;
@@ -826,21 +828,20 @@ Header
     padding-left: 2.6em;
     border-radius: 0;
     /*background-color: #3e454c;*/
-    background-color: #2ba0c2;
-    border-left: 1px solid white;
-    color: #ffffff;
+    background-color: #eaeaea;
+    color: #8B8C8C;
   }
   .cd-search input::-webkit-input-placeholder {
-    color: white;
+    color: #8B8C8C;
   }
   .cd-search input::-moz-placeholder {
-    color: white;
+    color: #8B8C8C;
   }
   .cd-search input:-moz-placeholder {
-    color: white;
+    color: #8B8C8C;
   }
   .cd-search input:-ms-input-placeholder {
-    color: white;
+    color: #8B8C8C;
   }
 }
 
