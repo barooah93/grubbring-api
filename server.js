@@ -18,6 +18,7 @@ var logoutRoute = require('./routes/logout');
 var registrationRoute = require('./routes/registration');
 var facebookloginRoute = require('./routes/facebooklogin');
 var getRingsRoute = require('./routes/ring'); 
+var getGrubberyRoute = require('./routes/grubbery');
 var getDashboardRoute = require("./routes/dashboard");
 var getActivitiesRoute = require("./routes/activities");
 var getOrdersRoute = require('./routes/orders');
@@ -56,6 +57,7 @@ app.use('/auth/facebook', facebookloginRoute);
 //Re-Routing URL requests to APIs
 
 app.use('/api/ring', getRingsRoute);
+app.use('/api/grubbery', getGrubberyRoute);
 app.use('/api/dashboard', getDashboardRoute);
 app.use('/api/activities', getActivitiesRoute);
 app.use('/api/orders', getOrdersRoute);
