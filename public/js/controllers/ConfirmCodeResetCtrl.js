@@ -2,16 +2,19 @@ angular.module('grubbring.controllers').controller('ConfirmCodeResetCtrl', funct
     $scope.isSubmitDisabled = true;
     $scope.headerMsg = "Validate Access Code";
     $scope.dirMsg = "Please enter in the access code that was sent to you in email/text message for " + passEmailService.getEmail() + ".";
-    $scope.$watch('accessCode', function() {
+    
+    $scope.onTextChanged = function(){
         if ($scope.accessCode.length > 0) {
             $scope.isSubmitDisabled = false;
         } else {
             $scope.isSubmitDisabled = true;
         }
-    });
+    }
+    
     $scope.submit = function() {
         var accessCode = $scope.accessCode;
         var email = passEmailService.getEmail();
+        console.log(accessCode + " "+email);
         $http({
             method: 'POST',
             url: '/api/profile/resetPassword/validateAccessCode',

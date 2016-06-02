@@ -9,6 +9,7 @@ var db = require('../dbexecute');
 var mysql = require('mysql');
 var emailServices = require('../emailServices');
 var accountAcc = require('../accountAccessibility');
+var statusCodes = require('../Utilities/StatusCodesBackend');
 
 app.get('/',function(req,res){
 	authenticate.checkAuthentication(req,res,function(data){
@@ -200,7 +201,12 @@ app.get('/loginAttempts/:email',function(req, res) {
    sql = mysql.format(sql, inserts);
    
    db.dbExecuteQuery(sql, res, function(result) {
-       res.json(result.data[0]);
+       if(result.data.length > 0){
+          res.json({status:statusCodes.LOGIN_ATTEMPTS_SUCCESS,data:result.data[0]});
+       }
+       else{
+           res.json({status:statusCodes.LOGIN_ATTEMPTS_FAIL,data:result.data[0]});
+       }
    });
 });
 
