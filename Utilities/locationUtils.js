@@ -7,7 +7,7 @@ var statusCodes = require('../Utilities/StatusCodesBackend');
 
 module.exports = {    
 
-    getSortedRingsByZip: function(ringObjectArray, userLat, userLong) {
+    getSortedObjectsByZipcodes: function(ringObjectArray, userLat, userLong) {
         var userZipCode = gps.gps2zip(userLat, userLong).zip_code; 
         var unsortedList = ringObjectArray;
         var len = unsortedList.length;
@@ -95,7 +95,7 @@ module.exports = {
         }
         else{
             // inject first zipcode into sql
-            var sql = "SELECT G.name AS grubbery, G.addr, G.city, G.state, G.zipcode FROM tblGrubbery G "+
+            var sql = "SELECT G.name, G.addr, G.city, G.state, G.zipcode FROM tblGrubbery G "+
             "WHERE zipcode = ? ";
             var inserts = [zipcodesNearUser[0].toString()];
             // inject the rest
