@@ -379,6 +379,10 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
         }
         
     }
+    
+    $scope.displayRingPanelOverlay = function(item){
+        $scope.showOverlay=true;
+    }
 
 
 });
