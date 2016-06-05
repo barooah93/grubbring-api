@@ -20,36 +20,46 @@ http://stackoverflow.com/questions/21021951/directive-template-unique-ids-for-el
 
 
 <header class="cd-main-header">
-    <table class="dashboard-container">
-      <tr class="dashboard-header">
-        <td class="dashboard-menu-container">
-              <span class="glyphicon glyphicon-menu-hamburger" aria-hidden="true"  data-toggle="dropdown" aria-haspopup="true"></span>
+    
+    
+    <div class="container main">
+    <div class="container header">
+      <div class="row">
+        <div class="menu col-md-4">
+          <span class="glyphicon glyphicon-menu-hamburger" aria-hidden="true"  data-toggle="dropdown" aria-haspopup="true"></span>
               <ul class="dropdown-menu">
                   <li><a href="#">My Rings</a></li>
                   <li><a href="#">Activities</a></li>
                   <li><a href="#">Profile</a></li>
                   <li><a href="#">Settings</a></li>
-                  <!--<li role="separator" class="divider"></li>-->
+                  <li role="separator" class="divider"></li>
                   <li><a href="#">Logout</a></li>
               </ul>
-        </td>
-        <td class="dashboard-search-container">
-          <div class="cd-search is-hidden">
-			  <form role="search">
-				  <input type="search" ng-model="searchText" ng-change="onSearchTextChanged()" placeholder="Search...">
-			  </form>
-		  </div> <!-- cd-search -->
-        </td>
-      </tr>
-      <tr class="dashboard-content">
-        <td class="dashboard-left-container">
-          <p>NO RINGS!</p>
-        </td>
-        <td class="dashboard-right-container">
-          <p>NO ACTIVITIES!</p>
-        </td>
-      </tr>
-    </table>
+        </div>
+        <div class="dashboard-search col-md-8 col-md-offset-4">
+           <div class="cd-search is-hidden">
+				    <input type="search" ng-model="searchText" ng-change="onSearchTextChanged()" placeholder="Search..."> 
+				    </div>
+		      <span class="glyphicon glyphicon-map-marker" aria-hidden="true"></span>
+        </div>
+      </div>
+      <div class="main-content row">
+        <!-- this is for the content in the container -->
+         <div class="left-container col-md-4">
+            <p>NO RINGS!</p>
+        </div>
+        <div class="right-container col-md-4">
+           <p>NO ACTIVITIES!</p>
+        </div>
+      </div>
+      
+    </div>
+    
+  </div>
+    
+    
+    
+    
 </header>
 
 <!--

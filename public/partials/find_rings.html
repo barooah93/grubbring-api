@@ -31,7 +31,7 @@ http://stackoverflow.com/questions/21021951/directive-template-unique-ids-for-el
          <div class="left-container col-md-4">
            <img ng-show="showLoader" class="loader-gif" src="../images/ring-alt.svg"/>
            <div class="ring-panel-group" ng-repeat="item in listItems track by $index">
-             <div class="ring-panel">
+             <div class="ring-panel" ng-click="displayRingPanelOverlay(item)">
                <div class="ring-panel-content" data-target="#ring-desc_[[::$id}}">
                  <h4>
                     <img ng-if="item.isRing" ng-src="../images/default_ring_0.png"/>
