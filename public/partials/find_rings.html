@@ -4,68 +4,63 @@ http://stackoverflow.com/questions/21021951/directive-template-unique-ids-for-el
 -->
 
 <header class="cd-main-header">
-<table class="dashboard-container">
-      <tr class="dashboard-header">
-        <td class="dashboard-menu-container">
-              <span class="glyphicon glyphicon-menu-hamburger" aria-hidden="true"  data-toggle="dropdown" aria-haspopup="true"></span>
+  
+  <div class="container main">
+    <div class="container header">
+      <div class="row">
+        <div class="menu col-md-4">
+          <span class="glyphicon glyphicon-menu-hamburger" aria-hidden="true"  data-toggle="dropdown" aria-haspopup="true"></span>
               <ul class="dropdown-menu">
                   <li><a href="#">My Rings</a></li>
                   <li><a href="#">Activities</a></li>
                   <li><a href="#">Profile</a></li>
                   <li><a href="#">Settings</a></li>
-                  <!--<li role="separator" class="divider"></li>-->
+                  <li role="separator" class="divider"></li>
                   <li><a href="#">Logout</a></li>
               </ul>
-        </td>
-        <td class="dashboard-search-container">
-          <!--<div style="float:right;">-->
-          <!--  <form class="navbar-form navbar-left" role="search">-->
-          <!--    <div class="form-group">-->
-          <!--      <input type="text" ng-model="searchText" ng-change="onSearchTextChanged()" id="searchBox" class="form-control" placeholder="Search">-->
-          <!--    </div>-->
-          <!--      <button type="submit" class="btn btn-default"><span class="glyphicon glyphicon-search"></span></button>-->
-          <!--  </form>-->
-          <!--</div>-->
-          
-          <div class="cd-search is-hidden">
+        </div>
+        <div class="dashboard-search col-md-8 col-md-offset-4">
+           <div class="cd-search is-hidden">
 				    <input type="search" ng-model="searchText" ng-change="onSearchTextChanged()" placeholder="Search..."> 
 				    </div>
 		      <span class="glyphicon glyphicon-map-marker" aria-hidden="true"></span>
-        </td>
-      </tr>
-      <tr class="dashboard-content">
-        <td class="dashboard-left-container">
-          <img ng-show="showLoader" class="loader-gif" src="../images/ring-alt.svg"/>
-            <div id="mapList">
-               <div class="panel-group" ng-repeat="item in listItems track by $index" style="margin-top:0px">
-                  <div class="panel panel-default" >
-                    <div class="panel-heading" data-target="#ring-desc_{{::$id}}">
-                      <h4 class="panel-title">
-                          <img ng-if="item.isRing" ng-src="../images/default_ring_0.png" style="float:left;" width="50" height="50"/>
-                          <img ng-if="item.isGrubbery" ng-src="../images/default_ring_1.png" style="float:left;" width="50" height="50"/>
-                          <div class="ring-panel-title-text">
-                            <b>{{ item.name }}</b>
-                          </div>
-                      </h4>
+        </div>
+      </div>
+      <div class="main-content row">
+        <!-- this is for the content in the container -->
+         <div class="left-container col-md-4">
+           <img ng-show="showLoader" class="loader-gif" src="../images/ring-alt.svg"/>
+           <div class="ring-panel-group" ng-repeat="item in listItems track by $index">
+             <div class="ring-panel">
+               <div class="ring-panel-content" data-target="#ring-desc_[[::$id}}">
+                 <h4>
+                    <img ng-if="item.isRing" ng-src="../images/default_ring_0.png"/>
+                    <img ng-if="item.isGrubbery" ng-src="../images/default_ring_1.png"/>
+                      <div class="ring-panel-title-text">
+                        <b>{{ item.name }}</b>
                     </div>
+                 </h4>
+               </div>
+             </div>
+           </div>
+      
+        </div>
+        <div class="right-container col-md-4">
+          <div id="map"></div>
+        </div>
+      </div>
+      
+    </div>
+    
+  </div>
+  
+  
                       <!--<div id="ring-desc_{{::$id}}" class="panel-collapse collapse">-->
                       <!--  <div class="panel-body">-->
                       <!--    {{ ring.addr }}-->
                       <!--  </div>-->
                       <!--</div>-->
-                  </div>
-                </div> 
-            </div>
-
-        </td>
-        <td class="dashboard-right-container">
-             <div id="map"></div>
-        </td>
-      </tr>
-    </table>
 </header>
-
-
 
 
 <!--<ng-include src=" 'partials/template.html' "></ng-include>-->
