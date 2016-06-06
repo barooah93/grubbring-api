@@ -13,6 +13,9 @@ app.service('StatusCodes', function(){
         DELETE_RING_FAIL:'00005', // Did not return any results for ring search
         USER_NOT_SUBSCRIBED_TO_RINGS:'00007', // User is not subscribed to any rings (will return map of rings near that person)
         USER_NOT_LEADER_TO_ANY_RINGS:'00006', // User is not leader to any rings
+        UPDATE_USER_ACCESS_TO_RING_SUCCESS:'00008',  // Successfully updated user's ring access status
+        NO_PENDING_USER_REQUESTS: '00009',  // This ring has no pending user requests
+        RECIEVED_PENDING_USER_REQUESTS: '00010', // Retrieved pending user requests to joing ring
         //----------------------------------------------------------
         
         // --------------- Activities API Status Codes -------------
@@ -45,8 +48,10 @@ app.service('StatusCodes', function(){
         
         // --------------- Other API Status Codes ----------------
         RETURNED_RINGS_NEAR_USER_SUCCESS:'16001', // Successfully returned rings near user
+        NO_RINGS_NEAR_USER:'16007',  // No rings found near user
         RETRIEVE_USER_LOCATION_FAIL:'16002', // Failed to retrieve user's location
         RETURNED_GRUBBERIES_NEAR_USER_SUCCESS:'16003', // Successfully returned grubberies near user
+        NO_GRUBBERIES_NEAR_USER: '16008',  // No grubberies found near user
         EXECUTED_QUERY_SUCCESS:'16004', // Successfully executed query
         EXECUTED_QUERY_FAIL:'16005', // Cannot execute query
         DATABASE_CONNECTION_FAIL:'16006' // Cannot connect to database

@@ -49,7 +49,7 @@ module.exports = {
         }
         else{
             // inject first zipcode into sql
-            var sql = "SELECT R.addr, R.city, R.state, R.name, U.firstName, U.lastName FROM tblRing R "+
+            var sql = "SELECT R.addr, R.city, R.state, R.name, R.ringId, U.firstName, U.lastName FROM tblRing R "+
             "INNER JOIN tblUser U "+
             "ON R.createdBy=U.userId "+
             "WHERE zipcode = ? ";
@@ -64,9 +64,14 @@ module.exports = {
             sql = mysql.format(sql, inserts);
             
             db.dbExecuteQuery(sql, res, function(result){
-                // overwrite description
-                result.status=statusCodes.RETURNED_RINGS_NEAR_USER_SUCCESS;
-                result.description="Returned all rings";
+                if(result.data.length > 0){
+                    // overwrite description
+                    result.status=statusCodes.RETURNED_RINGS_NEAR_USER_SUCCESS;
+                    result.description="Returned all rings";
+                } else {
+                    result.status=statusCodes.NO_RINGS_NEAR_USER;
+                    result.description="Returned no rings";
+                }
                 callback(result);
             });
         }
@@ -103,9 +108,17 @@ module.exports = {
             sql = mysql.format(sql, inserts);
             
             db.dbExecuteQuery(sql, res, function(result){
-                // overwrite description
-                result.status= statusCodes.RETURNED_GRUBBERIES_NEAR_USER_SUCCESS;
-                result.description="Returned all grubberies";
+                if(result.data.length > 0){
+                    // overwrite description
+                    result.status= statusCodes.RETURNED_GRUBBERIES_NEAR_USER_SUCCESS;
+                    result.description="Returned all grubberies";
+                } else {
+                    result.status=statusCodes.NO_GRUBBERIES_NEAR_USER;
+                    result.description="Returned no grubberies";
+                    
+                }
+                
+                
                 callback(result);
             });
         }

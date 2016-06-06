@@ -75,8 +75,11 @@ app.get('/:key', function(req,res) {
             userLong = -74.5441180;
         }*/
         
+        // Replace multiple spaces with a single space and any tabs, endline symbols, etc.
+        var cleanedSearchText = key.replace(/\s\s+/g, ' ');
+        
         // tokenize key for multiple word search
-        tokenized = key.split(" ");
+        tokenized = cleanedSearchText.split(" ");
     
             var tokenizedSearch="";
             var inserts = [];

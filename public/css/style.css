@@ -1329,6 +1329,7 @@ Sidebar
 }
 
 #mapList {
+  top:0px;
   overflow-y: scroll;
   width: 100%;
 }
