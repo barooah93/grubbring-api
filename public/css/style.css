@@ -1334,5 +1334,8 @@ Sidebar
   width: 100%;
 }
 
-
-
+.scroll {
+    position: absolute;
+    height: 400px;  /* TODO: change to actual height of container */
+    overflow-y: scroll;
+}

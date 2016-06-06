@@ -40,7 +40,13 @@ app.get('/', function(req,res){
 
 app.get('/subscribedRings', function(req, res) {
     authenticate.checkAuthentication(req, res, function (data) {
-    
+        var sql = 'SELECT * FROM tblRing WHERE ringId IN ( SELECT ringId FROM tblRingUser WHERE userId = ? )';
+        var inserts = [req.user.userId];
+        sql = mysql.format(sql, inserts);
+
+        db.dbExecuteQuery(sql, res, function(result) {
+            res.json(result)
+        });
         
     });
 });

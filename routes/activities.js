@@ -40,9 +40,10 @@ app.get('/', function(req,res){
 		
 		/*TODO: check last ordertime > current order time*/
 			var activitiesSql = "SELECT A.ringId, A.activityId, U.firstName, U.lastName, A.maxNumOrders, A.lastOrderDateTime, G.name as grubberyName, "+
-					"G.addr as grubberyAddress, G.city as grubberyCity, (A.maxNumOrders-SUM(A.activityId)) as remainingOrders "+
-					"FROM tblUser U, tblGrubbery G, tblActivity A " +
+					"G.addr as grubberyAddress, G.city as grubberyCity, (A.maxNumOrders-SUM(A.activityId)) as remainingOrders, R.name as ringName "+
+					"FROM tblUser U, tblGrubbery G, tblActivity A, tblRing R " +
 					"WHERE A.ringId IN (SELECT ringId FROM tblRingUser WHERE userId=? AND status=1) AND " +
+					"A.ringId = R.ringId AND " +
 					"A.grubberyId = G.grubberyId AND " +
 					"U.userId = A.bringerUserId "+
 					"GROUP BY A.activityId;";
