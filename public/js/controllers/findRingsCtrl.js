@@ -1,5 +1,7 @@
 angular.module('grubbring.controllers').controller('findRingsCtrl', function findRingsCtrl($scope, $http, $location, StatusCodes) {
     
+    $scope.states = ["Alabama","Alaska","Arizona","Arkansas","California","Colorado","Connecticut","Delaware","Florida","Georgia","Hawaii","Idaho","Illinois","Indiana","Iowa","Kansas","Kentucky","Louisiana","Maine","Maryland","Massachusetts","Michigan","Minnesota","Mississippi","Missouri","Montana","Nebraska","Nevada","New Hampshire","New Jersey","New Mexico","New York","North Dakota","North Carolina","Ohio","Oklahoma","Oregon","Pennsylvania","Rhode Island","South Carolina","South Dakota","Tennessee","Texas","Utah","Vermont","Virginia","Washington","West Virginia","Wisconsin","Wyoming"];
+    
     $scope.rings = null;
     $scope.sortedCounts = null;
     
@@ -302,6 +304,14 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
     
 // ----------------------- Search Algorithm End ----------------------------------------------------------------------------
 
+// ----------------------- Location Search Start --------------------------------------------------------------------------
+    $scope.onLocationTextChanged = function(){
+        console.log($scope.searchLocationText);
+        
+        $scope.locations = [];
+        
+    }
+// ----------------------- Location Search End -----------------------------------------------------------------------------
 
     // TODO: render something useful to user
     function errorFunction(position) {

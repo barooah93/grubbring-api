@@ -157,6 +157,22 @@ html{
   cursor: pointer;
 }
 
+ul { 
+list-style: none; 
+}
+
+.location-search-container{
+  margin-left: 65%;
+  margin-top: 10px;
+  width:200px;
+  position: absolute;
+}
+
+.search-location-results {
+height: 100px;
+overflow-y: auto;
+}
+
 
 /** logo on login page **/
 
@@ -856,6 +872,7 @@ Header
 }
 
 .cd-search {
+  float:left;
   position: relative;
   margin: 1.2em 5% 0.6em;
 }

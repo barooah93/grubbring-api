@@ -20,10 +20,25 @@ http://stackoverflow.com/questions/21021951/directive-template-unique-ids-for-el
               </ul>
         </div>
         <div class="dashboard-search col-md-8 col-md-offset-4">
-           <div class="cd-search is-hidden">
+          <div class="cd-search is-hidden">
 				    <input type="search" ng-model="searchText" ng-change="onSearchTextChanged()" placeholder="Search..."> 
 				    </div>
-		      <span class="glyphicon glyphicon-map-marker" aria-hidden="true"></span>
+				    <span class="glyphicon glyphicon-map-marker" aria-hidden="true" ng-click="isLocationEntryOpen = !isLocationEntryOpen" style="float:right;"></span>
+
+            <div class="location-search-container">
+                <div class="panel panel-default" ng-show="isLocationEntryOpen">
+                  <div class="panel-body">
+                    <div class="input-group">
+                     <input type="text" class="form-control" ng-change="onLocationTextChanged()" placeholder="Enter city and state or zipcode" id="input-zip-textbox" ng-model="searchLocationText">
+                    </div>
+                    <div class="search-location-results">
+                      <ul>
+                        <li data-ng-repeat="location in locations | filter: searchLocationText">{{state}}</li>
+                      </ul>
+                   </div>
+                 </div>
+              </div>
+          </div>
         </div>
       </div>
       <div class="main-content row">
@@ -46,6 +61,7 @@ http://stackoverflow.com/questions/21021951/directive-template-unique-ids-for-el
       
         </div>
         <div class="right-container col-md-4">
+          
           <div id="map"></div>
         </div>
       </div>

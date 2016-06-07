@@ -398,6 +398,17 @@ app.get('/:key', function(req,res) {
 //-------------------------END-------------------------------------------------------
 
 
+//-------------------------Start----------------------------------------------------
+// GET - Search by city, state or zipcode
+// ex: https://grubbring-api-barooah93.c9users.io/api/search/locations?latitude=40%2E8804088&longitude=-74%2E6744209
+app.get('/locations/:key', function(req,res) {
+    // TODO: Return list of city,state and zipcodes that match their search
+    var key = req.params.key;
+    var userLat = req.query.latitude;
+    var userLong = req.query.longitude;
+    
+});
 
+//-------------------------END-------------------------------------------------------
 
 module.exports = app;
