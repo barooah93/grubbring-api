@@ -137,8 +137,11 @@ app.get('/:key', function(req,res) {
                     
                     if(context == "findRings") {
                          if(userLat != null && userLong != null){ //sort by location
+                            locationUtils.getSortedObjectsByAddress(ringResult.data, userLat, userLong);
                             var sortedRings = locationUtils.getSortedObjectsByZipcodes(ringResult.data, userLat, userLong);
+                            var sortedGrubberies = locationUtils.getSortedObjectsByZipcodes(grubberyResult.data, userLat, userLong);
                             data.data.rings = sortedRings;
+                            data.data.grubberies = sortedGrubberies;
                             res.send(data);
                         }
                     }

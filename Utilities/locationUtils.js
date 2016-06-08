@@ -1,4 +1,6 @@
 var gps = require('gps2zip');
+var nodeGeocoder = require('node-geocoder');
+var geocoder = nodeGeocoder({provider: 'google'})
 var zipcodes = require('zipcodes');
 var mysql = require('mysql');
 var db = require('../dbexecute');
@@ -7,12 +9,50 @@ var statusCodes = require('../Utilities/StatusCodesBackend');
 
 module.exports = {    
 
+    getSortedObjectsByAddress: function(objectArray, userLat, userLong) {
+        var unsortedList = objectArray;
+        var len = unsortedList.length;
+        
+        // Loop through array to append a latitude and logitude field to each object
+        for(var i=0; i<len; i++){
+            (function(i) {
+                // Get lat and long from address
+                geocoder.geocode({address: unsortedList[i].addr +' ' + unsortedList[i].city + ', ' + unsortedList[i].state}, function(err, res) {
+                    if(!err){
+                        console.log("<<<<<<<<<<<<<<<<<<<<<<BEFORE<<<<<<<<<<<<<<<<");
+                        unsortedList[i].lat = res[0].latitude;
+                        unsortedList[i].long = res[0].longitude;
+                    } else {
+                        glog.error(err);
+                    }
+                });
+            })(i);
+        }
+        console.log(">>>>>>>>>>>>AFTERRR>>>>>>>>>>>>");
+        console.log(unsortedList);
+        //sort objects by distance from user lat and long using insertion sort
+        for (var i = 0; i < len; i++) {
+            
+            var currObject = unsortedList[i];
+            var currDist = getDistanceFromLatLong(userLat, userLong, currObject.lat, currObject.long);
+            
+            /*Check through the sorted list and compare with the unsorted ring if smaller, move the unsorted to the beginning of the list*/
+            for (var j = i - 1; j >= 0 && (getDistanceFromLatLong(userLat, userLong, unsortedList[j].lat, unsortedList[j].long) > currDist); j--) {
+                unsortedList[j + 1] = unsortedList[j];
+            }
+            unsortedList[j + 1] = currObject;
+        }
+        console.log("????????????????????????????????");
+        console.log(unsortedList);
+        return unsortedList;
+    },
+    
     getSortedObjectsByZipcodes: function(objectArray, userLat, userLong) {
         var userZipCode = gps.gps2zip(userLat, userLong).zip_code; 
         var unsortedList = objectArray;
         var len = unsortedList.length;
         
-        //sort rings by distance from userZipCode using insertion sort
+        //sort objects by distance from userZipCode using insertion sort
         for (var i = 0; i < len; i++) {
             var currRing = unsortedList[i];
             var currDist = zipcodes.distance(currRing.zipcode, userZipCode); //In Miles
@@ -122,5 +162,25 @@ module.exports = {
                 callback(result);
             });
         }
+    }
+}
+
+ // Using ‘Haversine’ formula (Needed again for use within file)
+function getDistanceFromLatLong(lat1 ,long1 , lat2, long2){
+    
+    var R = 6371; // Radius of the earth in km
+    var dLat = deg2rad(lat2-lat1);  // deg2rad below
+    var dLong = deg2rad(long2-long1); 
+    var a = 
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * 
+    Math.sin(dLong/2) * Math.sin(dLong/2)
+    ; 
+    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+    var d = R * c; // Distance in km
+    return d;
+    
+    function deg2rad(deg) {
+      return deg * (Math.PI/180)
     }
 }
