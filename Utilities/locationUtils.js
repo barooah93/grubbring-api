@@ -7,9 +7,9 @@ var statusCodes = require('../Utilities/StatusCodesBackend');
 
 module.exports = {    
 
-    getSortedObjectsByZipcodes: function(ringObjectArray, userLat, userLong) {
+    getSortedObjectsByZipcodes: function(objectArray, userLat, userLong) {
         var userZipCode = gps.gps2zip(userLat, userLong).zip_code; 
-        var unsortedList = ringObjectArray;
+        var unsortedList = objectArray;
         var len = unsortedList.length;
         
         //sort rings by distance from userZipCode using insertion sort
