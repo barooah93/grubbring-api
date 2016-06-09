@@ -391,7 +391,17 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
     }
     
     $scope.displayRingPanelOverlay = function(item){
-        $scope.showOverlay=true;
+        if (item != null){
+            $scope.name = item.name;
+            $scope.showRingDetailOverlay=true; 
+        }
+       else{
+           $scope.showRingDetailOverlay=false;
+       }
+    }
+    
+    $scope.closeRingDetailOverlay = function(){
+        $scope.showRingDetailOverlay = false;
     }
 
 
