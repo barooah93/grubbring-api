@@ -770,7 +770,7 @@ Header
 }
 
 .findrings-popup .content{
-  max-height: 30%;
+  max-height: 100%;
   overflow: auto;
   font-family: 'Source Sans Pro', sans-serif;
 }
@@ -799,7 +799,6 @@ Header
 .findrings.btn.btn-primary{
   background-color: #2ba0c2;
   margin-top: 5%;
-  vertical-align: middle;
 }
 
 .cd-logo {

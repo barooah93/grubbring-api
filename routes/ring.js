@@ -243,6 +243,62 @@ app.get('/notifyLeader', function(req,res){
 });
 //-------------------------END-------------------------------------------------------
 
+//-------------------------START-----------------------------------------------------
+// GET: Ring leader user details for selected ring in find_rings page
+
+app.get('/getLeaderDetails/:userId/:ringId', function(req, res){
+     authenticate.checkAuthentication(req, res, function (data) {
+        var sql = null;
+        var leaderId = req.params.userId;
+        var ringId = req.params.ringId;
+        
+        sql = "SELECT R.createdBy, U.username, U.firstname, U.lastname FROM tblRing R, tblUser U WHERE " +
+            "U.userId = ? AND R.ringId = ?;";
+            
+        var inserts = [leaderId, ringId];
+        sql = mysql.format(sql, inserts);
+        db.dbExecuteQuery(sql, res, function(result){
+            if(result.status==statusCodes.EXECUTED_QUERY_SUCCESS){
+                // Overwrite status and description
+                result.status=statusCodes.RING_LEADER_DETAILS_SUCCESS;
+                result.description="Retrieved ring leader's user details for userid: "+leaderId+" and ringid: "+ringId;
+            } 
+            res.send(result);
+            
+            
+        });    
+         
+     });
+});
+
+//-------------------------END-------------------------------------------------------
+
+//-------------------------START-----------------------------------------------------
+// GET: This counts the number of grubblings associated with a specific ring
+
+app.get('/getRingGrubblingsCount/:ringId', function(req, res){
+     authenticate.checkAuthentication(req, res, function (data) {
+        var sql = null;
+        var ringId = req.params.ringId;
+        
+        sql = "SELECT COUNT(R.ringId) AS grubblingCount FROM tblRingUser R WHERE R.ringId = ?;";
+        
+        var inserts = [ringId];
+        sql = mysql.format(sql, inserts);
+        db.dbExecuteQuery(sql, res, function(result){
+            if(result.status==statusCodes.EXECUTED_QUERY_SUCCESS){
+                // Overwrite status and description
+                result.status=statusCodes.RING_GRUBBLINGS_COUNT_SUCCESS;
+                result.description="Retrieved count of grubblings for selected ring with ringId: "+ringId;
+            } 
+            res.send(result);
+            
+            
+        });  
+     });
+     
+});
+
 //-----------------------Helper Functions--------------------------------------------
 
 

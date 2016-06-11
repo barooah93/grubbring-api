@@ -393,8 +393,54 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
     $scope.displayRingPanelOverlay = function(item){
         if (item != null){
             $scope.name = item.name;
+            $scope.address = item.addr+", "+item.city+", "+item.state+", "+item.zipcode;
             $scope.showRingDetailOverlay=true; 
-        }
+            
+            // to grab the ring leader username
+            $http({
+                    method: 'GET',
+                    url: '/api/ring/getLeaderDetails/'+item.createdBy+'/'+item.ringId
+                }).then(function(response) {
+                     console.log(response.data.data);
+                    $scope.leader = response.data.data[0].username;
+                }, function(err) {
+                    console.log(err);
+            });
+            
+            // to grab the number of grubblings for ring
+            $http({
+                    method: 'GET',
+                    url: '/api/ring/getRingGrubblingsCount/'+item.ringId
+                }).then(function(response) {
+                    if (response.data.data[0].grubblingCount == 0){
+                        $scope.grubblings = "No Grubblings have joined this ring."
+                    }
+                    else{
+                        if (response.data.data[0].grubblingCount == 1){
+                          $scope.grubblings = response.data.data[0].grubblingCount+" Grubbling";
+                        }
+                        else{
+                          $scope.grubblings = response.data.data[0].grubblingCount+" Grubblings";
+                        }
+                    }
+                }, function(err) {
+                    console.log(err);
+            });
+            // to grab the latest activity date and time for selected ring
+             $http({
+                    method: 'GET',
+                    url: '/api/activities/getLastActivity/'+item.ringId
+                }).then(function(response) {
+                  if (response.data.data.length > 0){
+                     $scope.lastActivity = response.data.data[0].enteredDate;  
+                  }
+                  else{
+                      $scope.lastActivity = "No activities have been created yet."
+                  }
+                }, function(err) {
+                    console.log(err);
+            });
+         }
        else{
            $scope.showRingDetailOverlay=false;
        }

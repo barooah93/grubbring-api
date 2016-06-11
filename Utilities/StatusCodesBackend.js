@@ -18,6 +18,8 @@ define('USER_NOT_LEADER_TO_ANY_RINGS','00006'); // User is not leader to any rin
 define('UPDATE_USER_ACCESS_TO_RING_SUCCESS','00008'); // Successfully updated user's ring access status
 define('NO_PENDING_USER_REQUESTS', '00009');  // This ring has no pending user requests to join ring
 define('RECIEVED_PENDING_USER_REQUESTS', '00010');  // Retrieved pending user requests to joing ring
+define("RING_LEADER_DETAILS_SUCCESS", '00011'); // Retrieved ring leader user details for selected ring
+define("RING_GRUBBLINGS_COUNT_SUCCESS", '00012'); // Retrieved count of grubblings for a selected ring
 //----------------------------------------------------------
 
 // --------------- Activities API Status Codes -------------
@@ -25,6 +27,7 @@ define('CREATE_ACTIVITY_SUCCESS','11001'); // Successfully created a new activit
 define('CREATE_ACTIVITY_FAIL','00003'); // Failed to create a new activity
 define('DELETE_ACTIVITY_SUCCESS','11003'); // Succcessfully deleted an activity
 define('NO_ACTIVITIES_FOUND','00013'); // No activities were found (in search or in specific ring)
+define("GET_LAST_ACTIVITY_SUCCESS", '00014'); // Retrieved most recent activity for a selected ring
 //----------------------------------------------------------
 
 // --------------- User Access API Status Codes -------------
