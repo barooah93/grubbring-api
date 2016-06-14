@@ -18,6 +18,8 @@ define('USER_NOT_LEADER_TO_ANY_RINGS','00006'); // User is not leader to any rin
 define('UPDATE_USER_ACCESS_TO_RING_SUCCESS','00008'); // Successfully updated user's ring access status
 define('NO_PENDING_USER_REQUESTS', '00009');  // This ring has no pending user requests to join ring
 define('RECIEVED_PENDING_USER_REQUESTS', '00010');  // Retrieved pending user requests to joing ring
+define('DELETE_USER_REQUEST_SUCCESS', '00011'); // Users pending or approved status successfully deleted
+define('DELETE_USER_REQUEST_FAIL', '00012'); // Users pending or approved status delete failed
 //----------------------------------------------------------
 
 // --------------- Activities API Status Codes -------------
