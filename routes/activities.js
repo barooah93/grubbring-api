@@ -6,6 +6,7 @@ var glog = require('../glog.js')('activity');
 var db = require('../dbexecute');
 var auth = require('../servicesAuthenticate');
 var mysql = require('mysql');
+var statusCodes = require('../Utilities/StatusCodesBackend');
 
 /** variables **/
 var user;
@@ -362,5 +363,32 @@ app.get('/viewActivity/:activityId', function(req,res) {
 	});
 });
 //-------------------------end-----------------------------------------------------
+
+//-------------------------START-----------------------------------------------------
+// GET: most recent activity date and time for selected ring
+
+app.get('/getLastActivity/:ringId', function(req,res) {
+		// Check if user session is still valid
+	auth.checkAuthentication(req, res, function (data) {
+		var ringId = req.params.ringId;
+		var sql = null;
+		
+		sql = "SELECT A.enteredOn AS enteredDate, A.activityId FROM tblActivityStatus A, tblActivity X " +
+		"WHERE A.activityId = X.activityId AND X.ringId = ? ORDER BY enteredDate DESC LIMIT 1;";
+		var inserts = [ringId];
+		sql = mysql.format(sql, inserts);
+		
+		  db.dbExecuteQuery(sql, res, function(result){
+		  
+		  	if(result.status==statusCodes.EXECUTED_QUERY_SUCCESS){
+                // Overwrite status and description
+                result.status=statusCodes.GET_LAST_ACTIVITY_SUCCESS;
+                result.description="Retrieved latest activity date and time for selected ring with ringId: "+ringId;
+            } 
+            res.send(result);
+		  	
+		  });
+	});
+});
 
 module.exports = app;

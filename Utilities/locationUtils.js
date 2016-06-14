@@ -75,7 +75,7 @@ module.exports = {
         }
         else{
             // inject first zipcode into sql
-            var sql = "SELECT R.addr, R.city, R.state, R.name, R.ringId, U.firstName, U.lastName FROM tblRing R "+
+            var sql = "SELECT R.addr, R.city, R.state, R.name, R.ringId, R.createdBy, R.zipcode, U.firstName, U.lastName FROM tblRing R "+
             "INNER JOIN tblUser U "+
             "ON R.createdBy=U.userId "+
             "WHERE zipcode = ? ";
@@ -121,7 +121,7 @@ module.exports = {
         }
         else{
             // inject first zipcode into sql
-            var sql = "SELECT G.name, G.addr, G.city, G.state, G.zipcode FROM tblGrubbery G "+
+            var sql = "SELECT G.name, G.addr, G.city, G.state, G.zipcode, G.phone FROM tblGrubbery G "+
             "WHERE zipcode = ? ";
             var inserts = [zipcodesNearUser[0].toString()];
             // inject the rest

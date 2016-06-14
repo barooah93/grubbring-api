@@ -3,6 +3,23 @@ Explanation of {{::$id}}
 http://stackoverflow.com/questions/21021951/directive-template-unique-ids-for-elements
 -->
 
+<!-- Overlay message -->
+<div class="findrings-overlay" ng-show="showRingDetailOverlay">
+<div class="findrings-popup">
+  <h2>Ring Detail <span class="close" ng-click="closeRingDetailOverlay()">X</span></h2>
+		<div class="content">
+			<p>Ring Name: {{ name }}</p>
+			<p>Address: {{ address }}</p>
+			<p>Ring Leader: {{ leader }}</p>
+			<p>Number of Grubblings: {{ grubblings }}</p>
+			<p>Last Activity: {{ lastActivity }}</p>
+			<button class="findrings btn btn-primary" ng-click="">Show on Map</button>
+			<button class="findrings btn btn-primary" ng-click="">Join Ring</button>
+		</div>
+		
+	</div>
+</div>
+
 <header class="cd-main-header">
   
   <div class="container main">
