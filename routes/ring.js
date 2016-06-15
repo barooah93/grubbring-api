@@ -22,7 +22,7 @@ app.get('/', function(req,res){
         */
         var userLat = req.query.latitude;
         var userLong = req.query.longitude;
-        locationUtils.getRingsNearLocation(userLat, userLong, 1, res, function(result){
+        locationUtils.getRingsNearLocation(userLat, userLong, 3, res, function(result){
             res.send(result);
         });
 

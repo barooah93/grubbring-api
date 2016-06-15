@@ -46,7 +46,7 @@ http://stackoverflow.com/questions/21021951/directive-template-unique-ids-for-el
                 <div class="panel panel-default" ng-show="isLocationEntryOpen">
                   <div class="panel-body">
                     <div class="input-group">
-                     <input type="text" class="form-control" ng-change="onLocationTextChanged()" placeholder="Enter city and state or zipcode" id="input-zip-textbox" ng-model="searchLocationText">
+                     <input id="pac-input" type="text" class="controls" ng-change="onLocationTextChanged()" placeholder="Search location" ng-model="searchLocationText">
                     </div>
                     <div class="search-location-results">
                       <ul>

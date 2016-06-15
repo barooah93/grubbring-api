@@ -1,5 +1,70 @@
 angular.module('grubbring.controllers').controller('findRingsCtrl', function findRingsCtrl($scope, $http, $location, StatusCodes) {
     
+    var map;
+    var markers = [];
+    
+    function initAutocomplete() {
+        // Create the search box and link it to the UI element.
+        var input = document.getElementById('pac-input');
+        var searchBox = new google.maps.places.SearchBox(input);
+        
+        map.controls[google.maps.ControlPosition.TOP_RIGHT].push(input);
+        
+        // Bias the SearchBox results towards current map's viewport.
+        map.addListener('bounds_changed', function() {
+          searchBox.setBounds(map.getBounds());
+        });
+        
+        // Listen for the event fired when the user selects a prediction and retrieve
+        // more details for that place.
+        searchBox.addListener('places_changed', function() {
+            var places = searchBox.getPlaces();
+            
+            if (places.length == 0) {
+                return;
+            }
+            
+            // For each place, get the icon, name and location.
+            var bounds = new google.maps.LatLngBounds();
+            places.forEach(function(place) {
+                var icon = {
+                    url: place.icon,
+                    size: new google.maps.Size(71, 71),
+                    origin: new google.maps.Point(0, 0),
+                    anchor: new google.maps.Point(17, 34),
+                    scaledSize: new google.maps.Size(25, 25)
+                };
+                
+                if (place.geometry.viewport) {
+                    // Only geocodes have viewport.
+                    bounds.union(place.geometry.viewport);
+                } else {
+                    bounds.extend(place.geometry.location);
+                }
+            });
+            
+            //http://stackoverflow.com/questions/2989858/google-maps-v3-enforcing-min-zoom-level-when-using-fitbounds (possible solution)
+            map.fitBounds(bounds); //TODO: set default max and min zoom level - async
+            
+            // Clear out the old markers.
+            clearMarkers();
+            
+            var latlong = map.getCenter();
+            $scope.lat = latlong.lat();
+            $scope.long = latlong.lng();
+            
+            // Place user marker on map
+            placeUserMarkerOnMap($scope.lat, $scope.long);
+            
+            // Get nearby rings and display markers
+            getNearbyRings($scope.lat, $scope.long);
+            
+            // open popup overlay for selected marker
+            openOverlayOnMapMarkerClick($scope.lat, $scope.long);
+          
+        });
+    }
+    
     $scope.states = ["Alabama","Alaska","Arizona","Arkansas","California","Colorado","Connecticut","Delaware","Florida","Georgia","Hawaii","Idaho","Illinois","Indiana","Iowa","Kansas","Kentucky","Louisiana","Maine","Maryland","Massachusetts","Michigan","Minnesota","Mississippi","Missouri","Montana","Nebraska","Nevada","New Hampshire","New Jersey","New Mexico","New York","North Dakota","North Carolina","Ohio","Oklahoma","Oregon","Pennsylvania","Rhode Island","South Carolina","South Dakota","Tennessee","Texas","Utah","Vermont","Virginia","Washington","West Virginia","Wisconsin","Wyoming"];
     
     
@@ -61,7 +126,9 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
         }
 
         // initialize google map object onto div mapCanvas with specified options
-        var map = new google.maps.Map(mapCanvas, mapOptions);
+        map = new google.maps.Map(mapCanvas, mapOptions);
+        
+        initAutocomplete();
         
         // Place user marker on map
         placeUserMarkerOnMap($scope.lat, $scope.long);
@@ -72,6 +139,127 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
         // open popup overlay for selected marker
         openOverlayOnMapMarkerClick($scope.lat, $scope.long);
 
+        
+        
+
+    }
+    
+    // ---------------------- Google Map Markers ---------------------------------------------------------------------------
+        
+        
+        // decodes address into long and lat coordinates to add marker for user to the map
+        function placeUserMarkerOnMap(lat, long) {
+            var latlng =  {lat: lat, lng: long};
+            var marker = new google.maps.Marker({
+                map: map,
+                position: latlng
+            });
+        
+            // Set marker icon color
+            marker.setIcon('http://maps.google.com/mapfiles/ms/icons/blue-dot.png');
+            marker.setTitle("You are here!");
+            
+            markers.push(marker);
+            
+            // add tooltip giving info about the ring
+            // geocoder.geocode({'location': latlng}, function(results, status) {
+            //     if (status === google.maps.GeocoderStatus.OK) {
+            //         if (results[1]) {
+            //             marker.setTitle(results[1]);
+            //         }
+            //         console.log(results[1]);
+            //         console.log(results[0]);
+            //     }
+            // });
+
+        }
+        
+         // opens detail popup overlay when clicking on map marker
+        function openOverlayOnMapMarkerClick(marker){
+             var marker = marker;
+             var contentString = '<div id="content">'+
+              '<div id="siteNotice">'+
+              '</div>'+
+              '<h1 id="firstHeading" class="firstHeading">Uluru</h1>'+
+              '<div id="bodyContent">'+
+              '<p><b>Uluru</b>, also referred to as <b>Ayers Rock</b>, is a large ' +
+              'sandstone rock formation in the southern part of the '+
+              'Northern Territory, central Australia. It lies 335&#160;km (208&#160;mi) '+
+              'south west of the nearest large town, Alice Springs; 450&#160;km '+
+              '(280&#160;mi) by road. Kata Tjuta and Uluru are the two major '+
+              'features of the Uluru - Kata Tjuta National Park. Uluru is '+
+              'sacred to the Pitjantjatjara and Yankunytjatjara, the '+
+              'Aboriginal people of the area. It has many springs, waterholes, '+
+              'rock caves and ancient paintings. Uluru is listed as a World '+
+              'Heritage Site.</p>'+
+              '<p>Attribution: Uluru, <a href="https://en.wikipedia.org/w/index.php?title=Uluru&oldid=297882194">'+
+              'https://en.wikipedia.org/w/index.php?title=Uluru</a> '+
+              '(last visited June 22, 2009).</p>'+
+              '</div>'+
+              '</div>';
+        
+              var infowindow = new google.maps.InfoWindow({
+                content: contentString
+              });
+        
+        
+                //TODO: maha fix :( !!
+              /*marker.addListener('click', function() {
+                infowindow.open(map, marker);
+              });*/
+            
+        }
+        
+        // decodes address into long and lat coordinates to add ring markers to the map
+        function placeRingMarkerOnMap(ring) {
+            geocoder.geocode({'address': ring.addr + ' ' + ring.city + ', ' + ring.state}, function(results, status) {
+                if (status == google.maps.GeocoderStatus.OK) {
+                    var marker = new google.maps.Marker({
+                        map: map,
+                        position: results[0].geometry.location
+                    });
+                    // Set marker icon color
+                    marker.setIcon('http://maps.google.com/mapfiles/ms/icons/red-dot.png');
+                    // add tooltip giving info about the ring
+                    marker.setTitle(ring.name + "\n" + ring.addr + "\n" + ring.firstName + " " + ring.lastName);
+                    
+                    markers.push(marker);
+                    
+                    // open ring detail popup on marker click
+                    openOverlayOnMapMarkerClick(marker)
+                    
+                    
+                } else {
+                    alert("We could not find nearby rings successfully, geocoder could not find location: " + status);
+                }
+            });
+
+        }
+        
+       
+        
+        // decodes address into long and lat coordinates to add ring markers to the map
+        function placeGrubberyMarkerOnMap(grubbery) {
+            geocoder.geocode({'address': grubbery.addr + ' ' + grubbery.city + ', ' + grubbery.state}, function(results, status) {
+                if (status == google.maps.GeocoderStatus.OK) {
+                    var marker = new google.maps.Marker({
+                        map: map,
+                        position: results[0].geometry.location
+                    });
+                    // Set marker icon color
+                    marker.setIcon('http://maps.google.com/mapfiles/ms/icons/green-dot.png');
+                    // add tooltip giving info about the ring
+                    marker.setTitle(grubbery.name + "\n" + grubbery.addr + "\n" + grubbery.city + " " + grubbery.state);
+                    
+                    markers.push(marker);
+                } else {
+                    alert("We could not find nearby grubberies successfully, geocoder could not find location: " + status);
+                }
+            });
+
+        }
+        
+        
         // Function to populate list with nearby rings and display markers on map
         function getNearbyRings(lat, long){
             // get suggested rings to display to user
@@ -135,112 +323,6 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
                 console.log(err);
             });
         }
-        
-// ---------------------- Google Map Markers ---------------------------------------------------------------------------
-        
-        
-        // decodes address into long and lat coordinates to add marker for user to the map
-        function placeUserMarkerOnMap(lat, long) {
-            var latlng =  {lat: lat, lng: long};
-            var marker = new google.maps.Marker({
-                map: map,
-                position: latlng
-            });
-            // Set marker icon color
-            marker.setIcon('http://maps.google.com/mapfiles/ms/icons/blue-dot.png');
-            marker.setTitle("You are here!");
-            // add tooltip giving info about the ring
-            // geocoder.geocode({'location': latlng}, function(results, status) {
-            //     if (status === google.maps.GeocoderStatus.OK) {
-            //         if (results[1]) {
-            //             marker.setTitle(results[1]);
-            //         }
-            //         console.log(results[1]);
-            //         console.log(results[0]);
-            //     }
-            // });
-
-        }
-        
-         // opens detail popup overlay when clicking on map marker
-        function openOverlayOnMapMarkerClick(marker){
-             var marker = marker;
-             var contentString = '<div id="content">'+
-              '<div id="siteNotice">'+
-              '</div>'+
-              '<h1 id="firstHeading" class="firstHeading">Uluru</h1>'+
-              '<div id="bodyContent">'+
-              '<p><b>Uluru</b>, also referred to as <b>Ayers Rock</b>, is a large ' +
-              'sandstone rock formation in the southern part of the '+
-              'Northern Territory, central Australia. It lies 335&#160;km (208&#160;mi) '+
-              'south west of the nearest large town, Alice Springs; 450&#160;km '+
-              '(280&#160;mi) by road. Kata Tjuta and Uluru are the two major '+
-              'features of the Uluru - Kata Tjuta National Park. Uluru is '+
-              'sacred to the Pitjantjatjara and Yankunytjatjara, the '+
-              'Aboriginal people of the area. It has many springs, waterholes, '+
-              'rock caves and ancient paintings. Uluru is listed as a World '+
-              'Heritage Site.</p>'+
-              '<p>Attribution: Uluru, <a href="https://en.wikipedia.org/w/index.php?title=Uluru&oldid=297882194">'+
-              'https://en.wikipedia.org/w/index.php?title=Uluru</a> '+
-              '(last visited June 22, 2009).</p>'+
-              '</div>'+
-              '</div>';
-        
-              var infowindow = new google.maps.InfoWindow({
-                content: contentString
-              });
-        
-
-              marker.addListener('click', function() {
-                infowindow.open(map, marker);
-              });
-            
-        }
-        
-        // decodes address into long and lat coordinates to add ring markers to the map
-        function placeRingMarkerOnMap(ring) {
-            geocoder.geocode({'address': ring.addr + ' ' + ring.city + ', ' + ring.state}, function(results, status) {
-                if (status == google.maps.GeocoderStatus.OK) {
-                    var marker = new google.maps.Marker({
-                        map: map,
-                        position: results[0].geometry.location
-                    });
-                    // Set marker icon color
-                    marker.setIcon('http://maps.google.com/mapfiles/ms/icons/red-dot.png');
-                    // add tooltip giving info about the ring
-                    marker.setTitle(ring.name + "\n" + ring.addr + "\n" + ring.firstName + " " + ring.lastName);
-                    // open ring detail popup on marker click
-                    openOverlayOnMapMarkerClick(marker)
-                    
-                    
-                } else {
-                    alert("We could not find nearby rings successfully, geocoder could not find location: " + status);
-                }
-            });
-
-        }
-        
-       
-        
-        // decodes address into long and lat coordinates to add ring markers to the map
-        function placeGrubberyMarkerOnMap(grubbery) {
-            geocoder.geocode({'address': grubbery.addr + ' ' + grubbery.city + ', ' + grubbery.state}, function(results, status) {
-                if (status == google.maps.GeocoderStatus.OK) {
-                    var marker = new google.maps.Marker({
-                        map: map,
-                        position: results[0].geometry.location
-                    });
-                    // Set marker icon color
-                    marker.setIcon('http://maps.google.com/mapfiles/ms/icons/green-dot.png');
-                    // add tooltip giving info about the ring
-                    marker.setTitle(grubbery.name + "\n" + grubbery.addr + "\n" + grubbery.city + " " + grubbery.state);
-                } else {
-                    alert("We could not find nearby grubberies successfully, geocoder could not find location: " + status);
-                }
-            });
-
-        }
-    }
 
     
 // ---------------------- Google Map Markers End ---------------------------------------------------------------------------
@@ -351,7 +433,7 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
 
 // ----------------------- Location Search Start --------------------------------------------------------------------------
     $scope.onLocationTextChanged = function(){
-        console.log($scope.searchLocationText);
+        //console.log($scope.searchLocationText);
         
         $scope.locations = [];
         
@@ -363,9 +445,12 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
         console.log('Error!');
     }
     
-
-
-
+    function clearMarkers() {
+        markers.forEach(function(marker) {
+                marker.setMap(null);
+        });
+        markers = [];
+    }
 
     function getRingsUserIsPartOf() { /*broken*/
         $http({
