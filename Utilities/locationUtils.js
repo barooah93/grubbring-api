@@ -25,26 +25,12 @@ module.exports = {
                     } else {
                         glog.error(err);
                     }
+                    if(i == len-1){
+                        
+                    }
                 });
             })(i);
         }
-        console.log(">>>>>>>>>>>>AFTERRR>>>>>>>>>>>>");
-        console.log(unsortedList);
-        //sort objects by distance from user lat and long using insertion sort
-        for (var i = 0; i < len; i++) {
-            
-            var currObject = unsortedList[i];
-            var currDist = getDistanceFromLatLong(userLat, userLong, currObject.lat, currObject.long);
-            
-            /*Check through the sorted list and compare with the unsorted ring if smaller, move the unsorted to the beginning of the list*/
-            for (var j = i - 1; j >= 0 && (getDistanceFromLatLong(userLat, userLong, unsortedList[j].lat, unsortedList[j].long) > currDist); j--) {
-                unsortedList[j + 1] = unsortedList[j];
-            }
-            unsortedList[j + 1] = currObject;
-        }
-        console.log("????????????????????????????????");
-        console.log(unsortedList);
-        return unsortedList;
     },
     
     getSortedObjectsByZipcodes: function(objectArray, userLat, userLong) {
@@ -89,7 +75,7 @@ module.exports = {
         }
         else{
             // inject first zipcode into sql
-            var sql = "SELECT R.addr, R.city, R.state, R.name, R.ringId, U.firstName, U.lastName FROM tblRing R "+
+            var sql = "SELECT R.addr, R.city, R.state, R.name, R.ringId, R.createdBy, R.zipcode, U.firstName, U.lastName FROM tblRing R "+
             "INNER JOIN tblUser U "+
             "ON R.createdBy=U.userId "+
             "WHERE zipcode = ? ";
@@ -135,7 +121,7 @@ module.exports = {
         }
         else{
             // inject first zipcode into sql
-            var sql = "SELECT G.name, G.addr, G.city, G.state, G.zipcode FROM tblGrubbery G "+
+            var sql = "SELECT G.name, G.addr, G.city, G.state, G.zipcode, G.phone FROM tblGrubbery G "+
             "WHERE zipcode = ? ";
             var inserts = [zipcodesNearUser[0].toString()];
             // inject the rest
@@ -183,4 +169,26 @@ function getDistanceFromLatLong(lat1 ,long1 , lat2, long2){
     function deg2rad(deg) {
       return deg * (Math.PI/180)
     }
+}
+
+function sortListByLatLong(unsortedList, userLat, userLong){
+    
+    var len = unsortedList.length;
+    console.log(">>>>>>>>>>>>AFTERRR>>>>>>>>>>>>");
+    console.log(unsortedList);
+    //sort objects by distance from user lat and long using insertion sort
+    for (var i = 0; i < len; i++) {
+        
+        var currObject = unsortedList[i];
+        var currDist = getDistanceFromLatLong(userLat, userLong, currObject.lat, currObject.long);
+        
+        /*Check through the sorted list and compare with the unsorted ring if smaller, move the unsorted to the beginning of the list*/
+        for (var j = i - 1; j >= 0 && (getDistanceFromLatLong(userLat, userLong, unsortedList[j].lat, unsortedList[j].long) > currDist); j--) {
+            unsortedList[j + 1] = unsortedList[j];
+        }
+        unsortedList[j + 1] = currObject;
+    }
+    console.log("????????????????????????????????");
+    console.log(unsortedList);
+    return unsortedList;
 }

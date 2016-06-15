@@ -149,6 +149,7 @@ app.post('/join/:ringId', function(req,res){
         var sql = null;
         // TODO: need error checking and validation
         
+        // TODO: Check if user already has request (0,1,2,3)
     
         // ring status for pending=0, approved=1, declined=2, and banned=3
          sql = "INSERT INTO tblRingUser (ringId, userId, roleId, status) VALUES (?,?,?,?);"
@@ -185,6 +186,10 @@ app.put('/join/:ringId/:handleRequest', function(req,res){
         var declined = 2;
         var banned = 3;
         
+        // TODO: Check if userId is leader of associated ring
+        
+        // TODO: Logic for changing status to banned if declined too many times
+        
         var changeStatusTo = req.params.handleRequest; //boolean
         var userId = req.user.userId;
         var ringId = req.params.ringId;
@@ -212,6 +217,63 @@ app.put('/join/:ringId/:handleRequest', function(req,res){
 });
 //-------------------------END-------------------------------------------------------
 
+// Delete: If user uses this delete, and the user has a pending status then the delete removes the record
+//          if user uses this with status of approved, then delete removes record  and notifies admin
+//          if none of the above, do nothing
+app.delete('/join/:ringId', function(req,res){
+    authenticate.checkAuthentication(req, res, function (data) {
+        var pending = 0;
+        var approved = 1;
+        var declined = 2;
+        var banned = 3;
+        
+        var userId = req.user.userId;
+        var ringId = req.params.ringId;
+        
+        
+        // Check if user has pending or approved status for joining a ring
+        var statusSql = "SELECT status FROM tblRingUser WHERE ringId=? AND userId=?;";
+        var inserts = [ringId, userId];
+        
+        statusSql = mysql.format(statusSql, inserts);
+        
+        db.dbExecuteQuery(statusSql, res, function(statusResult){
+            
+            if(statusResult.status==statusCodes.EXECUTED_QUERY_SUCCESS){
+                
+                if(statusResult.data.length == 0){
+                    
+                    // No data retreieved
+                    statusResult.status = statusCodes.NO_PENDING_USER_REQUESTS;
+                    statusResult.description = "No approved or pending requests retrieved for this user id and ring id.";
+                    res.send(statusResult);
+                     
+                } else {
+                    
+                   // If pending or approved status, then delete request
+                    if(statusResult.data[0].status == pending || statusResult.data.status[0] == approved){
+                        var deleteSql = "DELETE FROM tblRingUser WHERE ringId=? AND userId=?";
+                        inserts = [ringId, userId];
+                        deleteSql = mysql.format(deleteSql, inserts);
+                        
+                        db.dbExecuteQuery(deleteSql, res, function(deleteResult) {
+                            if(deleteResult.status == statusCodes.EXECUTED_QUERY_SUCCESS){
+                                deleteResult.status = statusCodes.DELETE_USER_REQUEST_SUCCESS;
+                                deleteResult.description = "Successfully deleted ring request.";
+                                res.send(deleteResult);
+                            }
+                        });
+                    } else {
+                        statusResult.status = statusCodes.DELETE_USER_REQUEST_FAIL;
+                        statusResult.description = "Unsuccessful attempt at deleting request from records.";
+                        res.send(statusResult);
+                    }
+                }
+            }
+        });
+        
+    });
+});
 
 //-------------------------START-----------------------------------------------------
 // GET: leader get notification if someone is trying join ring
@@ -242,6 +304,62 @@ app.get('/notifyLeader', function(req,res){
 
 });
 //-------------------------END-------------------------------------------------------
+
+//-------------------------START-----------------------------------------------------
+// GET: Ring leader user details for selected ring in find_rings page
+
+app.get('/getLeaderDetails/:userId/:ringId', function(req, res){
+     authenticate.checkAuthentication(req, res, function (data) {
+        var sql = null;
+        var leaderId = req.params.userId;
+        var ringId = req.params.ringId;
+        
+        sql = "SELECT R.createdBy, U.username, U.firstname, U.lastname FROM tblRing R, tblUser U WHERE " +
+            "U.userId = ? AND R.ringId = ?;";
+            
+        var inserts = [leaderId, ringId];
+        sql = mysql.format(sql, inserts);
+        db.dbExecuteQuery(sql, res, function(result){
+            if(result.status==statusCodes.EXECUTED_QUERY_SUCCESS){
+                // Overwrite status and description
+                result.status=statusCodes.RING_LEADER_DETAILS_SUCCESS;
+                result.description="Retrieved ring leader's user details for userid: "+leaderId+" and ringid: "+ringId;
+            } 
+            res.send(result);
+            
+            
+        });    
+         
+     });
+});
+
+//-------------------------END-------------------------------------------------------
+
+//-------------------------START-----------------------------------------------------
+// GET: This counts the number of grubblings associated with a specific ring
+
+app.get('/getRingGrubblingsCount/:ringId', function(req, res){
+     authenticate.checkAuthentication(req, res, function (data) {
+        var sql = null;
+        var ringId = req.params.ringId;
+        
+        sql = "SELECT COUNT(R.ringId) AS grubblingCount FROM tblRingUser R WHERE R.ringId = ?;";
+        
+        var inserts = [ringId];
+        sql = mysql.format(sql, inserts);
+        db.dbExecuteQuery(sql, res, function(result){
+            if(result.status==statusCodes.EXECUTED_QUERY_SUCCESS){
+                // Overwrite status and description
+                result.status=statusCodes.RING_GRUBBLINGS_COUNT_SUCCESS;
+                result.description="Retrieved count of grubblings for selected ring with ringId: "+ringId;
+            } 
+            res.send(result);
+            
+            
+        });  
+     });
+     
+});
 
 //-----------------------Helper Functions--------------------------------------------
 

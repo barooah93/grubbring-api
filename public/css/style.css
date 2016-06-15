@@ -603,14 +603,16 @@ Header
   margin-top: 1.3%;
 }
 
-.main-content{
+.main-content.row{
   margin-top: 1%;
+  height: 206%;
 }
 
-.left-container{
+.left-container.col-md-4{
   background-color: white;
-  width: 428px;
-  height: 537px;
+  /*width: 428px;*/
+  width: 35%;
+  height: 500%;
   padding: 0;
   margin-top: 1px;
   border-right: 1px solid #C4C4C4;
@@ -624,10 +626,10 @@ Header
   font-weight: 400;
 }
 
-.right-container{
+.right-container.col-md-4{
   margin-top: 1px;
-  width: 780px;
-  height: 268px;
+  width: 63.8%;
+  height: 250%;
   padding: 0;
 }
 /** END NEW CONTAINER STYLING**/
@@ -729,10 +731,10 @@ Header
 
 .findrings-overlay{
    position: absolute;
-  top: 13%;
+  top: 12%;
   left: 37.7%;
-  width: 55.3%;
-  height: 80.3%;
+  width: 55.5%;
+  height: 76%;
   z-index: 10;
   background-color: rgba(0,0,0,0.5); /*dim the background*/
 }
@@ -770,7 +772,7 @@ Header
 }
 
 .findrings-popup .content{
-  max-height: 30%;
+  max-height: 100%;
   overflow: auto;
   font-family: 'Source Sans Pro', sans-serif;
 }
@@ -799,7 +801,6 @@ Header
 .findrings.btn.btn-primary{
   background-color: #2ba0c2;
   margin-top: 5%;
-  vertical-align: middle;
 }
 
 .cd-logo {

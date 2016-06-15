@@ -16,6 +16,10 @@ app.service('StatusCodes', function(){
         UPDATE_USER_ACCESS_TO_RING_SUCCESS:'00008',  // Successfully updated user's ring access status
         NO_PENDING_USER_REQUESTS: '00009',  // This ring has no pending user requests
         RECIEVED_PENDING_USER_REQUESTS: '00010', // Retrieved pending user requests to joing ring
+        DELETE_USER_REQUEST_SUCCESS: '00011', // Users pending or approved status successfully deleted
+        DELETE_USER_REQUEST_FAIL: '00012', // Users pending or approved status delete failed
+        RING_LEADER_DETAILS_SUCCESS:'00013', // Retrieved ring leader user details for selected ring
+        RING_GRUBBLINGS_COUNT_SUCCESS: '00014', // Retrieved count of grubblings for a selected ring
         //----------------------------------------------------------
         
         // --------------- Activities API Status Codes -------------
