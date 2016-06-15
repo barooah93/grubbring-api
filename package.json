@@ -19,6 +19,7 @@
     "ejs": "^0.7.2",
     "express": "^4.13.3",
     "express-session": "^1.11.3",
+    "googleplaces": "^0.6.0",
     "gps2zip": "^1.1.0",
     "moment": "^2.10.6",
     "moment-timezone": "^0.4.1",
