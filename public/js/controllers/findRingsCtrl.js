@@ -59,8 +59,6 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
             // Get nearby rings and display markers
             getNearbyRings($scope.lat, $scope.long);
             
-            // open popup overlay for selected marker
-            openOverlayOnMapMarkerClick($scope.lat, $scope.long);
           
         });
     }
@@ -133,8 +131,6 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
         // Get nearby rings and display markers
         getNearbyRings($scope.lat, $scope.long);
         
-        // open popup overlay for selected marker
-        openOverlayOnMapMarkerClick($scope.lat, $scope.long);
 
         
         

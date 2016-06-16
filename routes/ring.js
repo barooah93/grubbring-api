@@ -251,7 +251,8 @@ app.delete('/join/:ringId', function(req,res){
                 } else {
                     
                    // If pending or approved status, then delete request
-                    if(statusResult.data[0].status == pending || statusResult.data.status[0] == approved){
+                    if(statusResult.data[0].status == pending || statusResult.data[0].status == approved){
+                        // TODO: confirm delete query (where clause)
                         var deleteSql = "DELETE FROM tblRingUser WHERE ringId=? AND userId=?";
                         inserts = [ringId, userId];
                         deleteSql = mysql.format(deleteSql, inserts);
