@@ -74,17 +74,28 @@ module.exports = {
         }
         else{
             // inject first zipcode into sql
-            var sql = "SELECT R.addr, R.city, R.state, R.name, R.ringId, R.createdBy, R.zipcode, U.firstName, U.lastName FROM tblRing R "+
-            "INNER JOIN tblUser U "+
-            "ON R.createdBy=U.userId "+
-            "WHERE zipcode = ? ";
+            // var sql = "SELECT R.addr, R.city, R.state, R.name, R.ringId, R.createdBy, R.zipcode, U.firstName, U.lastName" +
+            // "FROM tblRing R "+
+            // "INNER JOIN tblUser U "+
+            // "ON R.createdBy=U.userId "+
+            // "WHERE zipcode = ? AND R.ringStatus=1;";
+            //SELECT DISTINCT R.addr, R.city, R.state, R.name, R.ringId, R.createdBy, R.zipcode, U.firstName, U.lastName, (SELECT COUNT(*) FROM tblRingUser RU INNER JOIN tblRing R WHERE RU.ringId=R.ringID) AS members FROM tblRing R, tblRingUser RU, tblUser U WHERE R.createdBy=U.userId  AND zipcode = '07852' AND R.ringStatus=1 AND RU.status=1
+            //(SELECT COUNT(*) FROM tblRingUser where tblRingUser.ringId = tblRing.ringId) AS memberCount
+            
+            var sql = "SELECT DISTINCT R.addr, R.city, R.state, R.name, R.ringId, R.createdBy, R.zipcode, U.firstName, U.lastName, "+
+                "(SELECT COUNT(*) FROM tblRingUser RU where RU.ringId = R.ringId AND RU.status=1) AS memberCount "+
+                "FROM tblRing R, tblRingUser RU, tblUser U "+
+                "WHERE R.createdBy=U.userId  "+
+                "AND R.ringStatus=1 "+
+                "AND (zipcode = ? ";
+            
             var inserts = [zipcodesNearUser[0].toString()];
             // inject the rest
             for(var i=1;i<zipcodesNearUser.length;i++){
                 sql+="OR zipcode = ? ";
                 inserts.push(zipcodesNearUser[i].toString());
             }
-            sql = sql + ";";
+            sql = sql + ");";
             
             sql = mysql.format(sql, inserts);
             
