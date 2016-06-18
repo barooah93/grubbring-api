@@ -9,7 +9,7 @@ var statusCodes = require('../Utilities/StatusCodesBackend');
 
 module.exports = {    
 
-    getSortedObjectsByAddress: function(objectArray, userLat, userLong) {
+    getSortedObjectsByAddress: function(objectArray, userLat, userLong, callback) {
         var unsortedList = objectArray;
         var len = unsortedList.length;
         
@@ -19,14 +19,14 @@ module.exports = {
                 // Get lat and long from address
                 geocoder.geocode({address: unsortedList[i].addr +' ' + unsortedList[i].city + ', ' + unsortedList[i].state}, function(err, res) {
                     if(!err){
-                        console.log("<<<<<<<<<<<<<<<<<<<<<<BEFORE<<<<<<<<<<<<<<<<");
                         unsortedList[i].lat = res[0].latitude;
                         unsortedList[i].long = res[0].longitude;
                     } else {
                         glog.error(err);
                     }
                     if(i == len-1){
-                        
+                        console.log(unsortedList);
+                        callback(sortListByLatLong(unsortedList, userLat, userLong));
                     }
                 });
             })(i);
@@ -172,23 +172,17 @@ function getDistanceFromLatLong(lat1 ,long1 , lat2, long2){
 }
 
 function sortListByLatLong(unsortedList, userLat, userLong){
-    
     var len = unsortedList.length;
-    console.log(">>>>>>>>>>>>AFTERRR>>>>>>>>>>>>");
-    console.log(unsortedList);
     //sort objects by distance from user lat and long using insertion sort
     for (var i = 0; i < len; i++) {
         
         var currObject = unsortedList[i];
         var currDist = getDistanceFromLatLong(userLat, userLong, currObject.lat, currObject.long);
-        
         /*Check through the sorted list and compare with the unsorted ring if smaller, move the unsorted to the beginning of the list*/
         for (var j = i - 1; j >= 0 && (getDistanceFromLatLong(userLat, userLong, unsortedList[j].lat, unsortedList[j].long) > currDist); j--) {
             unsortedList[j + 1] = unsortedList[j];
         }
         unsortedList[j + 1] = currObject;
     }
-    console.log("????????????????????????????????");
-    console.log(unsortedList);
     return unsortedList;
 }
