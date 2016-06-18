@@ -87,7 +87,8 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
     // Retrieve user details
     function getUserDetails() {
         // Show spinner
-        showHideLoadingSpinner();
+        $scope.showLoader = true;
+        
         $http({
             method: 'GET',
             url: '/api/profile'
@@ -262,30 +263,35 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
                 url: '/api/ring?latitude='+lat +'&longitude=' + long
             }).then(function(response) {
                 
-                // Clear list of items
-                $scope.listItems = [];
-                $scope.nearbyRingsList = [];
-            
-                if(response.data.data != null) {
+                if(response.data.status == StatusCodes.RETURNED_RINGS_NEAR_USER_SUCCESS){
+                    // Clear list of items
+                    $scope.listItems = [];
+                    // This is a backup list for when we want to reset the list
+                    $scope.initialList = [];
+                
                     for (var i = 0; i < response.data.data.length; i++) {
                         placeRingMarkerOnMap(response.data.data[i]);
                         response.data.data[i].isRing = true;
-                        $scope.nearbyRingsList.push(response.data.data[i]);
                         
+                        // Add to list to display to user
+                        $scope.listItems.push(response.data.data[i]);
+                        
+                        // Add to back up list
+                        $scope.initialList.push(response.data.data[i]);
                     }
-                    $scope.listItems = $scope.nearbyRingsList;
-                    
                     // Now load grubberies to map and list
                     getNearbyGrubberies(lat, long);
-                   
-                    // Show spinner
-                    showHideLoadingSpinner();
                     
-                } else {
+                    
+                } else if(response.data.status == StatusCodes.NO_RINGS_NEAR_USER){
                     // TODO: display message to user to prompt them to be first to create a ring in their area
-                    $scope.showLoader=false;
+                } else {
+                    // TODO: handle error
+                    alert("We are experiencing issues trying to retrieve the rings around you. Please try again later.");
                 }
-    
+                // Hide spinner
+                $scope.showLoader = false;
+                
             }, function(err) {
                 console.log(err);
             });
@@ -304,10 +310,12 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
                         
                         // Add to list that's displayed to user
                         $scope.listItems.push(response.data.data[i]);
+                        
+                        // Add to back up list
+                        $scope.initialList.push(response.data.data[i]);
+                        
                     }
                     
-                    // Show spinner
-                    showHideLoadingSpinner();
                 } else {
                     // TODO: display message to user to prompt them to be first to create a ring in their area
                     $scope.showLoader=false;
@@ -328,6 +336,10 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
         // Error check search text
         if($scope.searchText != null && $scope.searchText != "" && $scope.searchText.length >= amountOfKeysToCallAPI){
             
+            // Clear list
+            $scope.listItems = [];
+            $scope.showLoader = true;
+        
             // Only make api call if text is a certain amount of letters
             if($scope.searchText.length == amountOfKeysToCallAPI){
                 
@@ -346,7 +358,13 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
                             
                             // Clear list of items
                             $scope.listItems = [];
-                            $scope.searchResults = [];
+                            
+                                                        // Loop through rings array, set isRing property, and add to the list to be displayed
+                            for(var k=0; k< response.data.data.rings.length; k++){
+                                response.data.data.rings[k].isRing = true;
+                                $scope.listItems.push(response.data.data.rings[k]);
+                                $scope.searchResults.push(response.data.data.rings[k]);
+                            }
                             
                             // Loop through grubberies array, set isGrubbery property, and add to the list to be displayed
                             for(var j=0; j< response.data.data.grubberies.length; j++){
@@ -355,18 +373,14 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
                                 $scope.searchResults.push(response.data.data.grubberies[j]);
                             }
                             
-                            // Loop through rings array, set isRing property, and add to the list to be displayed
-                            for(var k=0; k< response.data.data.rings.length; k++){
-                                response.data.data.rings[k].isRing = true;
-                                $scope.listItems.push(response.data.data.rings[k]);
-                                $scope.searchResults.push(response.data.data.rings[k]);
-                            }
-                            
-                             // Response finished, if more letters were typed while waiting, execute search
+                            // Response finished, if more letters were typed while waiting, execute search
                             if($scope.isWaitingOnSearchAPI){
                                 searchThroughCache();
-                                 $scope.isWaitingOnSearchAPI = false;
+                                $scope.isWaitingOnSearchAPI = false;
                             }
+                            
+                            // Hide spinner
+                            $scope.showLoader = false;
                         }
                     } else {
                         console.log("response.data.data is null - no rings or grubberies found in search results");
@@ -385,12 +399,17 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
                     $scope.isWaitingOnSearchAPI = true;
                 }
             }
-        }
-        else {
+        }  else if($scope.searchText.length == 0){
+            
             // Reset list
             $scope.isClear = true;
-            $scope.listItems = $scope.nearbyRingsList;
+            $scope.listItems = $scope.initialList;
             
+            // Clear cache
+            $scope.searchResults = [];
+            
+            // Hide spinner
+            $scope.showLoader = false;
         }
     }
     
@@ -418,6 +437,7 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
                  $scope.listItems.push($scope.searchResults[i]);
             }
         }
+        $scope.showLoader = false;
     
     }
     
@@ -502,15 +522,6 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
         }
     }
     
-    function showHideLoadingSpinner(){
-        if($scope.listItems == null || $scope.listItems.length == 0){
-            $scope.showLoader=true;
-        }
-        else{
-            $scope.showLoader=false;
-        }
-        
-    }
     
     $scope.displayRingPanelOverlay = function(item){
         if (item != null){

@@ -25,7 +25,6 @@ module.exports = {
                         glog.error(err);
                     }
                     if(i == len-1){
-                        console.log(unsortedList);
                         callback(sortListByLatLong(unsortedList, userLat, userLong));
                     }
                 });
@@ -60,7 +59,7 @@ module.exports = {
     getRingsNearLocation: function(lat, long, radius, res, callback){
          //get zipcode based on lat and log
         var userZipCode = gps.gps2zip(lat, long).zip_code; 
-        //find zipcodes within a certain radius (2 mile) of user's zipcode
+        //find zipcodes within a certain radius of user's zipcode
         var zipcodesNearUser = zipcodes.radius(userZipCode, radius);
         // Check if zipcodes were returned
         if(!zipcodesNearUser.length>0){
