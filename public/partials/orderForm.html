@@ -1,7 +1,64 @@
-<div class="container">
+<!-- 
+get the rings you are a part of
+display the rings on the left
+-->
+
+<header class="cd-main-header">
+  <div class="container main">
+    <div class="container header">
+      <div class="row">
+        <div class="menu col-md-4">
+          <span class="glyphicon glyphicon-menu-hamburger" aria-hidden="true"  data-toggle="dropdown" aria-haspopup="true"></span>
+              <ul class="dropdown-menu">
+                  <li><a href="#">My Rings</a></li>
+                  <li><a href="#">Activities</a></li>
+                  <li><a href="#">Profile</a></li>
+                  <li><a href="#">Settings</a></li>
+                  <li role="separator" class="divider"></li>
+                  <li><a href="#">Logout</a></li>
+              </ul>
+        </div>
+        <div class="dashboard-search col-md-8 col-md-offset-4">
+          <div class="cd-search is-hidden">
+				    <input type="search" ng-model="searchText" ng-change="onSearchTextChanged()" placeholder="Search..."> 
+				  </div>
+			    <!--<span class="glyphicon glyphicon-map-marker" aria-hidden="true" ng-click="isLocationEntryOpen = !isLocationEntryOpen" style="float:right;"></span>-->
+          
+        </div>
+      </div>
+      <div class="main-content row">
+        <!-- this is for the content in the container -->
+         <div class="left-container col-md-4">
+           <img ng-show="showLoader" class="loader-gif" src="../images/ring-alt.svg"/>
+           <div class="ring-panel-group" ng-repeat="ring in userRings">
+             <div class="ring-panel">
+               <div class="ring-panel-content" data-target="#ring-desc_[[::$id}}">
+                 <h4>
+                    <img ng-src="../images/default_ring_0.png"/>
+                      <div class="ring-panel-title-text">
+                        <b>{{ ring.name }}</b>
+                    </div>
+                 </h4>
+               </div>
+             </div>
+           </div>
+      
+        </div>
+        <div class="right-container col-md-4">
+          <!-- add stuff on right -->
+          
+        </div>
+      </div>
+      
+    </div>
+    
+  </div>
+
+
+
+<!--<div class="container">
     <h3 class="text-center">Create Order Form</h3>
     <form ng-submit="createOrder()">
-        <!-- TODO remove activityId field, and take it from params or something-->
         <div class="form-group">
             <label>Activity Id</label>
             <input type="number" class="form-control" placeholder="e.g. 1" ng-model="order.activityId" required>
@@ -20,13 +77,11 @@
         </div>
         <div class="form-group">
             <label>Payment Method</label>
-            <!-- TODO what type of payment methods are there?-->
             <select ng-model="order.paymentMethod" required>
                 <option value="0">Cash</option>
                 <option value="1">Credit</option>
             </select>
         </div>
-        <!-- TODO remove paymentStatus or give default value ?-->
         <div class="form-group">
             <label>Payment Status</label>
             <input type="number" class="form-control" placeholder="e.g. 1 for true or 0 for false" ng-model="order.paymentStatus" min="0" max="1" required>
@@ -37,4 +92,4 @@
         </div>
         <button class="btn btn-primary" type="submit">Create Order</button>
     </form>
-</div>
+</div>-->

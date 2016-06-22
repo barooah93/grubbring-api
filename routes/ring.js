@@ -33,6 +33,33 @@ app.get('/', function(req,res){
 });
 //-------------------------END-------------------------------------------------------
 
+
+//TODO: fix status codes and descriptions
+app.get('/subscribedRings', function(req, res) {
+    authenticate.checkAuthentication(req, res, function (data) {
+            var userId = req.user.userId;
+            var sql = "SELECT R.name FROM tblRing R WHERE R.ringId IN (SELECT RU.ringId FROM tblRingUser RU WHERE RU.userId = ?);";
+            var inserts = [userId];
+            sql = mysql.format(sql,inserts);
+            db.dbExecuteQuery(sql, res, function(result){
+                if(result.data.length == 0){
+                    // No data retreieved
+                    result.status = statusCodes.NO_PENDING_USER_REQUESTS;
+                    result.description = "No approved or pending requests retrieved for this user id and ring id.";
+                    res.send(result);
+                } else {
+                    console.log("success subring: " + result);
+                    if(result.status==statusCodes.EXECUTED_QUERY_SUCCESS){
+                        // Overwrite status and description
+                        result.status=statusCodes.UPDATE_USER_ACCESS_TO_RING_SUCCESS;
+                        result.description="Got ring names for userId: "+userId;
+                    } 
+                    res.send(result);
+                }
+             });
+    });
+});
+
 //-------------------------START-----------------------------------------------------
 // TODO: add promises?
 // TODO: if no rings show a map - rings near them - for the person to join and say that the user is in no rings
@@ -40,14 +67,6 @@ app.get('/', function(req,res){
 //too confusing - redo
 
 /*Get rings a user is part of (leads or is in as a member of the ring) */
-
-app.get('/subscribedRings', function(req, res) {
-    authenticate.checkAuthentication(req, res, function (data) {
-    
-        
-    });
-});
-
 // app.get('/subscribedRings', function(req, res) {
 //     authenticate.checkAuthentication(req, res, function (data) {
 //         var userId = req.user.userId;
