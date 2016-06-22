@@ -262,7 +262,6 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
                 method: 'GET',
                 url: '/api/ring?latitude='+lat +'&longitude=' + long
             }).then(function(response) {
-                
                 if(response.data.status == StatusCodes.RETURNED_RINGS_NEAR_USER_SUCCESS){
                     // Clear list of items
                     $scope.listItems = [];
@@ -303,6 +302,7 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
                 method: 'GET',
                 url: '/api/grubbery?latitude='+lat +'&longitude=' + long
             }).then(function(response) {
+                console.log(response);
                 if(response.data.data != null) {
                     for (var i = 0; i < response.data.data.length; i++) {
                         placeGrubberyMarkerOnMap(response.data.data[i]);
@@ -352,27 +352,28 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
                     method: 'GET',
                     url: '/api/search/'+$scope.searchText+'?context=findRings&latitude='+$scope.lat +'&longitude=' + $scope.long
                 }).then(function(response) {
-                    
                     if(response.data.data != null) {
                         if(!$scope.isClear){
                             
                             // Clear list of items
                             $scope.listItems = [];
                             
-                                                        // Loop through rings array, set isRing property, and add to the list to be displayed
-                            for(var k=0; k< response.data.data.rings.length; k++){
-                                response.data.data.rings[k].isRing = true;
-                                $scope.listItems.push(response.data.data.rings[k]);
-                                $scope.searchResults.push(response.data.data.rings[k]);
+                            if(response.data.data.rings != null){
+                                // Loop through rings array, set isRing property, and add to the list to be displayed
+                                for(var k=0; k< response.data.data.rings.length; k++){
+                                    response.data.data.rings[k].isRing = true;
+                                    $scope.listItems.push(response.data.data.rings[k]);
+                                    $scope.searchResults.push(response.data.data.rings[k]);
+                                }
                             }
-                            
-                            // Loop through grubberies array, set isGrubbery property, and add to the list to be displayed
-                            for(var j=0; j< response.data.data.grubberies.length; j++){
-                                response.data.data.grubberies[j].isGrubbery = true;
-                                $scope.listItems.push(response.data.data.grubberies[j]);
-                                $scope.searchResults.push(response.data.data.grubberies[j]);
+                            if(response.data.data.grubberies != null){
+                                // Loop through grubberies array, set isGrubbery property, and add to the list to be displayed
+                                for(var j=0; j< response.data.data.grubberies.length; j++){
+                                    response.data.data.grubberies[j].isGrubbery = true;
+                                    $scope.listItems.push(response.data.data.grubberies[j]);
+                                    $scope.searchResults.push(response.data.data.grubberies[j]);
+                                }
                             }
-                            
                             // Response finished, if more letters were typed while waiting, execute search
                             if($scope.isWaitingOnSearchAPI){
                                 searchThroughCache();
@@ -534,7 +535,6 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
                     method: 'GET',
                     url: '/api/ring/getLeaderDetails/'+item.createdBy+'/'+item.ringId
                 }).then(function(response) {
-                     console.log(response.data.data);
                     $scope.leader = response.data.data[0].username;
                 }, function(err) {
                     console.log(err);

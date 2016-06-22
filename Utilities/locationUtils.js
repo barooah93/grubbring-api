@@ -9,27 +9,23 @@ var statusCodes = require('../Utilities/StatusCodesBackend');
 
 module.exports = {    
 
-    getSortedObjectsByAddress: function(objectArray, userLat, userLong, callback) {
+    getSortedObjectsByAddress: function(objectArray, userLat, userLong) {
         var unsortedList = objectArray;
         var len = unsortedList.length;
         
-        // Loop through array to append a latitude and logitude field to each object
-        for(var i=0; i<len; i++){
-            (function(i) {
-                // Get lat and long from address
-                geocoder.geocode({address: unsortedList[i].addr +' ' + unsortedList[i].city + ', ' + unsortedList[i].state}, function(err, res) {
-                    if(!err){
-                        unsortedList[i].lat = res[0].latitude;
-                        unsortedList[i].long = res[0].longitude;
-                    } else {
-                        glog.error(err);
-                    }
-                    if(i == len-1){
-                        callback(sortListByLatLong(unsortedList, userLat, userLong));
-                    }
-                });
-            })(i);
+        //sort objects by distance from user lat and long using insertion sort
+        for (var i = 0; i < len; i++) {
+            
+            var currObject = unsortedList[i];
+            var currDist = getDistanceFromLatLong(userLat, userLong, currObject.latitude, currObject.longitude);
+            /*Check through the sorted list and compare with the unsorted ring if smaller, move the unsorted to the beginning of the list*/
+            for (var j = i - 1; j >= 0 && (getDistanceFromLatLong(userLat, userLong, unsortedList[j].latitude, unsortedList[j].longitude) > currDist); j--) {
+                unsortedList[j + 1] = unsortedList[j];
+            }
+            unsortedList[j + 1] = currObject;
         }
+        
+        return unsortedList;
     },
     
     getSortedObjectsByZipcodes: function(objectArray, userLat, userLong) {
@@ -82,9 +78,10 @@ module.exports = {
             //SELECT DISTINCT R.addr, R.city, R.state, R.name, R.ringId, R.createdBy, R.zipcode, U.firstName, U.lastName, (SELECT COUNT(*) FROM tblRingUser RU INNER JOIN tblRing R WHERE RU.ringId=R.ringID) AS members FROM tblRing R, tblRingUser RU, tblUser U WHERE R.createdBy=U.userId  AND zipcode = '07852' AND R.ringStatus=1 AND RU.status=1
             //(SELECT COUNT(*) FROM tblRingUser where tblRingUser.ringId = tblRing.ringId) AS memberCount
             
-            var sql = "SELECT DISTINCT R.addr, R.city, R.state, R.name, R.ringId, R.createdBy, R.zipcode, U.firstName, U.lastName, "+
+            var sql = "SELECT DISTINCT R.addr, R.city, R.state, R.name, R.ringId, R.createdBy, R.zipcode, R.latitude, R.longitude, "+
+                "U.firstName, U.lastName, "+
                 "(SELECT COUNT(*) FROM tblRingUser RU where RU.ringId = R.ringId AND RU.status=1) AS memberCount "+
-                "FROM tblRing R, tblRingUser RU, tblUser U "+
+                "FROM tblRing R, tblUser U "+
                 "WHERE R.createdBy=U.userId  "+
                 "AND R.ringStatus=1 "+
                 "AND (zipcode = ? ";
@@ -131,7 +128,7 @@ module.exports = {
         }
         else{
             // inject first zipcode into sql
-            var sql = "SELECT G.name, G.addr, G.city, G.state, G.zipcode, G.phone FROM tblGrubbery G "+
+            var sql = "SELECT G.name, G.addr, G.city, G.state, G.zipcode, G.latitude, G.longitude, G.phone FROM tblGrubbery G "+
             "WHERE zipcode = ? ";
             var inserts = [zipcodesNearUser[0].toString()];
             // inject the rest
@@ -187,7 +184,7 @@ function sortListByLatLong(unsortedList, userLat, userLong){
     for (var i = 0; i < len; i++) {
         
         var currObject = unsortedList[i];
-        var currDist = getDistanceFromLatLong(userLat, userLong, currObject.lat, currObject.long);
+        var currDist = getDistanceFromLatLong(userLat, userLong, currObject.latitude, currObject.longitude);
         /*Check through the sorted list and compare with the unsorted ring if smaller, move the unsorted to the beginning of the list*/
         for (var j = i - 1; j >= 0 && (getDistanceFromLatLong(userLat, userLong, unsortedList[j].lat, unsortedList[j].long) > currDist); j--) {
             unsortedList[j + 1] = unsortedList[j];
