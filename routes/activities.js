@@ -391,4 +391,37 @@ app.get('/getLastActivity/:ringId', function(req,res) {
 	});
 });
 
+//-------------------------START--------------------------------------------------
+//get number of activities for a ring id
+//TODO: fix the statuses and descs
+app.get('/getNumActivities/:ringId', function(req,res) {
+		// Check if user session is still valid
+	auth.checkAuthentication(req, res, function (data) {
+		var ringId = req.params.ringId;
+		var sql = null;
+		
+		sql = "SELECT COUNT(A.ringId) AS numActivities FROM tblActivity A WHERE A.ringId = ?;";
+		var inserts = [ringId];
+		sql = mysql.format(sql, inserts);
+		
+		  db.dbExecuteQuery(sql, res, function(result){
+		  	if(result.data.length == 0){
+                // No data retreieved
+                result.status = statusCodes.NO_PENDING_USER_REQUESTS;
+                result.description = "No approved or pending requests retrieved for this user id and ring id.";
+                res.send(result);
+            } else {
+                if(result.status==statusCodes.EXECUTED_QUERY_SUCCESS){
+                    // Overwrite status and description
+                    result.status=statusCodes.UPDATE_USER_ACCESS_TO_RING_SUCCESS;
+                    result.description="Got number of activities for that ringid";
+                } 
+                res.send(result);
+            }
+		  	
+		  });
+	});
+});
+//----------------------------------------------------end--------------------------------
+
 module.exports = app;

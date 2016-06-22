@@ -37,7 +37,7 @@ app.get('/', function(req,res){
 app.get('/subscribedRings', function(req, res) {
     authenticate.checkAuthentication(req, res, function (data) {
             var userId = req.user.userId;
-            var sql = "SELECT R.name FROM tblRing R WHERE R.ringId IN (SELECT RU.ringId FROM tblRingUser RU WHERE RU.userId = ?);";
+            var sql = "SELECT R.name, R.ringId FROM tblRing R WHERE R.ringId IN (SELECT RU.ringId FROM tblRingUser RU WHERE RU.userId = ?);";
             var inserts = [userId];
             sql = mysql.format(sql,inserts);
             db.dbExecuteQuery(sql, res, function(result){
@@ -47,7 +47,6 @@ app.get('/subscribedRings', function(req, res) {
                     result.description = "No approved or pending requests retrieved for this user id and ring id.";
                     res.send(result);
                 } else {
-                    console.log("success subring: " + result);
                     if(result.status==statusCodes.EXECUTED_QUERY_SUCCESS){
                         // Overwrite status and description
                         result.status=statusCodes.UPDATE_USER_ACCESS_TO_RING_SUCCESS;
