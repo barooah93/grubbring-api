@@ -95,7 +95,9 @@ app.get('/:key', function(req,res) {
                 }
                 inserts.push("%"+tokenized[i]+"%");
             }
-            ringSql = "SELECT R.name, R.ringId, R.addr, R.city, R.state, R.zipcode, R.createdBy FROM tblRing R "+
+            ringSql = "SELECT DISTINCT R.name, R.ringId, R.addr, R.city, R.state, R.zipcode, R.latitude, R.longitude, R.createdBy, "+
+                "(SELECT COUNT(*) FROM tblRingUser RU where RU.ringId = R.ringId AND RU.status=1) AS memberCount "+
+                "FROM tblRing R, tblRingUser RU "+
                 "WHERE ("+tokenizedSearch+" AND R.ringStatus=1);";
             ringSql = mysql.format(ringSql, inserts);
             db.dbExecuteQuery(ringSql,res, function(ringResult){
@@ -114,7 +116,7 @@ app.get('/:key', function(req,res) {
                     inserts.push("%"+tokenized[i]+"%");
                 }
                 
-                grubberySql = "SELECT G.name, G.grubberyId, G.addr, G.city, G.state, G.zipcode FROM tblGrubbery G WHERE "+tokenizedSearch+";";
+                grubberySql = "SELECT G.name, G.grubberyId, G.addr, G.city, G.state, G.zipcode, G.latitude, G.longitude FROM tblGrubbery G WHERE "+tokenizedSearch+";";
                 grubberySql = mysql.format(grubberySql,inserts);
                 //execute
                 db.dbExecuteQuery(grubberySql,res, function(grubberyResult){
@@ -137,8 +139,8 @@ app.get('/:key', function(req,res) {
                     
                     if(context == "findRings") {
                          if(userLat != null && userLong != null){ //sort by location
-                            var sortedRings = locationUtils.getSortedObjectsByZipcodes(ringResult.data, userLat, userLong);
-                            var sortedGrubberies = locationUtils.getSortedObjectsByZipcodes(grubberyResult.data, userLat, userLong);
+                            var sortedRings = locationUtils.getSortedObjectsByAddress(ringResult.data, userLat, userLong);
+                            var sortedGrubberies = locationUtils.getSortedObjectsByAddress(grubberyResult.data, userLat, userLong);
                             data.data.rings = sortedRings;
                             data.data.grubberies = sortedGrubberies;
                             res.send(data);

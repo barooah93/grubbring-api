@@ -24,7 +24,7 @@ app.get('/', function(req,res){
         var userLat = req.query.latitude;
         var userLong = req.query.longitude;
         locationUtils.getGrubberiesNearLocation(userLat, userLong, 3, res, function(result){
-            var sortedGrubberies = locationUtils.getSortedObjectsByZipcodes(result.data, userLat, userLong);
+            var sortedGrubberies = locationUtils.getSortedObjectsByAddress(result.data, userLat, userLong);
             result.data = sortedGrubberies;
             res.send(result);
         });

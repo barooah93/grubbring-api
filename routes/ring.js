@@ -23,9 +23,10 @@ app.get('/', function(req,res){
         var userLat = req.query.latitude;
         var userLong = req.query.longitude;
         locationUtils.getRingsNearLocation(userLat, userLong, 3, res, function(result){
-            var sortedRings = locationUtils.getSortedObjectsByZipcodes(result.data, userLat, userLong);
+            var sortedRings = locationUtils.getSortedObjectsByAddress(result.data, userLat, userLong);
             result.data = sortedRings;
             res.send(result);
+            
         });
 
     });
