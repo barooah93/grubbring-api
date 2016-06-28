@@ -96,9 +96,10 @@ app.get('/:key', function(req,res) {
                 inserts.push("%"+tokenized[i]+"%");
             }
             ringSql = "SELECT DISTINCT R.name, R.ringId, R.addr, R.city, R.state, R.zipcode, R.latitude, R.longitude, R.createdBy, "+
+                "U.username, U.firstName, U.lastName, "+
                 "(SELECT COUNT(*) FROM tblRingUser RU where RU.ringId = R.ringId AND RU.status=1) AS memberCount "+
-                "FROM tblRing R, tblRingUser RU "+
-                "WHERE ("+tokenizedSearch+" AND R.ringStatus=1);";
+                "FROM tblRing R, tblUser U "+
+                "WHERE ("+tokenizedSearch+" AND U.userId=R.createdBy AND R.ringStatus=1);";
             ringSql = mysql.format(ringSql, inserts);
             db.dbExecuteQuery(ringSql,res, function(ringResult){
                 var tokenizedSearch="";
