@@ -67,9 +67,6 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
     $scope.rings = null;
     $scope.sortedCounts = null;
     
-    // initialize geocoder for finding long and lat of an address
-    var geocoder = new google.maps.Geocoder();
-    
     getUserDetails();
     
     // array containing rings near person's location
@@ -151,45 +148,30 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
         marker.setTitle("You are here!");
         
         markers.push(marker);
-        
-        // add tooltip giving info about the ring
-        // geocoder.geocode({'location': latlng}, function(results, status) {
-        //     if (status === google.maps.GeocoderStatus.OK) {
-        //         if (results[1]) {
-        //             marker.setTitle(results[1]);
-        //         }
-        //         console.log(results[1]);
-        //         console.log(results[0]);
-        //     }
-        // });
 
     }
     
     
     // decodes address into long and lat coordinates to add ring markers to the map
     function placeRingMarkerOnMap(ring) {
-        geocoder.geocode({'address': ring.addr + ' ' + ring.city + ', ' + ring.state}, function(results, status) {
-            if (status == google.maps.GeocoderStatus.OK) {
-                var marker = new google.maps.Marker({
-                    map: map,
-                    position: results[0].geometry.location
-                });
-                // Set marker icon color
-                marker.setIcon('http://maps.google.com/mapfiles/ms/icons/red-dot.png');
-                // add tooltip giving info about the ring
-                marker.setTitle(ring.name + "\n" + ring.addr + "\n" + ring.firstName + " " + ring.lastName);
-                
-                markers.push(marker);
-                
-                // open ring detail popup on marker click
-                marker.addListener('click', function() {
-                    openOverlayOnMapMarkerClick(marker)
-                });
-                
-                
-            } else {
-                alert("We could not find nearby rings successfully, geocoder could not find location: " + status);
-            }
+        
+        var latLng = {lat : ring.latitude, lng : ring.longitude};
+        
+        var marker = new google.maps.Marker({
+            map: map,
+            position: latLng
+        });
+        
+        // Set marker icon color
+        marker.setIcon('http://maps.google.com/mapfiles/ms/icons/red-dot.png');
+        // add tooltip giving info about the ring
+        marker.setTitle(ring.name + "\n" + ring.addr + "\n" + ring.firstName + " " + ring.lastName);
+        
+        markers.push(marker);
+        
+        // open ring detail popup on marker click
+        marker.addListener('click', function() {
+            openOverlayOnMapMarkerClick(marker)
         });
 
     }
@@ -198,23 +180,20 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
     
     // decodes address into long and lat coordinates to add ring markers to the map
     function placeGrubberyMarkerOnMap(grubbery) {
-        geocoder.geocode({'address': grubbery.addr + ' ' + grubbery.city + ', ' + grubbery.state}, function(results, status) {
-            if (status == google.maps.GeocoderStatus.OK) {
-                var marker = new google.maps.Marker({
-                    map: map,
-                    position: results[0].geometry.location
-                });
-                // Set marker icon color
-                marker.setIcon('http://maps.google.com/mapfiles/ms/icons/green-dot.png');
-                // add tooltip giving info about the ring
-                marker.setTitle(grubbery.name + "\n" + grubbery.addr + "\n" + grubbery.city + " " + grubbery.state);
-                
-                markers.push(marker);
-            } else {
-                alert("We could not find nearby grubberies successfully, geocoder could not find location: " + status);
-            }
+        
+        var latLng = {lat : grubbery.latitude, lng : grubbery.longitude};
+        
+        var marker = new google.maps.Marker({
+            map: map,
+            position: latLng
         });
-
+        // Set marker icon color
+        marker.setIcon('http://maps.google.com/mapfiles/ms/icons/green-dot.png');
+        // add tooltip giving info about the ring
+        marker.setTitle(grubbery.name + "\n" + grubbery.addr + "\n" + grubbery.city + " " + grubbery.state);
+        
+        markers.push(marker);
+        
     }
     
     // opens detail popup overlay when clicking on map marker
