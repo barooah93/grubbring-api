@@ -39,7 +39,7 @@ if dashboard: (purpose: shows the rings you are in and your activities)
         return ( rings that satisfy search AND grubberies that satisfy search )
 */
 
-// ex: https://grubbring-api-barooah93.c9users.io/api/search/chip?context=dashboard&latitude=40%2E8804088&longitude=-74%2E6744209
+// ex: /api/search/chip?context=findRings&latitude=40%2E8804088&longitude=-74%2E6744209
 app.get('/:key', function(req,res) {
     authenticate.checkAuthentication(req, res, function (data) {
         var ringSql = null; // sql statement to find key in ringIds or ring names

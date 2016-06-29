@@ -52,6 +52,7 @@ module.exports = {
         return /(^\d{5}$)|(^\d{5}-\d{4}$)/.test(zip);
     },
     
+    // Returns object with rings near given lat and long by the radius
     getRingsNearLocation: function(lat, long, radius, res, callback){
          //get zipcode based on lat and log
         var userZipCode = gps.gps2zip(lat, long).zip_code; 

@@ -12,11 +12,12 @@ var statusCodes = require('../Utilities/StatusCodesBackend');
 
 //-------------------------START-----------------------------------------------------
 
-// GET: pull all ring locations and details near the user. If no rings found, send error code
+// GET: pull all ring locations and details near the user, sorted by distance from given lat and long
+// Ex: /api/ring?latitude='+lat +'&longitude=' + long
 app.get('/', function(req,res){
      authenticate.checkAuthentication(req, res, function (data) {
         /*
-        Latitude and Longitude of user comes from front end and passed in the body of this http GET request
+        Latitude and Longitude of user comes from front end and passed in as query params of this http GET request
         For website - browser can get user's coordiates --> Example: http://www.w3schools.com/html/html5_geolocation.asp
         For Android/IOS - use mobiles geolocation api to get user's coordinates and pass to this api
         */
@@ -34,7 +35,9 @@ app.get('/', function(req,res){
 //-------------------------END-------------------------------------------------------
 
 
-//TODO: fix status codes and descriptions
+//------------------------START-----------------------------------------------------
+// GET: get an object containing the rings a user is a part of
+// Ex: /api/ring/subscribedRings
 app.get('/subscribedRings', function(req, res) {
     authenticate.checkAuthentication(req, res, function (data) {
             var userId = req.user.userId;
@@ -44,13 +47,13 @@ app.get('/subscribedRings', function(req, res) {
             db.dbExecuteQuery(sql, res, function(result){
                 if(result.data.length == 0){
                     // No data retreieved
-                    result.status = statusCodes.NO_PENDING_USER_REQUESTS;
-                    result.description = "No approved or pending requests retrieved for this user id and ring id.";
+                    result.status = statusCodes.USER_NOT_SUBSCRIBED_TO_RINGS;
+                    result.description = "No rings that this user is part of.";
                     res.send(result);
                 } else {
                     if(result.status==statusCodes.EXECUTED_QUERY_SUCCESS){
                         // Overwrite status and description
-                        result.status=statusCodes.UPDATE_USER_ACCESS_TO_RING_SUCCESS;
+                        result.status=statusCodes.RECIEVED_SUBSCRIBED_RINGS_SUCCESS;
                         result.description="Got ring names for userId: "+userId;
                     } 
                     res.send(result);
@@ -58,6 +61,7 @@ app.get('/subscribedRings', function(req, res) {
              });
     });
 });
+//-------------------------END------------------------------------------------------
 
 //-------------------------START-----------------------------------------------------
 // TODO: add promises?
@@ -159,7 +163,7 @@ app.get('/subscribedRings', function(req, res) {
 
 //-------------------------START-----------------------------------------------------
 // POST: request to join the ring
-// ex: https://grubbring-api-barooah93.c9.io/api/ring/join/234/429
+// ex: /api/ring/join/234
 app.post('/join/:ringId', function(req,res){
     authenticate.checkAuthentication(req, res, function (data) {
         var ringId = req.params.ringId;
@@ -200,6 +204,7 @@ app.post('/join/:ringId', function(req,res){
 //          service will also notify user of ring leader's decision
 
 //assuming pending = 0, approved = 1, declined = 2, banned = 3
+// EX: /api/ring/join/234/1
 app.put('/join/:ringId/:handleRequest', function(req,res){
     authenticate.checkAuthentication(req, res, function (data) {
         var pending = 0;
@@ -241,6 +246,7 @@ app.put('/join/:ringId/:handleRequest', function(req,res){
 // Delete: If user uses this delete, and the user has a pending status then the delete removes the record
 //          if user uses this with status of approved, then delete removes record  and notifies admin
 //          if none of the above, do nothing
+// Ex: /api/ring/join/234
 app.delete('/join/:ringId', function(req,res){
     authenticate.checkAuthentication(req, res, function (data) {
         var pending = 0;
@@ -299,6 +305,7 @@ app.delete('/join/:ringId', function(req,res){
 
 //-------------------------START-----------------------------------------------------
 // GET: leader get notification if someone is trying join ring
+// Ex: /api/ring/notifyLeader
 app.get('/notifyLeader', function(req,res){
     authenticate.checkAuthentication(req, res, function (data) {
         var leaderId = req.user.userId;
