@@ -127,6 +127,9 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
         
     function placeMarkers(){
         
+        // Show spinner
+        $scope.showLoader = true;
+        
         // Place user marker on map
         placeUserMarkerOnMap($scope.lat, $scope.long);
         
@@ -179,7 +182,6 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
 
     }
     
-   
     
     // decodes address into long and lat coordinates to add ring markers to the map
     function placeGrubberyMarkerOnMap(grubbery) {
