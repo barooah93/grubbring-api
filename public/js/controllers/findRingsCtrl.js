@@ -3,7 +3,24 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
     var map;
     var markers = [];
     
-    function initAutocomplete() {
+    
+    $scope.rings = null;
+    $scope.sortedCounts = null;
+    
+    getUserDetails();
+    
+    // array containing rings near person's location
+    $scope.listItems = [];
+    $scope.searchResults = [];
+    
+    $scope.isClear = false;    // flag to help with async clearing of list
+    $scope.isWaitingOnSearchAPI = false; // flag to help with async updating of the list
+    
+    // initialize map canvas
+    var mapCanvas = document.getElementById('map');
+    var defaultZoomLevel = 15; // TODO: hardcoded for now
+
+    function initLocationBox() {
         // Create the search box and link it to the UI element.
         var input = document.getElementById('pac-input');
         var searchBox = new google.maps.places.SearchBox(input);
@@ -53,33 +70,10 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
             $scope.lat = latlong.lat();
             $scope.long = latlong.lng();
             
-            // Place user marker on map
-            placeUserMarkerOnMap($scope.lat, $scope.long);
+            placeMarkers();
             
-            // Get nearby rings and display markers
-            getNearbyRings($scope.lat, $scope.long);
-            
-          
         });
     }
-
-    
-    $scope.rings = null;
-    $scope.sortedCounts = null;
-    
-    getUserDetails();
-    
-    // array containing rings near person's location
-    $scope.listItems = [];
-    $scope.searchResults = [];
-    
-    $scope.isClear = false;    // flag to help with async clearing of list
-    $scope.isWaitingOnSearchAPI = false; // flag to help with async updating of the list
-    
-    // initialize map canvas
-    var mapCanvas = document.getElementById('map');
-    var defaultZoomLevel = 15; // TODO: hardcoded for now
-
 
     // Retrieve user details
     function getUserDetails() {
@@ -121,7 +115,17 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
         // initialize google map object onto div mapCanvas with specified options
         map = new google.maps.Map(mapCanvas, mapOptions);
         
-        initAutocomplete();
+        // initialize google search box
+        initLocationBox();
+        
+        // initialize google markers
+        placeMarkers();
+
+    }
+    
+    // ---------------------- Google Map Markers ---------------------------------------------------------------------------
+        
+    function placeMarkers(){
         
         // Place user marker on map
         placeUserMarkerOnMap($scope.lat, $scope.long);
@@ -129,11 +133,10 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
         // Get nearby rings and display markers
         getNearbyRings($scope.lat, $scope.long);
         
-
+         // Load grubberies to map and list
+        getNearbyGrubberies($scope.lat, $scope.long);
+        // ***NOTE*** getNearbyRings and getNearbyGrubberies will run simultaneously
     }
-    
-    // ---------------------- Google Map Markers ---------------------------------------------------------------------------
-        
         
     // decodes address into long and lat coordinates to add marker for user to the map
     function placeUserMarkerOnMap(lat, long) {
@@ -233,16 +236,21 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
     
     // Function to populate list with nearby rings and display markers on map
     function getNearbyRings(lat, long){
+        
+        // Clear list of items
+        $scope.listItems = [];
+        // This is a backup list for when we want to reset the list
+        $scope.initialList = [];
+        
+        // Flag used for asynchronous rendering of list
+        $scope.isWaitingOnNearbyRings = true;
+                
         // get suggested rings to display to user
         $http({
             method: 'GET',
             url: '/api/ring?latitude='+lat +'&longitude=' + long
         }).then(function(response) {
             if(response.data.status == StatusCodes.RETURNED_RINGS_NEAR_USER_SUCCESS){
-                // Clear list of items
-                $scope.listItems = [];
-                // This is a backup list for when we want to reset the list
-                $scope.initialList = [];
                 
                 for (var i = 0; i < response.data.data.length; i++) {
                     placeRingMarkerOnMap(response.data.data[i]);
@@ -255,9 +263,12 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
                     $scope.initialList.push(response.data.data[i]);
                 }
                 
-                // Now load grubberies to map and list
-                getNearbyGrubberies(lat, long);
+                $scope.isWaitingOnNearbyRings = false;
                 
+                // Check if the grubbery list was waiting to render
+                if($scope.grubberiesWaiting){
+                    populateGrubberiesInList();
+                }
                 
             } else if(response.data.status == StatusCodes.NO_RINGS_NEAR_USER){
                 // TODO: display message to user to prompt them to be first to create a ring in their area
@@ -265,14 +276,17 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
                 // TODO: handle error
                 alert("We are experiencing issues trying to retrieve the rings around you. Please try again later.");
             }
+            
             // Hide spinner
             $scope.showLoader = false;
             
         }, function(err) {
             console.log(err);
+            $scope.showLoader=false;
         });
     }
     
+    // Gets the grubberies near user and place on the map
     function getNearbyGrubberies(lat, long){
         // get nearby grubberies to display to user
         $http({
@@ -280,27 +294,36 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
             url: '/api/grubbery?latitude='+lat +'&longitude=' + long
         }).then(function(response) {
             
-            if(response.data.data != null) {
-                for (var i = 0; i < response.data.data.length; i++) {
-                    placeGrubberyMarkerOnMap(response.data.data[i]);
-                    response.data.data[i].isGrubbery = true;
-                    
-                    // Add to list that's displayed to user
-                    $scope.listItems.push(response.data.data[i]);
-                    
-                    // Add to back up list
-                    $scope.initialList.push(response.data.data[i]);
-                    
-                }
-                
+            // Set this list to use in populateGrubberiesInList() function
+            $scope.grubberyList = response.data.data;
+            
+            // Check if get nearby rings is still executing
+            if($scope.isWaitingOnNearbyRings){
+                $scope.grubberiesWaiting = true;
             } else {
-                // TODO: display message to user to prompt them to be first to create a ring in their area
-                $scope.showLoader=false;
+                populateGrubberiesInList();
             }
-
+            
         }, function(err) {
             console.log(err);
         });
+    }
+    
+    function populateGrubberiesInList(){
+        if($scope.grubberyList != null) {
+            for (var i = 0; i < $scope.grubberyList.length; i++) {
+                placeGrubberyMarkerOnMap($scope.grubberyList[i]);
+                $scope.grubberyList[i].isGrubbery = true;
+                
+                // Add to list that's displayed to user
+                $scope.listItems.push($scope.grubberyList[i]);
+                
+                // Add to back up list
+                $scope.initialList.push($scope.grubberyList[i]);
+                
+            }
+            
+        }
     }
 
     
