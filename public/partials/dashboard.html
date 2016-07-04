@@ -6,16 +6,16 @@ http://stackoverflow.com/questions/21021951/directive-template-unique-ids-for-el
 <!--<ng-include src=" 'partials/template.html' "></ng-include>-->
 
 <!-- Overlay message-->
-<div class="dashboard-bg-overlay" ng-show="showOverlay">
+<!--<div class="dashboard-bg-overlay" ng-show="showOverlay">
 <div class="popup">
   <h2>Welcome to Grubbring!</h2>
 		<div class="content">
 			You're not part of any rings yet! Click "Join Rings" to get started!
-			<button class="btn btn-primary" ng-click="redirectToFindRings()">Join Rings</button>
-		</div>
+			<button class="btn btn-primary">Join Rings</button>--> <!-- had ng-click="redirectToFindRings()" -->
+<!--		</div>
 		
 	</div>
-</div>
+</div>-->
 
 
 
@@ -45,11 +45,25 @@ http://stackoverflow.com/questions/21021951/directive-template-unique-ids-for-el
       </div>
       <div class="main-content row">
         <!-- this is for the content in the container -->
-         <div class="left-container col-md-4">
-            <p>NO RINGS!</p>
+        <div class="left-container col-md-4">
+           <img ng-show="showLoader" class="loader-gif" src="../images/ring-alt.svg"/>
+           <div class="ring-panel-group" ng-repeat="ring in ringNameNumActivity">
+             <div class="ring-panel">
+               <div class="ring-panel-content" data-target="#ring-desc_[[::$id}}">
+                 <h4>
+                    <img ng-src="../images/default_ring_0.png"/>
+                      <div class="ring-panel-title-text">
+                        <b>{{ ring.name }}</b>
+                     </div>
+                 </h4>
+                 {{ ring.numActivities}} new activities
+               </div>
+             </div>
+           </div>
         </div>
         <div class="right-container col-md-4">
-           <p>NO ACTIVITIES!</p>
+          <!-- add stuff on right -->
+
         </div>
       </div>
       
