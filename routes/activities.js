@@ -393,6 +393,7 @@ app.get('/getLastActivity/:ringId', function(req,res) {
 
 //-------------------------START--------------------------------------------------
 //get number of activities for a ring id
+//TODO: NEEDED FOR ORDERS PAGE
 //TODO: fix the statuses and descs
 app.get('/getNumActivities/:ringId', function(req,res) {
 		// Check if user session is still valid
@@ -423,5 +424,40 @@ app.get('/getNumActivities/:ringId', function(req,res) {
 	});
 });
 //----------------------------------------------------end--------------------------------
+
+//-------------------------START--------------------------------------------------
+//get activities for a ring id and group by activity creator and activity id (to not merge rows)
+//TODO: NEEDED FOR ORDERS PAGE
+//TODO: fix the statuses and descs
+app.get('/getActivities/:ringId', function(req,res) {
+		// Check if user session is still valid
+	auth.checkAuthentication(req, res, function (data) {
+		var ringId = req.params.ringId;
+		var sql = null;
+		
+		sql = "SELECT U.userId, U.firstName, A.activityId, A.ringId, A.bringerUserId, A.maxNumOrders, A.grubberyId, A.lastOrderDateTime FROM tblActivity A, tblUser U WHERE A.ringId = ? AND A.bringerUserId = U.userId GROUP BY A.bringerUserId, A.activityId;";
+		var inserts = [ringId];
+		sql = mysql.format(sql, inserts);
+		
+		  db.dbExecuteQuery(sql, res, function(result){
+		  	if(result.data.length == 0){
+                // No data retreieved
+                result.status = statusCodes.NO_PENDING_USER_REQUESTS;
+                result.description = "No approved or pending requests retrieved for this user id and ring id.";
+                res.send(result);
+            } else {
+                if(result.status==statusCodes.EXECUTED_QUERY_SUCCESS){
+                    // Overwrite status and description
+                    result.status=statusCodes.UPDATE_USER_ACCESS_TO_RING_SUCCESS;
+                    result.description="Got number of activities for that ringid";
+                } 
+                res.send(result);
+            }
+		  	
+		  });
+	});
+});
+//----------------------------------------------------end--------------------------------
+
 
 module.exports = app;

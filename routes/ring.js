@@ -33,7 +33,7 @@ app.get('/', function(req,res){
 });
 //-------------------------END-------------------------------------------------------
 
-
+//TODO: NEEDED FOR ORDERS PAGE
 //TODO: fix status codes and descriptions
 app.get('/subscribedRings', function(req, res) {
     authenticate.checkAuthentication(req, res, function (data) {
