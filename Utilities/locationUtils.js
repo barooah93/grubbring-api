@@ -52,6 +52,7 @@ module.exports = {
         return /(^\d{5}$)|(^\d{5}-\d{4}$)/.test(zip);
     },
     
+    // Returns object with rings near given lat and long by the radius
     getRingsNearLocation: function(lat, long, radius, res, callback){
          //get zipcode based on lat and log
         var userZipCode = gps.gps2zip(lat, long).zip_code; 
@@ -79,7 +80,7 @@ module.exports = {
             //(SELECT COUNT(*) FROM tblRingUser where tblRingUser.ringId = tblRing.ringId) AS memberCount
             
             var sql = "SELECT DISTINCT R.addr, R.city, R.state, R.name, R.ringId, R.createdBy, R.zipcode, R.latitude, R.longitude, "+
-                "U.firstName, U.lastName, "+
+                "U.firstName, U.lastName, U.username, "+
                 "(SELECT COUNT(*) FROM tblRingUser RU where RU.ringId = R.ringId AND RU.status=1) AS memberCount "+
                 "FROM tblRing R, tblUser U "+
                 "WHERE R.createdBy=U.userId  "+

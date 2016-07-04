@@ -18,8 +18,7 @@ app.service('StatusCodes', function(){
         RECIEVED_PENDING_USER_REQUESTS: '00010', // Retrieved pending user requests to joing ring
         DELETE_USER_REQUEST_SUCCESS: '00011', // Users pending or approved status successfully deleted
         DELETE_USER_REQUEST_FAIL: '00012', // Users pending or approved status delete failed
-        RING_LEADER_DETAILS_SUCCESS:'00013', // Retrieved ring leader user details for selected ring
-        RING_GRUBBLINGS_COUNT_SUCCESS: '00014', // Retrieved count of grubblings for a selected ring
+        RECIEVED_SUBSCRIBED_RINGS_SUCCESS: '00013',  // Successfully returned rings the user is a part of
         //----------------------------------------------------------
         
         // --------------- Activities API Status Codes -------------

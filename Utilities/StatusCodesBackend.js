@@ -20,8 +20,7 @@ define('NO_PENDING_USER_REQUESTS', '00009');  // This ring has no pending user r
 define('RECIEVED_PENDING_USER_REQUESTS', '00010');  // Retrieved pending user requests to joing ring
 define('DELETE_USER_REQUEST_SUCCESS', '00011'); // Users pending or approved status successfully deleted
 define('DELETE_USER_REQUEST_FAIL', '00012'); // Users pending or approved status delete failed
-define("RING_LEADER_DETAILS_SUCCESS", '00013'); // Retrieved ring leader user details for selected ring
-define("RING_GRUBBLINGS_COUNT_SUCCESS", '00014'); // Retrieved count of grubblings for a selected ring
+define('RECIEVED_SUBSCRIBED_RINGS_SUCCESS', '00013');  // Successfully returned rings the user is a part of
 //----------------------------------------------------------
 
 // --------------- Activities API Status Codes -------------
