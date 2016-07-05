@@ -90,6 +90,30 @@ app.get('/viewAllOrdersForActivity/:activityId', function(req,res) {
 	});
 });
 
+/*TODO: test*/
+app.get('/numOpenOrders/:activityId', function(req,res) {
+	authenticate.checkAuthentication(req, res, function (data) {
+	    var sql = null;
+
+        var activityId = req.params.activityId;
+
+        sql = "SELECT (SELECT A.maxNumOrders FROM tblActivity A WHERE A.activityId = ?) - (SELECT COUNT(OU.activityId) FROM tblOrderUser OU WHERE OU.activityId = ?);";
+
+        var inserts = [activityId];
+
+		sql = mysql.format(sql, inserts);
+
+		db.dbExecuteQuery(sql, res, function(result) {
+            result.description = '';
+            
+            console.log("numopenorders result " + JSON.stringify(result));
+            res.json({
+                data: result
+            })
+		});
+	});
+});
+
 
 app.get('/viewAllOrdersForRing/:ringId', function(req, res) {
 	authenticate.checkAuthentication(req, res, function(data) {

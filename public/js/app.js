@@ -76,6 +76,6 @@ app.config(['$routeProvider', '$locationProvider', function($routeProvider, $loc
             controller: 'OrdersCtrl'
         })
         .otherwise({
-            redirectTo: '/'
+            redirectTo: '/login'
         });
 }]);

@@ -39,7 +39,7 @@ if dashboard: (purpose: shows the rings you are in and your activities)
         return ( rings that satisfy search AND grubberies that satisfy search )
 */
 
-// ex: https://grubbring-api-barooah93.c9users.io/api/search/chip?context=dashboard&latitude=40%2E8804088&longitude=-74%2E6744209
+// ex: /api/search/chip?context=findRings&latitude=40%2E8804088&longitude=-74%2E6744209
 app.get('/:key', function(req,res) {
     authenticate.checkAuthentication(req, res, function (data) {
         var ringSql = null; // sql statement to find key in ringIds or ring names
@@ -95,8 +95,11 @@ app.get('/:key', function(req,res) {
                 }
                 inserts.push("%"+tokenized[i]+"%");
             }
-            ringSql = "SELECT R.name, R.ringId, R.addr, R.city, R.state, R.zipcode FROM tblRing R "+
-                "WHERE ("+tokenizedSearch+" AND R.ringStatus=1);";
+            ringSql = "SELECT DISTINCT R.name, R.ringId, R.addr, R.city, R.state, R.zipcode, R.latitude, R.longitude, R.createdBy, "+
+                "U.username, U.firstName, U.lastName, "+
+                "(SELECT COUNT(*) FROM tblRingUser RU where RU.ringId = R.ringId AND RU.status=1) AS memberCount "+
+                "FROM tblRing R, tblUser U "+
+                "WHERE ("+tokenizedSearch+" AND U.userId=R.createdBy AND R.ringStatus=1);";
             ringSql = mysql.format(ringSql, inserts);
             db.dbExecuteQuery(ringSql,res, function(ringResult){
                 var tokenizedSearch="";
@@ -114,7 +117,7 @@ app.get('/:key', function(req,res) {
                     inserts.push("%"+tokenized[i]+"%");
                 }
                 
-                grubberySql = "SELECT G.name, G.grubberyId, G.addr, G.city, G.state FROM tblGrubbery G WHERE "+tokenizedSearch+";";
+                grubberySql = "SELECT G.name, G.grubberyId, G.addr, G.city, G.state, G.zipcode, G.latitude, G.longitude FROM tblGrubbery G WHERE "+tokenizedSearch+";";
                 grubberySql = mysql.format(grubberySql,inserts);
                 //execute
                 db.dbExecuteQuery(grubberySql,res, function(grubberyResult){
@@ -137,8 +140,10 @@ app.get('/:key', function(req,res) {
                     
                     if(context == "findRings") {
                          if(userLat != null && userLong != null){ //sort by location
-                            var sortedRings = locationUtils.getSortedRingsByZip(ringResult.data, userLat, userLong);
+                            var sortedRings = locationUtils.getSortedObjectsByAddress(ringResult.data, userLat, userLong);
+                            var sortedGrubberies = locationUtils.getSortedObjectsByAddress(grubberyResult.data, userLat, userLong);
                             data.data.rings = sortedRings;
+                            data.data.grubberies = sortedGrubberies;
                             res.send(data);
                         }
                     }
@@ -398,6 +403,17 @@ app.get('/:key', function(req,res) {
 //-------------------------END-------------------------------------------------------
 
 
+//-------------------------Start----------------------------------------------------
+// GET - Search by city, state or zipcode
+// ex: https://grubbring-api-barooah93.c9users.io/api/search/locations?latitude=40%2E8804088&longitude=-74%2E6744209
+app.get('/locations/:key', function(req,res) {
+    // TODO: Return list of city,state and zipcodes that match their search
+    var key = req.params.key;
+    var userLat = req.query.latitude;
+    var userLong = req.query.longitude;
+    
+});
 
+//-------------------------END-------------------------------------------------------
 
 module.exports = app;
