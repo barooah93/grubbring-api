@@ -20,7 +20,7 @@ var user;
 6. POST Update an activities info
 
 TODO:
-1)refractor code to only allow user to acces HIS activities, rings, etc 
+1)refractor code to only allow user to acces HIS activities, rings, etc
 2) add status codes
 3) Refactor the url - how we pass in the parameters - dont pass a user id obvi ;000
 4) go on google docs and add status codes
@@ -36,11 +36,11 @@ app.get('/', function(req,res){
 	// check authentication of user
 	auth.checkAuthentication(req,res, function(data){
 		// retrieve userId
-		userId = req.user.userId; 
-		
+		userId = req.user.userId;
+
 		/*TODO: check last ordertime > current order time*/
 			var activitiesSql = "SELECT A.ringId, A.activityId, U.firstName, U.lastName, A.maxNumOrders, A.lastOrderDateTime, G.name as grubberyName, "+
-					"G.addr as grubberyAddress, G.city as grubberyCity, (A.maxNumOrders-SUM(A.activityId)) as remainingOrders, R.name as ringName "+
+					"G.addr as grubberyAddress, G.city as grubberyCity, R.name as ringName "+
 					"FROM tblUser U, tblGrubbery G, tblActivity A, tblRing R " +
 					"WHERE A.ringId IN (SELECT ringId FROM tblRingUser WHERE userId=? AND status=1) AND " +
 					"A.ringId = R.ringId AND " +
@@ -55,26 +55,58 @@ app.get('/', function(req,res){
 				var status = "";
 				var description;
 				var data;
-				
+
 				if(result.data.length > 0){
-					status="status code"
-					description = "Successfully pulled all activities associated with this user.";
-					
-					glog.log("Activities.js: Retrieved a list of activities (ordered by most active to least active) " +
-					"for userId " + userId + " that are active/expired which this user was a part of.");
+					var sql = 'select activityId, count(*) as numOrders from tblOrderUser where activityId IN (?) Group by activityId';
+					inserts = [];
+					for (var i = 0; i < result.data.length; i++) {
+						inserts.push(result.data[i].activityId);
+					}
+					inserts = [inserts];	// had to put array inside array for the IN part of sql to work
+					sql = mysql.format(sql, inserts);
+					db.dbExecuteQuery(sql, res, function(orders) {
+						// orders = array of objs that contain activityId and total orders have been placed for that id
+
+						for (var i = 0; i < result.data.length; i++) {
+							var activity = result.data[i];
+							for (var j = 0; j < orders.data.length; j++) {
+								var order = orders.data[j];
+								console.log(order);
+								if (activity.activityId === order.activityId) {
+									activity.remainingOrders = activity.maxNumOrders - order.numOrders;
+								} else {
+									activity.remainingOrders = activity.maxNumOrders;
+								}
+							}
+						}
+
+						status="status code";
+						description = "Successfully pulled all activities associated with this user.";
+
+						glog.log("Activities.js: Retrieved a list of activities (ordered by most active to least active) " +
+							"for userId " + userId + " that are active/expired which this user was a part of.");
+
+						resultObject = {
+							status: status,
+							description: description,
+							data: result.data
+						};
+						res.send(resultObject);
+					});
 				}
 				else{
-					status="status code"
+					status="status code";
 					description = "No activities are associated with this user.";
-					
+
 					glog.log("Activities.js: No activities are associated with userId " + userId);
+
+					resultObject = {
+						status: status,
+						description: description,
+						data: result.data
+					};
+					res.send(resultObject);
 				}
-				resultObject = {
-					status: status,
-					description: description,
-					data: result.data
-				};
-				res.send(resultObject);
 			});
 	    });
 });
@@ -86,31 +118,31 @@ app.delete('/deleteActivity/:activityId', function(req,res) {
 		var sql = null;
 		var activityId = req.params.key;
 		var userId = req.user.userId;
-				
+
 		if(activityId.isNaN) {
 			glog.error("Activities.js: Not a valid activityId to deleteActivity");
 		} else {
-			
+
 			// TODO: Delete all orders associated with this activity (physical)
-			
-			//TODO: error checking - should we have a separate query to see if the user is allowed to delete the activity - 
+
+			//TODO: error checking - should we have a separate query to see if the user is allowed to delete the activity -
 			//should we show the error message or not***
-			
-			sql = "DELETE FROM tblActivity A " + 
-			"WHERE A.activityId = ? " + 
+
+			sql = "DELETE FROM tblActivity A " +
+			"WHERE A.activityId = ? " +
 			"AND A.bringerUserId = ?;"; //TODO: why does the bringeruserid the one that owns the ring??
 			var inserts = [activityId, userId];
 		    sql = mysql.format(sql, inserts);
-			
+
 			db.dbExecuteQuery(sql, res, function(deleteActivityResult){
 		        deleteActivityResult.description="Deleted activity for activityId " + activityId;
-		        
+
 		        res.send(deleteActivityResult);
-		        
+
 		        glog.log(deleteActivityResult.description);
 		    });
 		}
-		
+
 	});
 });
 
@@ -120,22 +152,22 @@ app.post('/updateActivity/:activityId', function(req,res) { //assuming the grubb
 	/*maxorders
 	lastorderdatetime
 	bringeruserid???*/
-	
+
 	auth.checkAuthentication(req, res, function (data) {
 		var sql = null;
 		var userId = req.user.userId;
-		
+
 		var activityId = req.params.activityId;
 		var maxNumOrders = req.body.maxNumOrders;
 		var lastOrderDateTime = req.body.lastOrderDateTime;
 //		var bringerUserId = req.body.bringerUserId;		**Future enhancement
-		
+
 		var isMoreThanOneUpdate = false;
 		var inserts = [];
-		
-		sql = "UPDATE tblActivity A " + 
-		"SET "; 
-		
+
+		sql = "UPDATE tblActivity A " +
+		"SET ";
+
 		if(maxNumOrders != null) {
 			sql += "A.maxNumOrders = ?";
 			isMoreThanOneUpdate = true;
@@ -157,19 +189,19 @@ app.post('/updateActivity/:activityId', function(req,res) { //assuming the grubb
 		// 	isMoreThanOneUpdate = true;
 		// 	inserts.push(bringerUserId);
 		// }
-		
+
 		sql += " WHERE A.activityId = ?;";
 		inserts.push(activityId);
-		
+
 		sql = mysql.format(sql, inserts);
-		
+
 		db.dbExecuteQuery(sql, res, function(updateActivityResult){
 	        updateActivityResult.description="Updated activity for activityId " + activityId;
-	        
+
 	        res.send(updateActivityResult);
 	        glog.log(updateActivityResult.description);
 		});
-		
+
 	});
 });
 
@@ -189,7 +221,7 @@ app.post('/createActivity', function(req,res) {
 		var grubberyId = req.body.grubberyId;
 		var lastOrderDateTime = req.body.lastOrderDateTime;
 		var malformedInput = false;
-		
+
 		if(userId.isNaN) {
 			glog.error("Activities.js: User did not enter a number for userId in createActivity API");
 			malformedInput = true;
@@ -210,26 +242,26 @@ app.post('/createActivity', function(req,res) {
 			glog.error("Activities.js: User did not enter a number for grubberyId in createActivity API");
 			malformedInput = true;
 		}
-		
+
 		/*TODO: check if valid date format - depends on how ui will let u input this*/
-		
+
 		if(new Date(lastOrderDateTime).getTime() <= new Date().getTime()) {
 			glog.error("Activities.js: User did not enter a lastOrderDateTime greater than the current time in createActivity API");
 			malformedInput = true;
 		}
-		
+
 		if(!malformedInput) {
-			sql = "INSERT INTO tblActivity (ringId, bringerUserId, maxNumOrders, grubberyId, lastOrderDateTime) " + 
-			"VALUES (?,?,?,?,?);";  
-			
+			sql = "INSERT INTO tblActivity (ringId, bringerUserId, maxNumOrders, grubberyId, lastOrderDateTime) " +
+			"VALUES (?,?,?,?,?);";
+
 			//var inserts = [ringId, bringerUserId, maxNumOrders, grubberyId, lastOrderDateTime];
 			var inserts = [ringId, userId, maxNumOrders, grubberyId, lastOrderDateTime];
 		    sql = mysql.format(sql, inserts);
-		            
+
 		    db.dbExecuteQuery(sql, res, function(insertActivityResult){
 		        insertActivityResult.description="Added activity for userId " + userId;
 		        res.send(insertActivityResult);
-		        
+
 		        glog.log("Activities.js: Added activitiy for userId " + userId);
 		    });
 		}
@@ -249,7 +281,7 @@ app.get('/searchActvities/:key', function(req,res) {
 	auth.checkAuthentication(req, res, function (data) {
 		var key = req.params.key;
 		var grubberySql = null;
-		
+
 		grubberySql = "SELECT G.name as grubbery, R.name as ringName, U.firstName, U.lastName, "+
 			"A.maxNumOrders, A.lastOrderDateTime, A.activityId "+
 			"FROM tblGrubbery G "+
@@ -260,10 +292,10 @@ app.get('/searchActvities/:key', function(req,res) {
 				"INNER JOIN tblUser U "+
 				"ON A.bringerUserId = U.userId "+
 			"WHERE G.name LIKE ? OR R.name LIKE ?;";
-			
+
 		var inserts = ["%"+key+"%","%"+key+"%"];
     	grubberySql = mysql.format(grubberySql, inserts);
-			
+
 		db.dbExecuteQuery(grubberySql, res, function(activityResult){
 			var description = null;
 			if(activityResult.data.length == 0) {
@@ -273,7 +305,7 @@ app.get('/searchActvities/:key', function(req,res) {
 					description: description,
 					data: null
 				}
-				
+
 				glog.log("Activities.js: Could not find an activity for the search on " + key);
 				res.send(errData);
 			}
@@ -284,12 +316,12 @@ app.get('/searchActvities/:key', function(req,res) {
 					description: description,
 					data: activityResult.data
 				};
-				
+
 				glog.log("Activities.js: Returned activity details for the search on " + key);
 				res.send(data);
 			}
 		});
-		
+
 	});
 });
 //-------------------------end-----------------------------------------------------
@@ -304,7 +336,7 @@ app.get('/viewActivity/:activityId', function(req,res) {
 		var activitySql = null;
 		var ordersSql = null;
 		var description = null;
-		
+
 		if(req.params.activityId.isNaN) {
 			glog.error("Activities.js: User did not enter a number for activityId in viewActivity API");
 		} else {
@@ -315,7 +347,7 @@ app.get('/viewActivity/:activityId', function(req,res) {
 					"WHERE A.activityId = ?";
 			var inserts = [req.params.activityId];
 			activitySql = mysql.format(activitySql,inserts);
-			
+
 			db.dbExecuteQuery(activitySql, res, function(activityResult){
 				if(activityResult.data.length == 0){
 					description = "Could not find an activity with activityId " + req.params.activityId;
@@ -324,7 +356,7 @@ app.get('/viewActivity/:activityId', function(req,res) {
 						description: description,
 						data: null
 					}
-					
+
 					glog.log("Activities.js: Could not find an activity with activityId " + req.params.activityId +
 					" so the user is unable to view details for this activity");
 					res.send(errData);
@@ -343,7 +375,7 @@ app.get('/viewActivity/:activityId', function(req,res) {
 						}
 						else{
 							description = "Returned activity details and orders.";
-							glog.log("Activities.js: Viewing details for activity with activityId " + req.params.activityId + 
+							glog.log("Activities.js: Viewing details for activity with activityId " + req.params.activityId +
 							" and viewing details with its orders");
 						}
 						var data = {
@@ -357,7 +389,7 @@ app.get('/viewActivity/:activityId', function(req,res) {
 						res.send(data);
 					});
 				}
-				
+
 			});
 		}
 	});
