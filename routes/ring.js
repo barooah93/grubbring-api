@@ -161,6 +161,45 @@ app.get('/subscribedRings', function(req, res) {
 //-------------------------END-------------------------------------------------------
 
 
+
+//-------------------------START-----------------------------------------------------
+// POST - Create ring
+app.post('/', function(req, res){
+    authenticate.checkAuthentication(req, res, function(data) {
+        var userId = req.user.userId; 
+        var ringName = req.body.name;
+        var ringAddr = req.body.addr;
+        var ringCity = req.body.city;
+        var ringState = req.body.state;
+        var ringZipcode = req.body.zipcode;
+        var ringLat = req.body.latitude;
+        var ringLong = req.body.longitude;
+        var ringStatus = 1;
+        var createdBy = userId;
+       
+        // TODO: Check how many rings this user has already created
+        // TODO: Check if the name of the ring already exists
+        // TODO: Get timestamp to enter into db
+        var sql = "INSERT INTO tblRing (name, addr, city, state, zipcode, latitude, longitude, ringStatus, createdBy) VALUES "+
+                    "(?????????);";
+        var inserts = [ringName, ringAddr, ringCity, ringState, ringZipcode, ringLat, ringLong, ringStatus, createdBy];
+        sql = mysql.format(sql, inserts);
+        
+        db.dbExecuteQuery(sql, res, function(result){
+            if(result.status == statusCodes.EXECUTED_QUERY_SUCCESS){
+                result.status = statusCodes.CREATE_RING_SUCCESS;
+                result.description = "Successfully created ring created by userId " + createdBy;
+            } else {
+                result.status = statusCodes.CREATE_RING_FAIL;
+                result.description = "Something went wrong when creating the ring.";
+            }
+        })
+       
+    });
+});
+//-------------------------END-------------------------------------------------------
+
+
 //-------------------------START-----------------------------------------------------
 // POST: request to join the ring
 // ex: /api/ring/join/234

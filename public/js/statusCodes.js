@@ -25,7 +25,7 @@ app.service('StatusCodes', function(){
         CREATE_ACTIVITY_SUCCESS:'11001', // Successfully created a new activity
         CREATE_ACTIVITY_FAIL:'00003', // Failed to create a new activity
         DELETE_ACTIVITY_SUCCESS:'11003', // Succcessfully deleted an activity
-        NO_ACTIVITIES_FOUND:'00013', // No activities were found (in search or in specific ring)
+        NO_ACTIVITIES_FOUND:'10013', // No activities were found (in search or in specific ring)
         //----------------------------------------------------------
         
         // --------------- User Access API Status Codes -------------
@@ -34,7 +34,8 @@ app.service('StatusCodes', function(){
         PASSWORD_RESET_SUCCESS:'12003', // Password has been successfully reset
         ACCESS_CODE_VALIDATION_SUCCESS:'12007', // Access code for registered user has been successfully validated
         UPDATE_USER_PROFILE_SUCCESS:'13001', // Successfully updated user profile page
-        UPDATE_USER_PROFILE_FAIL:'00012', // Error updating user profile page (email: userid: phone number: etc)
+        UPDATE_USER_PROFILE_FAIL:'12012', // Error updating user profile page (email: userid: phone number: etc)
+        LOGIN_ATTEMPTS_FAIL:'12013',  // Success of login attempts api
         //----------------------------------------------------------
         
         // --------------- Orders API Status Codes -----------------
