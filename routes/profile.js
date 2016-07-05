@@ -1,6 +1,5 @@
 var express = require('express');
 var app = express.Router();
-var debug = require('debug')('grubbring:profile');
 //var pool = require('../config/dbconnection.js').pool;
 var encrypt = require('../config/passwordEncryption.js');
 var authenticate = require('../servicesAuthenticate');
@@ -10,6 +9,7 @@ var mysql = require('mysql');
 var emailServices = require('../emailServices');
 var accountAcc = require('../accountAccessibility');
 var statusCodes = require('../Utilities/StatusCodesBackend');
+var glog = require('../glog')('profile');
 
 app.get('/',function(req,res){
 	authenticate.checkAuthentication(req,res,function(data){
@@ -21,21 +21,19 @@ app.get('/',function(req,res){
 // Update email address
 app.put('/email', function(req, res) {
     authenticate.checkAuthentication(req, res, function (data) {
-        debug(req.method + ' ' + req.url);
-
         var currEmail = req.user.emailAddr;
         var newEmail = req.body.newEmail;
 
         if (!newEmail) {
-            debug('Email field was empty');
+            glog.error('Email field was empty');
             res.json({
-                status: 'error',
+                status: statusCodes.UPDATE_USER_PROFILE_FAIL,
                 description: 'Email field was empty'
             });
         } else if (currEmail === newEmail) {
-            debug('The same email address was entered');
+            glog.error('The same email address was entered');
             res.json({
-                status: 'error',
+                status: statusCodes.UPDATE_USER_PROFILE_FAIL,
                 description: 'The same email address was specified'
             });
         } else {
@@ -44,9 +42,9 @@ app.put('/email', function(req, res) {
             sql = mysql.format(sql, inserts);
 
             db.dbExecuteQuery(sql, res, function(result) {
-                debug('Generating access code');
+                glog.log('Generating access code');
                 if (result.data.length > 0) {
-                    debug('Email already exists');
+                    glog.error('Email already exists');
                     res.json({
                         status: 'error',
                         description: 'The email specified already exists'
@@ -71,10 +69,10 @@ app.put('/email', function(req, res) {
                     sql = mysql.format(sql, inserts);
 
                     db.dbExecuteQuery(sql, res, function(result) {
-                        debug('Sent message to old email');
+                        glog.log('Sent message to old email');
                         emailServices.sendEmail(oldEmailObj.msg, oldEmailObj.subject, oldEmailObj.emailAddress);
 
-                        debug('Sent message to new email with access code ' + accessCode);
+                        glog.log('Sent message to new email with access code ' + accessCode);
                         emailServices.sendEmail(newEmailObj.msg, newEmailObj.subject, newEmailObj.emailAddress);
 
                         result.description = 'An access code has been sent to the new email address.';
@@ -102,14 +100,15 @@ app.put('/email/validateAccessCode',function(req, res){
                 inserts = [newEmail, oldEmail, accessCode];
                 sql = mysql.format(sql, inserts);
                 db.dbExecuteQuery(sql, res, function (result) {
-                    debug('Updated Email Address');
+                    glog.log('Updated Email Address');
+                    result.status = statusCodes.UPDATE_USER_PROFILE_SUCCESS;
                     result.description = "Email has been updated.";
                     res.json(result);
                 });
             } else {
-                debug('Invalid accessCode');
+                glog.error('Invalid accessCode');
                 result.description = "This is an invalid access code for this user.";
-                result.status = "fail";
+                result.status = statusCodes.UPDATE_USER_PROFILE_FAIL;
                 res.json(result);
             }
         });
@@ -119,38 +118,37 @@ app.put('/email/validateAccessCode',function(req, res){
 // Update cell phone
 app.put('/cellphone', function(req, res) {
     authenticate.checkAuthentication(req, res, function (data) {
-        debug(req.method + ' ' + req.url);
-
         var currCell = req.user.cellPhone;
         var newCell = req.body.newCell;
         var userId = req.user.userId;
 
         if (!newCell) {
-            debug('Cell number field is empty');
+            glog.error('Cell number field is empty');
             res.json({
-                status: 'error',
+                status: statusCodes.UPDATE_USER_PROFILE_FAIL,
                 description: 'Cell number field is empty'
             })
         } else if (currCell === newCell) {
-            debug('The new number is the same as the old number');
+            glog.error('The new number is the same as the old number');
             res.json({
-                status: 'error',
+                status: statusCodes.UPDATE_USER_PROFILE_FAIL,
                 description: 'The new number is the same as the old number'
             })
         } else if (isNaN(newCell)) {
-            debug('The new number is not of type number');
+            glog.error('The new number is not of type number');
             res.json({
-                status: 'error',
+                status: statusCodes.UPDATE_USER_PROFILE_FAIL,
                 description: 'The new number is not of type number'
             })
         } else {
-            debug('Updating cell phone number');
+            glog.log('Updating cell phone number');
             var sql = 'UPDATE tblUser SET cellPhone=? WHERE userId=?';
             var inserts = [newCell, userId];
             sql = mysql.format(sql, inserts);
 
             db.dbExecuteQuery(sql, res, function (result) {
                 result.description = 'Updated Cell phone number';
+                result.status = statusCodes.UPDATE_USER_PROFILE_SUCCESS;
                 res.json(result);
             })
         }
@@ -160,26 +158,24 @@ app.put('/cellphone', function(req, res) {
 // Update password
 app.put('/password', function(req, res) {
     authenticate.checkAuthentication(req, res, function (data) {
-        debug(req.method + ' ' + req.url);
-
         var newPassword = req.body.newPassword;
         var confirmPassword = req.body.confirmPassword;
         var userId = req.user.userId;
 
         if (!newPassword) {
-            debug('New password field is empty.');
+            glog.error('New password field is empty.');
             res.json({
-                status: 'error',
+                status: statusCodes.UPDATE_USER_PROFILE_FAIL,
                 description: 'New password field is empty'
             });
         } else if (newPassword != confirmPassword) {
-            debug('New password and confirm password do not match');
+            glog.error('New password and confirm password do not match');
             res.json({
-                status: 'error',
+                status: statusCodes.UPDATE_USER_PROFILE_FAIL,
                 description: 'New password and confirm password do not match'
             });
         } else {
-            debug('Updating password');
+            glog.log('Updating password');
             var newHash = encrypt.generateHash(newPassword);
 
             var sql = 'UPDATE tblUser SET password=? WHERE userId=?';
@@ -187,6 +183,7 @@ app.put('/password', function(req, res) {
             sql = mysql.format(sql, inserts);
 
             db.dbExecuteQuery(sql, res, function (result) {
+                result.status = statusCodes.UPDATE_USER_PROFILE_SUCCESS,
                 result.description = 'Updated password';
                 res.json(result);
             });

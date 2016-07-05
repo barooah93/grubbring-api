@@ -1,8 +1,11 @@
 angular.module('grubbring.controllers').controller('findRingsCtrl', function findRingsCtrl($scope, $http, $location, StatusCodes) {
     
+    var map;
+    var markers = [];
+    
+    
     $scope.rings = null;
     $scope.sortedCounts = null;
-    
     
     getUserDetails();
     
@@ -15,28 +18,82 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
     
     // initialize map canvas
     var mapCanvas = document.getElementById('map');
-    var zoomLevel = 15; // TODO: hardcoded for now
+    var defaultZoomLevel = 15; // TODO: hardcoded for now
 
+    function initLocationBox() {
+        // Create the search box and link it to the UI element.
+        var input = document.getElementById('pac-input');
+        var searchBox = new google.maps.places.SearchBox(input);
+        
+        map.controls[google.maps.ControlPosition.TOP_RIGHT].push(input);
+        
+        // Bias the SearchBox results towards current map's viewport.
+        map.addListener('bounds_changed', function() {
+          searchBox.setBounds(map.getBounds());
+        });
+        
+        // Listen for the event fired when the user selects a prediction and retrieve
+        // more details for that place.
+        searchBox.addListener('places_changed', function() {
+            var places = searchBox.getPlaces();
+            
+            if (places.length == 0) {
+                return;
+            }
+            
+            // For each place, get the icon, name and location.
+            var bounds = new google.maps.LatLngBounds();
+            places.forEach(function(place) {
+                var icon = {
+                    url: place.icon,
+                    size: new google.maps.Size(71, 71),
+                    origin: new google.maps.Point(0, 0),
+                    anchor: new google.maps.Point(17, 34),
+                    scaledSize: new google.maps.Size(25, 25)
+                };
+                
+                if (place.geometry.viewport) {
+                    // Only geocodes have viewport.
+                    bounds.union(place.geometry.viewport);
+                } else {
+                    bounds.extend(place.geometry.location);
+                }
+            });
+            
+            //http://stackoverflow.com/questions/2989858/google-maps-v3-enforcing-min-zoom-level-when-using-fitbounds (possible solution)
+            map.fitBounds(bounds); //TODO: set default max and min zoom level - async
+            
+            // Clear out the old markers.
+            clearMarkers();
+            
+            var latlong = map.getCenter();
+            $scope.lat = latlong.lat();
+            $scope.long = latlong.lng();
+            
+            placeMarkers();
+            
+        });
+    }
 
-    
     // Retrieve user details
     function getUserDetails() {
         // Show spinner
-        showHideLoadingSpinner();
+        $scope.showLoader = true;
+        
         $http({
             method: 'GET',
             url: '/api/profile'
         }).then(function(response) {
             $scope.userId = response.data.userId;
-                if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(successFunction, errorFunction);
-                }
-                else {
-                    alert('It seems like Geolocation, which is required for this page, is not enabled in your browser.');
-                }
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(successFunction, errorFunction);
+            }
+            else {
+                alert('It seems like Geolocation, which is required for this page, is not enabled in your browser.');
+            }
         }, function(err) {
-            console.log("Couldn't get user details:");
-            console.log(err);
+            alert("Couldn't get user details: Unauthorized");
+            $location.path('/login');
         });
     }
     
@@ -47,66 +104,232 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
         // get client coordinates
         $scope.lat = position.coords.latitude;
         $scope.long = position.coords.longitude;
-
-        // initialize geocoder for finding long and lat of an address
-        var geocoder = new google.maps.Geocoder();
-
+        
         // initialize options for map
         var mapOptions = {
             center: new google.maps.LatLng($scope.lat, $scope.long),
-            zoom: zoomLevel,
+            zoom: defaultZoomLevel,
             mapTypeId: google.maps.MapTypeId.ROADMAP
         }
 
         // initialize google map object onto div mapCanvas with specified options
-        var map = new google.maps.Map(mapCanvas, mapOptions);
+        map = new google.maps.Map(mapCanvas, mapOptions);
+        
+        // initialize google search box
+        initLocationBox();
+        
+        // initialize google markers
+        placeMarkers();
 
+    }
+    
+    // ---------------------- Google Map Markers ---------------------------------------------------------------------------
+        
+    function placeMarkers(){
+        
+        // Show spinner
+        $scope.showLoader = true;
+        
+        // Place user marker on map
+        placeUserMarkerOnMap($scope.lat, $scope.long);
+        
+        // Get nearby rings and display markers
+        getNearbyRings($scope.lat, $scope.long);
+        
+         // Load grubberies to map and list
+        getNearbyGrubberies($scope.lat, $scope.long);
+        // ***NOTE*** getNearbyRings and getNearbyGrubberies will run simultaneously
+    }
+        
+    // decodes address into long and lat coordinates to add marker for user to the map
+    function placeUserMarkerOnMap(lat, long) {
+        var latlng =  {lat: lat, lng: long};
+        var marker = new google.maps.Marker({
+            map: map,
+            position: latlng
+        });
+    
+        // Set marker icon color
+        marker.setIcon('http://maps.google.com/mapfiles/ms/icons/blue-dot.png');
+        marker.setTitle("You are here!");
+        
+        markers.push(marker);
+
+    }
+    
+    
+    // decodes address into long and lat coordinates to add ring markers to the map
+    function placeRingMarkerOnMap(ring) {
+        
+        var latLng = {lat : ring.latitude, lng : ring.longitude};
+        
+        var marker = new google.maps.Marker({
+            map: map,
+            position: latLng
+        });
+        
+        // Set marker icon color
+        marker.setIcon('http://maps.google.com/mapfiles/ms/icons/red-dot.png');
+        // add tooltip giving info about the ring
+        marker.setTitle(ring.name + "\n" + ring.addr + "\n" + ring.firstName + " " + ring.lastName);
+        
+        markers.push(marker);
+        
+        // open ring detail popup on marker click
+        marker.addListener('click', function() {
+            openOverlayOnMapMarkerClick(marker)
+        });
+
+    }
+    
+    
+    // decodes address into long and lat coordinates to add ring markers to the map
+    function placeGrubberyMarkerOnMap(grubbery) {
+        
+        var latLng = {lat : grubbery.latitude, lng : grubbery.longitude};
+        
+        var marker = new google.maps.Marker({
+            map: map,
+            position: latLng
+        });
+        // Set marker icon color
+        marker.setIcon('http://maps.google.com/mapfiles/ms/icons/green-dot.png');
+        // add tooltip giving info about the ring
+        marker.setTitle(grubbery.name + "\n" + grubbery.addr + "\n" + grubbery.city + " " + grubbery.state);
+        
+        markers.push(marker);
+        
+    }
+    
+    // opens detail popup overlay when clicking on map marker
+    function openOverlayOnMapMarkerClick(marker){
+        var marker = marker;
+        var contentString = '<div id="content">'+
+        '<div id="siteNotice">'+
+        '</div>'+
+        '<h1 id="firstHeading" class="firstHeading">Uluru</h1>'+
+        '<div id="bodyContent">'+
+        '<p><b>Uluru</b>, also referred to as <b>Ayers Rock</b>, is a large ' +
+        'sandstone rock formation in the southern part of the '+
+        'Northern Territory, central Australia. It lies 335&#160;km (208&#160;mi) '+
+        'south west of the nearest large town, Alice Springs; 450&#160;km '+
+        '(280&#160;mi) by road. Kata Tjuta and Uluru are the two major '+
+        'features of the Uluru - Kata Tjuta National Park. Uluru is '+
+        'sacred to the Pitjantjatjara and Yankunytjatjara, the '+
+        'Aboriginal people of the area. It has many springs, waterholes, '+
+        'rock caves and ancient paintings. Uluru is listed as a World '+
+        'Heritage Site.</p>'+
+        '<p>Attribution: Uluru, <a href="https://en.wikipedia.org/w/index.php?title=Uluru&oldid=297882194">'+
+        'https://en.wikipedia.org/w/index.php?title=Uluru</a> '+
+        '(last visited June 22, 2009).</p>'+
+        '</div>'+
+        '</div>';
+        
+        var infowindow = new google.maps.InfoWindow({
+        content: contentString
+        });
+        
+        infowindow.open(map, marker);
+        
+    }
+    
+// ---------------------- Google Map Markers End ---------------------------------------------------------------------------
+    
+    
+    // Function to populate list with nearby rings and display markers on map
+    function getNearbyRings(lat, long){
+        
+        // Clear list of items
+        $scope.listItems = [];
+        // This is a backup list for when we want to reset the list
+        $scope.initialList = [];
+        
+        // Flag used for asynchronous rendering of list
+        $scope.isWaitingOnNearbyRings = true;
+                
         // get suggested rings to display to user
         $http({
             method: 'GET',
-            url: '/api/ring?latitude='+$scope.lat +'&longitude=' + $scope.long
+            url: '/api/ring?latitude='+lat +'&longitude=' + long
+        }).then(function(response) {
+            if(response.data.status == StatusCodes.RETURNED_RINGS_NEAR_USER_SUCCESS){
+                
+                for (var i = 0; i < response.data.data.length; i++) {
+                    placeRingMarkerOnMap(response.data.data[i]);
+                    response.data.data[i].isRing = true;
+                    
+                    // Add to list to display to user
+                    $scope.listItems.push(response.data.data[i]);
+                    
+                    // Add to back up list
+                    $scope.initialList.push(response.data.data[i]);
+                }
+                
+                $scope.isWaitingOnNearbyRings = false;
+                
+                // Check if the grubbery list was waiting to render
+                if($scope.grubberiesWaiting){
+                    populateGrubberiesInList();
+                }
+                
+            } else if(response.data.status == StatusCodes.NO_RINGS_NEAR_USER){
+                // TODO: display message to user to prompt them to be first to create a ring in their area
+            } else {
+                // TODO: handle error
+                alert("We are experiencing issues trying to retrieve the rings around you. Please try again later.");
+            }
+            
+            // Hide spinner
+            $scope.showLoader = false;
+            
+        }, function(err) {
+            console.log(err);
+            $scope.showLoader=false;
+        });
+    }
+    
+    // Gets the grubberies near user and place on the map
+    function getNearbyGrubberies(lat, long){
+        // get nearby grubberies to display to user
+        $http({
+            method: 'GET',
+            url: '/api/grubbery?latitude='+lat +'&longitude=' + long
         }).then(function(response) {
             
-            // Clear list of items
-            $scope.listItems = [];
-            $scope.nearbyRingsList = [];
-        
-            if(response.data.data != null) {
-                for (var i = 0; i < response.data.data.length; i++) {
-                    codeAddress(response.data.data[i]);
-                    response.data.data[i].isRing = true;
-                    $scope.nearbyRingsList.push(response.data.data[i]);
-                    $scope.listItems = $scope.nearbyRingsList;
-                }
-                // Show spinner
-                showHideLoadingSpinner();
+            // Set this list to use in populateGrubberiesInList() function
+            $scope.grubberyList = response.data.data;
+            
+            // Check if get nearby rings is still executing
+            if($scope.isWaitingOnNearbyRings){
+                $scope.grubberiesWaiting = true;
             } else {
-                // TODO: display message to user to prompt them to be first to create a ring in their area
-                $scope.showLoader=false;
+                populateGrubberiesInList();
             }
-
+            
         }, function(err) {
             console.log(err);
         });
-        
-        // decodes address into long and lat coordinates to add markers to the map
-        function codeAddress(ring) {
-            geocoder.geocode({'address': ring.addr + ' ' + ring.city + ', ' + ring.state}, function(results, status) {
-                if (status == google.maps.GeocoderStatus.OK) {
-                    var marker = new google.maps.Marker({
-                        map: map,
-                        position: results[0].geometry.location
-                    });
-                    // add tooltip giving info about the ring
-                    marker.setTitle(ring.name + "\n" + ring.addr + "\n" + ring.firstName + " " + ring.lastName);
-                } else {
-                    alert("We could not find nearby locations successfully: " + status);
-                }
-            });
-
-        }
     }
     
+    function populateGrubberiesInList(){
+        if($scope.grubberyList != null) {
+            for (var i = 0; i < $scope.grubberyList.length; i++) {
+                placeGrubberyMarkerOnMap($scope.grubberyList[i]);
+                $scope.grubberyList[i].isGrubbery = true;
+                
+                // Add to list that's displayed to user
+                $scope.listItems.push($scope.grubberyList[i]);
+                
+                // Add to back up list
+                $scope.initialList.push($scope.grubberyList[i]);
+                
+            }
+            
+        }
+    }
+
+    
+// ----------------------- Search Algorithm ----------------------------------------------------------------------------
     // Event listener for search input change
     $scope.onSearchTextChanged = function(){
         
@@ -115,6 +338,10 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
         // Error check search text
         if($scope.searchText != null && $scope.searchText != "" && $scope.searchText.length >= amountOfKeysToCallAPI){
             
+            // Clear list
+            $scope.listItems = [];
+            $scope.showLoader = true;
+        
             // Only make api call if text is a certain amount of letters
             if($scope.searchText.length == amountOfKeysToCallAPI){
                 
@@ -127,33 +354,36 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
                     method: 'GET',
                     url: '/api/search/'+$scope.searchText+'?context=findRings&latitude='+$scope.lat +'&longitude=' + $scope.long
                 }).then(function(response) {
-                    
                     if(response.data.data != null) {
                         if(!$scope.isClear){
                             
                             // Clear list of items
                             $scope.listItems = [];
-                            $scope.searchResults = [];
                             
-                            // Loop through grubberies array, set isGrubbery property, and add to the list to be displayed
-                            for(var j=0; j< response.data.data.grubberies.length; j++){
-                                response.data.data.grubberies[j].isGrubbery = true;
-                                $scope.listItems.push(response.data.data.grubberies[j]);
-                                $scope.searchResults.push(response.data.data.grubberies[j]);
+                            if(response.data.data.rings != null){
+                                // Loop through rings array, set isRing property, and add to the list to be displayed
+                                for(var k=0; k< response.data.data.rings.length; k++){
+                                    response.data.data.rings[k].isRing = true;
+                                    $scope.listItems.push(response.data.data.rings[k]);
+                                    $scope.searchResults.push(response.data.data.rings[k]);
+                                }
                             }
-                            
-                            // Loop through rings array, set isRing property, and add to the list to be displayed
-                            for(var k=0; k< response.data.data.rings.length; k++){
-                                response.data.data.rings[k].isRing = true;
-                                $scope.listItems.push(response.data.data.rings[k]);
-                                $scope.searchResults.push(response.data.data.rings[k]);
+                            if(response.data.data.grubberies != null){
+                                // Loop through grubberies array, set isGrubbery property, and add to the list to be displayed
+                                for(var j=0; j< response.data.data.grubberies.length; j++){
+                                    response.data.data.grubberies[j].isGrubbery = true;
+                                    $scope.listItems.push(response.data.data.grubberies[j]);
+                                    $scope.searchResults.push(response.data.data.grubberies[j]);
+                                }
                             }
-                            
-                             // Response finished, if more letters were typed while waiting, execute search
+                            // Response finished, if more letters were typed while waiting, execute search
                             if($scope.isWaitingOnSearchAPI){
                                 searchThroughCache();
-                                 $scope.isWaitingOnSearchAPI = false;
+                                $scope.isWaitingOnSearchAPI = false;
                             }
+                            
+                            // Hide spinner
+                            $scope.showLoader = false;
                         }
                     } else {
                         console.log("response.data.data is null - no rings or grubberies found in search results");
@@ -172,12 +402,17 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
                     $scope.isWaitingOnSearchAPI = true;
                 }
             }
-        }
-        else {
+        }  else if($scope.searchText.length == 0){
+            
             // Reset list
             $scope.isClear = true;
-            $scope.listItems = $scope.nearbyRingsList;
+            $scope.listItems = $scope.initialList;
             
+            // Clear cache
+            $scope.searchResults = [];
+            
+            // Hide spinner
+            $scope.showLoader = false;
         }
     }
     
@@ -205,18 +440,32 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
                  $scope.listItems.push($scope.searchResults[i]);
             }
         }
+        $scope.showLoader = false;
     
     }
+    
+// ----------------------- Search Algorithm End ----------------------------------------------------------------------------
 
+// ----------------------- Location Search Start --------------------------------------------------------------------------
+    $scope.onLocationTextChanged = function(){
+        //console.log($scope.searchLocationText);
+        
+        $scope.locations = [];
+        
+    }
+// ----------------------- Location Search End -----------------------------------------------------------------------------
 
     // TODO: render something useful to user
     function errorFunction(position) {
         console.log('Error!');
     }
     
-
-
-
+    function clearMarkers() {
+        markers.forEach(function(marker) {
+                marker.setMap(null);
+        });
+        markers = [];
+    }
 
     function getRingsUserIsPartOf() { /*broken*/
         $http({
@@ -276,15 +525,47 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
         }
     }
     
-    function showHideLoadingSpinner(){
-        if($scope.listItems == null || $scope.listItems.length == 0){
-            $scope.showLoader=true;
-        }
-        else{
-            $scope.showLoader=false;
-        }
-        
+// ---------------------------- Overlay Panel --------------------------------------------------
+    // Displays the panel when user selects a ring
+    $scope.displayRingPanelOverlay = function(item){
+        if (item != null){
+            $scope.name = item.name;
+            $scope.address = item.addr+", "+item.city+", "+item.state+", "+item.zipcode;
+            $scope.showRingDetailOverlay=true; 
+            $scope.leader = item.username;
+            
+            if(item.memberCount == 0){
+                $scope.grubblings = "No Grubblings have joined this ring."
+            } else if(item.memberCount == 1){
+                $scope.grubblings =item.memberCount + " Grubbling";
+            } else {
+                $scope.grubblings =item.memberCount + " Grubblings";
+            }
+            
+            // to grab the latest activity date and time for selected ring
+             $http({
+                    method: 'GET',
+                    url: '/api/activities/getLastActivity/'+item.ringId
+                }).then(function(response) {
+                  if (response.data.data.length > 0){
+                     $scope.lastActivity = response.data.data[0].enteredDate;  
+                  }
+                  else{
+                      $scope.lastActivity = "No activities have been created yet."
+                  }
+                }, function(err) {
+                    console.log(err);
+            });
+         }
+       else{
+           $scope.showRingDetailOverlay=false;
+       }
+    }
+    
+    $scope.closeRingDetailOverlay = function(){
+        $scope.showRingDetailOverlay = false;
     }
 
+// ------------------------------------------------------------------------------
 
 });

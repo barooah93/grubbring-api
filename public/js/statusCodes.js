@@ -16,13 +16,16 @@ app.service('StatusCodes', function(){
         UPDATE_USER_ACCESS_TO_RING_SUCCESS:'00008',  // Successfully updated user's ring access status
         NO_PENDING_USER_REQUESTS: '00009',  // This ring has no pending user requests
         RECIEVED_PENDING_USER_REQUESTS: '00010', // Retrieved pending user requests to joing ring
+        DELETE_USER_REQUEST_SUCCESS: '00011', // Users pending or approved status successfully deleted
+        DELETE_USER_REQUEST_FAIL: '00012', // Users pending or approved status delete failed
+        RECIEVED_SUBSCRIBED_RINGS_SUCCESS: '00013',  // Successfully returned rings the user is a part of
         //----------------------------------------------------------
         
         // --------------- Activities API Status Codes -------------
         CREATE_ACTIVITY_SUCCESS:'11001', // Successfully created a new activity
         CREATE_ACTIVITY_FAIL:'00003', // Failed to create a new activity
         DELETE_ACTIVITY_SUCCESS:'11003', // Succcessfully deleted an activity
-        NO_ACTIVITIES_FOUND:'00013', // No activities were found (in search or in specific ring)
+        NO_ACTIVITIES_FOUND:'10013', // No activities were found (in search or in specific ring)
         //----------------------------------------------------------
         
         // --------------- User Access API Status Codes -------------
@@ -31,7 +34,8 @@ app.service('StatusCodes', function(){
         PASSWORD_RESET_SUCCESS:'12003', // Password has been successfully reset
         ACCESS_CODE_VALIDATION_SUCCESS:'12007', // Access code for registered user has been successfully validated
         UPDATE_USER_PROFILE_SUCCESS:'13001', // Successfully updated user profile page
-        UPDATE_USER_PROFILE_FAIL:'00012', // Error updating user profile page (email: userid: phone number: etc)
+        UPDATE_USER_PROFILE_FAIL:'12012', // Error updating user profile page (email: userid: phone number: etc)
+        LOGIN_ATTEMPTS_FAIL:'12013',  // Success of login attempts api
         //----------------------------------------------------------
         
         // --------------- Orders API Status Codes -----------------

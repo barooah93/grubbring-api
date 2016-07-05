@@ -10,7 +10,7 @@ var mysql = require('mysql');
 var emailServices = require('../emailServices');
 var accountAcc = require('../accountAccessibility');
 var glog = require('../glog')('orders');
-
+var statusCodes = require('../Utilities/StatusCodesBackend');
 
 //table order user - each unique order for a user
 //table order - 
@@ -30,6 +30,21 @@ app.post('/createOrder',function(req,res){
 		var paymentMethod = req.body.paymentMethod;
 		var paymentStatus = req.body.paymentStatus;
 
+        if (!activityId) glog.error('Missing activityId');
+        if (!itemOrdered) glog.error('Missing item ordered');
+        if (!quantity) glog.error('Missing quantity');
+        if (!comment) glog.error('Missing comment field');
+        if (!cost) glog.error('Missing cost');
+        if (!paymentMethod) glog.error('Missing payment Method');
+        if (!paymentStatus) glog.error('Missing payment status');
+
+        if (!(activityId || itemOrdered || quantity || comment || cost || paymentMethod || paymentStatus)) {
+            return res.json({
+                status: statusCodes.CREATE_ORDER_FAIL,
+                description: 'Some fields were missing.'
+            })
+        }
+
 		sql = "INSERT INTO tblOrderUser (activityId, userId, orderedOn, itemOrdered, quantity, addnComment, costOfItemOrdered, paymentMethod, paymentStatus) " +
             "VALUES (?,?,?,?,?,?,?,?,?)";
 
@@ -38,8 +53,9 @@ app.post('/createOrder',function(req,res){
 		sql = mysql.format(sql, inserts);
 
 		db.dbExecuteQuery(sql, res, function (result) {
+            glog.log('Created Order');
 			var data = {
-				status: 'Success',
+                status: statusCodes.CREATE_ORDER_SUCCESS,
 				description: 'Order Created'
 			};
 
@@ -67,6 +83,30 @@ app.get('/viewAllOrdersForActivity/:activityId', function(req,res) {
 		db.dbExecuteQuery(sql, res, function(result) {
             result.description = '';
 
+            res.json({
+                data: result
+            })
+		});
+	});
+});
+
+/*TODO: test*/
+app.get('/numOpenOrders/:activityId', function(req,res) {
+	authenticate.checkAuthentication(req, res, function (data) {
+	    var sql = null;
+
+        var activityId = req.params.activityId;
+
+        sql = "SELECT (SELECT A.maxNumOrders FROM tblActivity A WHERE A.activityId = ?) - (SELECT COUNT(OU.activityId) FROM tblOrderUser OU WHERE OU.activityId = ?);";
+
+        var inserts = [activityId];
+
+		sql = mysql.format(sql, inserts);
+
+		db.dbExecuteQuery(sql, res, function(result) {
+            result.description = '';
+            
+            console.log("numopenorders result " + JSON.stringify(result));
             res.json({
                 data: result
             })

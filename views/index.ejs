@@ -14,7 +14,8 @@
     <link rel="stylesheet" href="css/style.css">
 
     <!-- Google Maps API -->
-    <script src="https://maps.googleapis.com/maps/api/js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?libraries=places"></script>
+    
     <script src="/bower_components/angular/angular.js"></script>
     <script src="/bower_components/angular-route/angular-route.js"></script>
     <script src="/bower_components/jquery/dist/jquery.min.js"></script>
@@ -54,6 +55,7 @@
 
     <script src="js/services.js"></script>
     <script src="js/statusCodes.js"></script>
+    <script src="js/services/OrderService.js"></script>
 </head>
 <body ng-controller="MainCtrl">
 <ng-view></ng-view>
