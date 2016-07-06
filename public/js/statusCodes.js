@@ -9,6 +9,7 @@ app.service('StatusCodes', function(){
         REQUEST_TO_LEAVE_RING_SUCCESS: '10003', // Request to leave a ring successful
         CREATE_RING_SUCCESS: '10002', // Successfully created a new ring
         CREATE_RING_FAIL:'00009', // Failed to create a new ring
+        NUMBER_OF_CREATED_RINGS_EXCEEDED_LIMIT: '00015',
         DELETE_RING_SUCCESS:'10007', // Successfully deleted a ring
         DELETE_RING_FAIL:'00005', // Did not return any results for ring search
         USER_NOT_SUBSCRIBED_TO_RINGS:'00007', // User is not subscribed to any rings (will return map of rings near that person)

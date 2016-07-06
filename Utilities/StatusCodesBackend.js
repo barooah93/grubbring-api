@@ -11,6 +11,7 @@ define('REQUEST_TO_JOIN_RING_FAIL', '00002'); // Request to join a ring failed
 define('REQUEST_TO_LEAVE_RING_SUCCESS', '10003'); // Request to leave a ring successful
 define('CREATE_RING_SUCCESS', '10002'); // Successfully created a new ring
 define('CREATE_RING_FAIL','00009'); // Failed to create a new ring
+define('NUMBER_OF_CREATED_RINGS_EXCEEDED_LIMIT', '00015'); // Limit reached for creating rings
 define('DELETE_RING_SUCCESS','10007'); // Successfully deleted a ring
 define('DELETE_RING_FAIL','00005'); // Did not return any results for ring search
 define('USER_NOT_SUBSCRIBED_TO_RINGS','00007'); // User is not subscribed to any rings (will return map of rings near that person)

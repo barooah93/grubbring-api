@@ -9,6 +9,7 @@ var locationUtils = require('../Utilities/locationUtils');
 var mysql = require('mysql');
 var authenticate = require('../servicesAuthenticate')
 var statusCodes = require('../Utilities/StatusCodesBackend');
+var Constants = require('../Utilities/Constants');
 
 //-------------------------START-----------------------------------------------------
 
@@ -177,23 +178,60 @@ app.post('/', function(req, res){
         var ringStatus = 1;
         var createdBy = userId;
        
-        // TODO: Check how many rings this user has already created
-        // TODO: Check if the name of the ring already exists
-        // TODO: Get timestamp to enter into db
-        var sql = "INSERT INTO tblRing (name, addr, city, state, zipcode, latitude, longitude, ringStatus, createdBy) VALUES "+
-                    "(?????????);";
-        var inserts = [ringName, ringAddr, ringCity, ringState, ringZipcode, ringLat, ringLong, ringStatus, createdBy];
+        // Check how many rings this user already has created
+        var sql = "SELECT COUNT(*) as count FROM tblRing WHERE createdBy = ?";
+        var inserts = [userId];
         sql = mysql.format(sql, inserts);
         
         db.dbExecuteQuery(sql, res, function(result){
             if(result.status == statusCodes.EXECUTED_QUERY_SUCCESS){
-                result.status = statusCodes.CREATE_RING_SUCCESS;
-                result.description = "Successfully created ring created by userId " + createdBy;
-            } else {
-                result.status = statusCodes.CREATE_RING_FAIL;
-                result.description = "Something went wrong when creating the ring.";
+                if(result.data[0].count >= Constants.NUMBER_OF_CREATED_RINGS_ALLOWED){
+                    result.status = statusCodes.NUMBER_OF_CREATED_RINGS_EXCEEDED_LIMIT;
+                    result.description = "This user has reached the limits of how many rings they can create.";
+                    result.data = null;
+                    res.send(result);
+                } else {
+                    createRing();
+                }
             }
-        })
+        });
+        
+        var createRing = function (){
+            var sql = "INSERT INTO tblRing (name, addr, city, state, zipcode, latitude, longitude, ringStatus, createdBy, createdOn) VALUES "+
+                        "(?,?,?,?,?,?,?,?,?, NOW());";
+            var inserts = [ringName, ringAddr, ringCity, ringState, ringZipcode, ringLat, ringLong, ringStatus, createdBy];
+            sql = mysql.format(sql, inserts);
+            
+            db.dbExecuteQuery(sql, res, function(result){
+                if(result.status == statusCodes.EXECUTED_QUERY_SUCCESS){
+                    insertUserIntoRingUserTable();
+                }
+            });
+            
+            var insertUserIntoRingUserTable = function(){
+                // Get the ring ID of the ring just inserted
+                var ringIdSql = "SELECT ringId FROM tblRing WHERE NAME=?";
+                ringIdSql = mysql.format(ringIdSql, [ringName]);
+                
+                db.dbExecuteQuery(ringIdSql, res, function(ringIdResult){
+                    if(ringIdResult.status == statusCodes.EXECUTED_QUERY_SUCCESS){
+                        var ringUserSql =  "INSERT INTO tblRingUser (ringId, userId, roleId, status, joinedOn) VALUES (?,?,?,?,NOW());"; 
+                        var ringUserInserts = [ringIdResult.data[0].ringId, userId, 0, 1];
+                        ringUserSql = mysql.format(ringUserSql, ringUserInserts);
+                        
+                        db.dbExecuteQuery(ringUserSql, res, function(ringUserResult){
+                            if(ringUserResult.status == statusCodes.EXECUTED_QUERY_SUCCESS){
+                                ringUserResult.status = statusCodes.CREATE_RING_SUCCESS;
+                                ringUserResult.description = "Successfully created ring created by userId " + createdBy;
+                                ringUserResult.data = null;
+                            }
+                            res.send(ringUserResult);
+                        });
+                    }
+                });;
+                
+            };
+        }
        
     });
 });
@@ -216,7 +254,7 @@ app.post('/join/:ringId', function(req,res){
         // TODO: Check if user already has request (0,1,2,3)
     
         // ring status for pending=0, approved=1, declined=2, and banned=3
-         sql = "INSERT INTO tblRingUser (ringId, userId, roleId, status) VALUES (?,?,?,?);"
+         sql = "INSERT INTO tblRingUser (ringId, userId, roleId, status, joinedOn) VALUES (?,?,?,?, NOW());";
          var inserts = [ringId, userId, userRole,userStatus];
          sql = mysql.format(sql, inserts);
             
@@ -226,9 +264,6 @@ app.post('/join/:ringId', function(req,res){
                 result.status = statusCodes.REQUEST_TO_JOIN_RING_SUCCESS;
                 result.description="Added userId " + userId + " with pending status to ringId " + ringId;
                 
-            } else {
-                result.status = statusCodes.REQUEST_TO_JOIN_RING_FAIL;
-                result.description="Failed to add userId " + userId + " with pending status to ringId " + ringId;
             }
             res.send(result);
         });
@@ -262,7 +297,7 @@ app.put('/join/:ringId/:handleRequest', function(req,res){
         
         if(changeStatusTo == pending || changeStatusTo == approved || changeStatusTo == declined || changeStatusTo == banned ) {
             sql = "UPDATE tblRingUser R " +
-            "SET R.status = ? " + 
+            "SET R.status = ?, R.joinedOn = NOW() " + 
             "WHERE R.userId = ? " +
             "AND R.ringId = ?;";
             var inserts = [changeStatusTo, userId, ringId];
