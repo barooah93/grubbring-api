@@ -71,6 +71,20 @@ app.get('/subscribedRings', function(req, res) {
 //too confusing - redo
 
 /*Get rings a user is part of (leads or is in as a member of the ring) */
+
+app.get('/subscribedRings', function(req, res) {
+    authenticate.checkAuthentication(req, res, function (data) {
+        var sql = 'SELECT * FROM tblRing WHERE ringId IN ( SELECT ringId FROM tblRingUser WHERE userId = ? )';
+        var inserts = [req.user.userId];
+        sql = mysql.format(sql, inserts);
+
+        db.dbExecuteQuery(sql, res, function(result) {
+            res.json(result)
+        });
+        
+    });
+});
+
 // app.get('/subscribedRings', function(req, res) {
 //     authenticate.checkAuthentication(req, res, function (data) {
 //         var userId = req.user.userId;
