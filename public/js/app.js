@@ -5,7 +5,6 @@
 var app = angular.module('grubbring', [
     'grubbring.controllers',
     'grubbring.services',
-    'grubbring.statusCodes',
     'ngRoute',
     'ui.bootstrap'
 ]);
