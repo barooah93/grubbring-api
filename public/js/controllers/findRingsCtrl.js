@@ -1,4 +1,4 @@
-angular.module('grubbring.controllers').controller('findRingsCtrl', function findRingsCtrl($scope, $http, $location, StatusCodes) {
+angular.module('grubbring.controllers').controller('findRingsCtrl', function findRingsCtrl($scope, $http, $location) {
     
     var map;
     var markers = [];
@@ -253,7 +253,7 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
             url: '/api/ring?latitude='+lat +'&longitude=' + long
         }).then(function(response) {
             if(response.data.status == StatusCodes.RETURNED_RINGS_NEAR_USER_SUCCESS){
-                
+                console.log(StatusCodes.RETURNED_RINGS_NEAR_USER_SUCCESS);
                 for (var i = 0; i < response.data.data.length; i++) {
                     placeRingMarkerOnMap(response.data.data[i]);
                     response.data.data[i].isRing = true;
