@@ -10,7 +10,7 @@ var app = angular.module('grubbring', [
 ]);
 
 
-app.config(['$routeProvider', '$locationProvider', function($routeProvider, $locationProvider) {
+app.config(['$routeProvider', '$locationProvider','$httpProvider', function($routeProvider, $locationProvider, $httpProvider) {
     $locationProvider.html5Mode(true);
 
     $routeProvider
@@ -77,4 +77,15 @@ app.config(['$routeProvider', '$locationProvider', function($routeProvider, $loc
         .otherwise({
             redirectTo: '/login'
         });
+
+    $httpProvider.interceptors.push(function($q, $location) {
+        return {
+            'responseError': function(response) {
+                if (response.status === 401) {
+                    $location.path('/login');
+                }
+                return $q.reject(response);
+            }
+        };
+    });
 }]);
