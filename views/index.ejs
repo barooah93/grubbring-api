@@ -40,9 +40,16 @@
     <!-- Angular app -->
     <script src="js/app.js"></script>
     
+    <!-- Socket.io -->
+    <script src="/node_modules/socket.io/socket.io.js"></script>
+    <script>
+      var socket = io();
+    </script>
+    
     <!-- Controllers -->
     <!-- MainCtrl has to be first -->
     <script src="js/controllers/MainCtrl.js"></script>
+    <script src="js/controllers/SocketTestCtrl.js"></script>
     <script src="js/controllers/ActivityCtrl.js"></script>
     <script src="js/controllers/BeginPasswordResetCtrl.js"></script>
     <script src="js/controllers/BeginRegistrationCtrl.js"></script>

@@ -14,6 +14,10 @@ app.config(['$routeProvider', '$locationProvider', function($routeProvider, $loc
     $locationProvider.html5Mode(true);
 
     $routeProvider
+        .when('/chat', {
+            templateUrl: 'partials/socket_test.html',
+            controller: 'SocketTestCtrl'
+        })
         .when('/login', {
             templateUrl: 'partials/login.html',
             controller: 'LoginCtrl'

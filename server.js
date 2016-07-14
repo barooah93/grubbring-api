@@ -2,6 +2,17 @@ var express = require('express');
 var app = express();
 //var http = require('http').Server(app);
 
+
+
+var http = require('http').Server(app); //steph added to test socket.io
+var io = require('socket.io')(http);
+
+io.on('connection', function(socket){
+  console.log('a user connected');
+});
+
+
+
 var bodyParser = require('body-parser');
 var cookieParser = require('cookie-parser');
 var expressSession = require('express-session');
