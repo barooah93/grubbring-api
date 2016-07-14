@@ -11,6 +11,7 @@ define('REQUEST_TO_JOIN_RING_FAIL', '00002'); // Request to join a ring failed
 define('REQUEST_TO_LEAVE_RING_SUCCESS', '10003'); // Request to leave a ring successful
 define('CREATE_RING_SUCCESS', '10002'); // Successfully created a new ring
 define('CREATE_RING_FAIL','00009'); // Failed to create a new ring
+define('NUMBER_OF_CREATED_RINGS_EXCEEDED_LIMIT', '00015'); // Limit reached for creating rings
 define('DELETE_RING_SUCCESS','10007'); // Successfully deleted a ring
 define('DELETE_RING_FAIL','00005'); // Did not return any results for ring search
 define('USER_NOT_SUBSCRIBED_TO_RINGS','00007'); // User is not subscribed to any rings (will return map of rings near that person)
@@ -27,7 +28,7 @@ define('RECIEVED_SUBSCRIBED_RINGS_SUCCESS', '00013');  // Successfully returned 
 define('CREATE_ACTIVITY_SUCCESS','11001'); // Successfully created a new activity
 define('CREATE_ACTIVITY_FAIL','00003'); // Failed to create a new activity
 define('DELETE_ACTIVITY_SUCCESS','11003'); // Succcessfully deleted an activity
-define('NO_ACTIVITIES_FOUND','00013'); // No activities were found (in search or in specific ring)
+define('NO_ACTIVITIES_FOUND','10013'); // No activities were found (in search or in specific ring)
 define("GET_LAST_ACTIVITY_SUCCESS", '00014'); // Retrieved most recent activity for a selected ring
 //----------------------------------------------------------
 
@@ -37,9 +38,9 @@ define('LOGIN_FAIL','00010'); // Login failed - incorrect password or username
 define('PASSWORD_RESET_SUCCESS','12003'); // Password has been successfully reset
 define('ACCESS_CODE_VALIDATION_SUCCESS','12007'); // Access code for registered user has been successfully validated
 define('UPDATE_USER_PROFILE_SUCCESS','13001'); // Successfully updated user profile page
-define('UPDATE_USER_PROFILE_FAIL','00012'); // Error updating user profile page (email, userid, phone number, etc)
+define('UPDATE_USER_PROFILE_FAIL','12012'); // Error updating user profile page (email, userid, phone number, etc)
 define('LOGIN_ATTEMPTS_SUCCESS','12005'); // Success of login attempts api
-define('LOGIN_ATTEMPTS_FAIL','00013'); // Success of login attempts api
+define('LOGIN_ATTEMPTS_FAIL','12013'); // Success of login attempts api
 //----------------------------------------------------------
 
 // --------------- Orders API Status Codes -----------------

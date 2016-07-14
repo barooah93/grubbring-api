@@ -1,35 +1,112 @@
-<div class="container">
-    <h3 class="text-center">Create Activity</h3>
-    <form ng-submit="createActivity()">
-        <div class="form-group">
-            <!-- Following /createActivity API-->
-            <!-- TODO should be removed; use req.user on backend for currentUser-->
-            <label>User Id</label>
-            <input type="number" ng-model="userId" class="form-control" placeholder="e.g. 1" required>
-        </div>
-        <div class="form-group">
-            <!-- TODO ring id should be in params or defined somewhere-->
-            <label>Ring Id</label>
-            <input type="number" ng-model="ringId" class="form-control" placeholder="e.g. 1" required>
-        </div>
-        <div class="form-group">
-            <!-- TODO bringer User Id should be connected to ring or something-->
-            <label>Bringer User ID</label>
-            <input type="text" ng-model="bringerUserId" class="form-control" placeholder="e.g. 1" required>
-        </div>
-        <div class="form-group">
-            <label>Max Number of Orders</label>
-            <input type="text" ng-model="maxNumOrders" class="form-control" placeholder="e.g. 5" required>
-        </div>
-        <div class="form-group">
-            <!-- TODO replace with dropdown of grubberies?-->
-            <label>Grubbery Id</label>
-            <input type="text" ng-model="grubberyId" class="form-control" placeholder="e.g. 1" required>
-        </div>
-        <div class="form-group">
-            <label>Deadline for orders</label>
-            <input type="datetime-local" ng-model="lastOrderDateTime" class="form-control" required>
-        </div>
-        <button type="submit" class="btn btn-green">Create Activity</button>
-    </form>
-</div>
+<header class="cd-main-header">
+    <table class="dashboard-container">
+        <tr class="dashboard-header">
+            <td class="dashboard-menu-container">
+                <span class="glyphicon glyphicon-option-vertical" aria-hidden="true"  data-toggle="dropdown" aria-haspopup="true"></span>
+                <ul class="dropdown-menu">
+                    <li><a href="#">My Rings</a></li>
+                    <li><a href="#">Activities</a></li>
+                    <li><a href="#">Profile</a></li>
+                    <li><a href="#">Settings</a></li>
+                    <!--<li role="separator" class="divider"></li>-->
+                    <li><a href="#">Logout</a></li>
+                </ul>
+            </td>
+            <td class="dashboard-search-container">
+                <div style="float:right;">
+                    <form class="navbar-form navbar-left" role="search">
+                        <div class="form-group">
+                            <input type="text" ng-model="searchText" ng-change="onSearchTextChanged()" id="searchBox" class="form-control" placeholder="Search">
+                        </div>
+                        <button type="submit" class="btn btn-default"><span class="glyphicon glyphicon-search"></span></button>
+                    </form>
+                </div>
+            </td>
+        </tr>
+        <tr class="dashboard-content">
+            <td class="dashboard-left-container">
+                <img ng-show="showLoader" src="../images/loading.gif" style="width:100%; height:70%; z-index:2; position:absolute; opacity:0.4;"/>
+                <div id="mapList">
+                    <div class="panel-group" ng-repeat="ring in myRings track by $index" style="margin-top:0">
+                        <div class="panel panel-default" >
+                            <div class="panel-heading" data-target="#ring-desc_{{::$id}}">
+                                <h4 class="panel-title">
+                                    <!--<img ng-if="item.isRing" ng-src="../images/default_ring_0.png" style="float:left;" width="50" height="50"/>-->
+                                    <!--<img ng-if="item.isGrubbery" ng-src="../images/default_ring_1.png" style="float:left;" width="50" height="50"/>-->
+                                    <div class="ring-panel-title-text">
+                                        <b>{{ ring.name }}</b>
+                                    </div>
+                                </h4>
+                            </div>
+                            <!--<div id="ring-desc_{{::$id}}" class="panel-collapse collapse">-->
+                            <!--  <div class="panel-body">-->
+                            <!--    {{ ring.addr }}-->
+                            <!--  </div>-->
+                            <!--</div>-->
+                        </div>
+                    </div>
+                </div>
+            </td>
+            <td class="dashboard-right-container scroll">
+                <div class="panel-group" ng-repeat="activity in activityFeed | orderBy: orderActivityFeed track by $index">
+                    <div class="panel panel-default">
+                        <div class="panel-body">
+                            {{activity | displayText}}
+                            <!--{{activity.firstName}} posted an activity for {{activity.grubberyName}} in RINGNAME.-->
+                            <!--There are {{activity.remainingOrders}} open orders and {{activity.lastOrderDateTime | displayText}}-->
+                            <br>
+                            <!-- TODO what happens if I click I'm in? does it open create order? -->
+                            <!-- TODO what happens if i click I'll pass? just remove the button? remove the feed? -->
+                            <p class="pull-right" ng-if="isOpen(activity)">
+                                <a href="#">I'M IN</a>
+                                <span> | </span>
+                                <a href="#">I'LL PASS</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </td>
+        </tr>
+    </table>
+</header>
+
+
+
+
+
+
+<!--<div class="container">-->
+    <!--<h3 class="text-center">Create Activity</h3>-->
+    <!--<form ng-submit="createActivity()">-->
+        <!--<div class="form-group">-->
+            <!--&lt;!&ndash; Following /createActivity API&ndash;&gt;-->
+            <!--&lt;!&ndash; TODO should be removed; use req.user on backend for currentUser&ndash;&gt;-->
+            <!--<label>User Id</label>-->
+            <!--<input type="number" ng-model="userId" class="form-control" placeholder="e.g. 1" required>-->
+        <!--</div>-->
+        <!--<div class="form-group">-->
+            <!--&lt;!&ndash; TODO ring id should be in params or defined somewhere&ndash;&gt;-->
+            <!--<label>Ring Id</label>-->
+            <!--<input type="number" ng-model="ringId" class="form-control" placeholder="e.g. 1" required>-->
+        <!--</div>-->
+        <!--<div class="form-group">-->
+            <!--&lt;!&ndash; TODO bringer User Id should be connected to ring or something&ndash;&gt;-->
+            <!--<label>Bringer User ID</label>-->
+            <!--<input type="text" ng-model="bringerUserId" class="form-control" placeholder="e.g. 1" required>-->
+        <!--</div>-->
+        <!--<div class="form-group">-->
+            <!--<label>Max Number of Orders</label>-->
+            <!--<input type="text" ng-model="maxNumOrders" class="form-control" placeholder="e.g. 5" required>-->
+        <!--</div>-->
+        <!--<div class="form-group">-->
+            <!--&lt;!&ndash; TODO replace with dropdown of grubberies?&ndash;&gt;-->
+            <!--<label>Grubbery Id</label>-->
+            <!--<input type="text" ng-model="grubberyId" class="form-control" placeholder="e.g. 1" required>-->
+        <!--</div>-->
+        <!--<div class="form-group">-->
+            <!--<label>Deadline for orders</label>-->
+            <!--<input type="datetime-local" ng-model="lastOrderDateTime" class="form-control" required>-->
+        <!--</div>-->
+        <!--<button type="submit" class="btn btn-green">Create Activity</button>-->
+    <!--</form>-->
+<!--</div>-->
