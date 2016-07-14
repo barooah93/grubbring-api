@@ -426,8 +426,6 @@ app.get('/getNumActivities/:ringId', function(req,res) {
 //----------------------------------------------------end--------------------------------
 
 //-------------------------START--------------------------------------------------
-//get activities for a ring id and group by activity creator and activity id (to not merge rows)
-//TODO: NEEDED FOR ORDERS PAGE
 //TODO: fix the statuses and descs
 app.get('/getActivities/:ringId', function(req,res) {
 		// Check if user session is still valid
@@ -435,7 +433,7 @@ app.get('/getActivities/:ringId', function(req,res) {
 		var ringId = req.params.ringId;
 		var sql = null;
 		
-		sql = "SELECT U.userId, U.firstName, A.activityId, A.ringId, A.bringerUserId, A.maxNumOrders, A.grubberyId, A.lastOrderDateTime FROM tblActivity A, tblUser U WHERE A.ringId = ? AND A.bringerUserId = U.userId GROUP BY A.bringerUserId, A.activityId;";
+		sql = "SELECT U.userId, U.firstName, A.activityId, A.ringId, A.bringerUserId, A.maxNumOrders, A.grubberyId, A.lastOrderDateTime, G.name AS grubberyName, R.name AS ringName FROM tblActivity A, tblUser U, tblGrubbery G, tblRing R WHERE A.ringId = ? AND A.bringerUserId = U.userId AND G.grubberyId = A.grubberyId AND A.ringId = R.ringId;";
 		var inserts = [ringId];
 		sql = mysql.format(sql, inserts);
 		

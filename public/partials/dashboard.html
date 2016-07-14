@@ -63,7 +63,18 @@ http://stackoverflow.com/questions/21021951/directive-template-unique-ids-for-el
         </div>
         <div class="right-container col-md-4">
           <!-- add stuff on right -->
-
+          <div class="ring-panel-group" ng-repeat="activity in activityList">
+             <div class="ring-panel">
+               <div class="ring-panel-content" data-target="#ring-desc_[[::$id}}">
+                 <h4>
+                    <img ng-src="../images/default_ring_0.png"/>
+                      <div class="ring-panel-title-text">
+                        <b>{{ activity.activityObj.firstName }} posted an activity for {{activity.activityObj.grubberyName}} in {{activity.activityObj.ringName}}. There are {{activity.numOpenOrders}} </b>
+                     </div>
+                 </h4>
+               </div>
+             </div>
+           </div>
         </div>
       </div>
       

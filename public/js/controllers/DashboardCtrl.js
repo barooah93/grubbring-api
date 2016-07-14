@@ -6,6 +6,7 @@ angular.module('grubbring.controllers').controller('DashboardCtrl', function Das
     $scope.userRings = [];
     $scope.numActivities = [];
     $scope.ringNameNumActivity = [];
+    $scope.activityList = [];
     
     getUserRings();
     
@@ -38,24 +39,40 @@ angular.module('grubbring.controllers').controller('DashboardCtrl', function Das
         });
     }
     
-        function getActivities(ringId) { //TODO: test
+    /*Need:
+    Firstname of bringerUserId, 
+    name of grubbery, 
+    number of open orders, 
+    time left to join 
+    from table activity where activity is in a certain ring
+    */
+    
+    getActivities(2);
+    
+    function getActivities(ringId) { //TODO: test
         $http({
             method: 'GET',
             url: '/api/activities/getActivities/' + ringId
         }).then(function(response) {
-            console.log("the activity: " + JSON.stringify(response.data.data));
+           // console.log("the activities: " + JSON.stringify(response.data.data));
             $scope.activities = response.data.data;
+            
+            for(var i = 0; i < $scope.activities.length; i++) {
+                getNumOpenOrders($scope.activities[i], $scope.activities[i].activityId);
+            }
+            
         }, function(err) {
             $location.path('/orders');
         });
     }
     
-    function getNumOpenOrders(activityId) { //TODO: test
+    function getNumOpenOrders(activity, activityId) { //TODO: test
         $http({
             method: 'GET',
             url: '/api/orders/numOpenOrders/' + activityId
         }).then(function(response) {
-            $scope.numOpenOrders.push({activityId: activityId, numOpenOrders: response.data.data[0]});
+            $scope.activityList.push({activityObj: activity, numOpenOrders: response.data.data[0]});
+            console.log("this list  " + JSON.stringify($scope.activityList));
         }, function(err) {
             $location.path('/orders');
         });

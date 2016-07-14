@@ -98,15 +98,14 @@ app.get('/numOpenOrders/:activityId', function(req,res) {
         var activityId = req.params.activityId;
 
         sql = "SELECT (SELECT A.maxNumOrders FROM tblActivity A WHERE A.activityId = ?) - (SELECT COUNT(OU.activityId) FROM tblOrderUser OU WHERE OU.activityId = ?);";
-
-        var inserts = [activityId];
+        var inserts = [activityId, activityId];
 
 		sql = mysql.format(sql, inserts);
+		console.log("the num orders sql " + sql);
 
 		db.dbExecuteQuery(sql, res, function(result) {
             result.description = '';
             
-            console.log("numopenorders result " + JSON.stringify(result));
             res.json({
                 data: result
             })
