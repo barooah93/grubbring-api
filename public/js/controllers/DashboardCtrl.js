@@ -71,8 +71,12 @@ angular.module('grubbring.controllers').controller('DashboardCtrl', function Das
             method: 'GET',
             url: '/api/orders/numOpenOrders/' + activityId
         }).then(function(response) {
-            $scope.activityList.push({activityObj: activity, numOpenOrders: response.data.data[0]});
-            console.log("this list  " + JSON.stringify($scope.activityList));
+            console.log(response.data);
+            $scope.activityList.push({
+                activityObj: activity,
+                numOpenOrders: response.data.data[0].numOpenOrders,
+                lastOrderTime: response.data.data[0].lastOrderDateTime
+            });
         }, function(err) {
             $location.path('/orders');
         });
