@@ -60,17 +60,6 @@ http://stackoverflow.com/questions/21021951/directive-template-unique-ids-for-el
                                 {{ring.numActivities}} new activities
                             </div>
                         </li>
-                        <li class="media">
-                            <div class="media-left">
-                                <a href="#">
-                                    <img class="media-object center-image" src="../images/default_ring_0.png" alt="...">
-                                </a>
-                            </div>
-                            <div class="media-body center-body">
-                                <h4 class="media-heading">{{ring.name}}</h4>
-                                {{ring.numActivities}} new activities
-                            </div>
-                        </li>
                     </ul>
                     <!--<div class="ring-panel-group" ng-repeat="ring in ringNameNumActivity">-->
 
@@ -90,24 +79,41 @@ http://stackoverflow.com/questions/21021951/directive-template-unique-ids-for-el
                 </div>
                 <div class="right-container col-md-4">
                     <!-- add stuff on right -->
-                    <div class="ring-panel-group" ng-repeat="activity in activityList">
-                        <div class="ring-panel">
-                            <div class="ring-panel-content" data-target="#ring-desc_[[::$id}}">
-                                <h4>
-                                    <img ng-src="../images/default_ring_0.png"/>
-
-                                    <div class="ring-panel-title-text">
-                                        <b>{{ activity.activityObj.firstName }} posted an activity for
-                                            {{activity.activityObj.grubberyName}} in {{activity.activityObj.ringName}}.
-                                            There are {{activity.numOpenOrders}} open orders.
-                                            <!--  TODO put remining seconds here-->
-                                            <!--There are {{}} seconds remaining.-->
-                                        </b>
-                                    </div>
-                                </h4>
+                    <ul class="media-list" ng-repeat="activity in activityList">
+                        <li class="media">
+                            <div class="media-left">
+                                <a href="#">
+                                    <img class="media-object center-image" src="../images/default_ring_0.png" alt="...">
+                                </a>
                             </div>
-                        </div>
-                    </div>
+                            <div class="media-body center-body">
+                                <!--<h4 class="media-heading">{{ring.name}}aa</h4>-->
+                                {{ activity.activityObj.firstName }} posted an activity for
+                                    {{activity.activityObj.grubberyName}} in {{activity.activityObj.ringName}}.
+                                    There are {{activity.numOpenOrders}} open orders.
+                                    <!--  TODO put remining seconds here-->
+                                    <!--There are {{}} seconds remaining.-->
+                            </div>
+                        </li>
+                    </ul>
+                    <!--<div class="ring-panel-group" ng-repeat="activity in activityList">-->
+                        <!--<div class="ring-panel">-->
+                            <!--<div class="ring-panel-content" data-target="#ring-desc_[[::$id}}">-->
+                                <!--<h4>-->
+                                    <!--<img ng-src="../images/default_ring_0.png"/>-->
+
+                                    <!--<div class="ring-panel-title-text">-->
+                                        <!--<b>{{ activity.activityObj.firstName }} posted an activity for-->
+                                            <!--{{activity.activityObj.grubberyName}} in {{activity.activityObj.ringName}}.-->
+                                            <!--There are {{activity.numOpenOrders}} open orders.-->
+                                            <!--&lt;!&ndash;  TODO put remining seconds here&ndash;&gt;-->
+                                            <!--&lt;!&ndash;There are {{}} seconds remaining.&ndash;&gt;-->
+                                        <!--</b>-->
+                                    <!--</div>-->
+                                <!--</h4>-->
+                            <!--</div>-->
+                        <!--</div>-->
+                    <!--</div>-->
                 </div>
             </div>
 
