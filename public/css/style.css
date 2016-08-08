@@ -1472,3 +1472,16 @@ Sidebar
   margin-top: 40%;
 }
 
+img.center-image {
+    width: 50px;
+    margin: 15px;
+}
+
+.center-body {
+    vertical-align: middle;
+}
+
+.media {
+    margin-top: 0;
+    border-bottom: 1px solid;
+}

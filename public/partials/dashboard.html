@@ -48,21 +48,45 @@ http://stackoverflow.com/questions/21021951/directive-template-unique-ids-for-el
                 <!-- this is for the content in the container -->
                 <div class="left-container col-md-4">
                     <img ng-show="showLoader" class="loader-gif" src="../images/ring-alt.svg"/>
-
-                    <div class="ring-panel-group" ng-repeat="ring in ringNameNumActivity">
-                        <div class="ring-panel">
-                            <div class="ring-panel-content" data-target="#ring-desc_[[::$id}}">
-                                <h4>
-                                    <img ng-src="../images/default_ring_0.png"/>
-
-                                    <div class="ring-panel-title-text">
-                                        <b>{{ ring.name }}</b>
-                                    </div>
-                                </h4>
-                                {{ ring.numActivities}} new activities
+                    <ul class="media-list" ng-repeat="ring in ringNameNumActivity">
+                        <li class="media">
+                            <div class="media-left">
+                                <a href="#">
+                                    <img class="media-object center-image" src="../images/default_ring_0.png" alt="...">
+                                </a>
                             </div>
-                        </div>
-                    </div>
+                            <div class="media-body center-body">
+                                <h4 class="media-heading">{{ring.name}}</h4>
+                                {{ring.numActivities}} new activities
+                            </div>
+                        </li>
+                        <li class="media">
+                            <div class="media-left">
+                                <a href="#">
+                                    <img class="media-object center-image" src="../images/default_ring_0.png" alt="...">
+                                </a>
+                            </div>
+                            <div class="media-body center-body">
+                                <h4 class="media-heading">{{ring.name}}</h4>
+                                {{ring.numActivities}} new activities
+                            </div>
+                        </li>
+                    </ul>
+                    <!--<div class="ring-panel-group" ng-repeat="ring in ringNameNumActivity">-->
+
+                        <!--<div class="ring-panel">-->
+                            <!--<div class="ring-panel-content" data-target="#ring-desc_[[::$id}}">-->
+                                <!--<h4>-->
+                                    <!--<img ng-src="../images/default_ring_0.png"/>-->
+
+                                    <!--<div class="ring-panel-title-text">-->
+                                        <!--<b>{{ ring.name }}</b>-->
+                                    <!--</div>-->
+                                <!--</h4>-->
+                                <!--{{ ring.numActivities}} new activities-->
+                            <!--</div>-->
+                        <!--</div>-->
+                    <!--</div>-->
                 </div>
                 <div class="right-container col-md-4">
                     <!-- add stuff on right -->
