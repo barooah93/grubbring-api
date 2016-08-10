@@ -1,0 +1,56 @@
+<header class="cd-main-header">
+  
+  <div class="container main">
+    <div class="container header">
+      <div class="row">
+        <!--Left Header-->
+        <div class="menu col-md-4">
+          <span class="glyphicon glyphicon-menu-hamburger" aria-hidden="true"  data-toggle="dropdown" aria-haspopup="true"></span>
+              <ul class="dropdown-menu">
+                  <li><a href="#">My Rings</a></li>
+                  <li><a href="#">Activities</a></li>
+                  <li><a href="#">Profile</a></li>
+                  <li><a href="#">Settings</a></li>
+                  <li role="separator" class="divider"></li>
+                  <li><a href="#">Logout</a></li>
+              </ul>
+        </div>
+        <!--Right Header-->
+        <div class="dashboard-search col-md-8 col-md-offset-4">
+          <div class="cd-search is-hidden">
+				    <input type="search" ng-model="searchText" ng-change="onSearchTextChanged()" placeholder="Search..."> 
+				  </div>
+			    <!--<span class="glyphicon glyphicon-map-marker" aria-hidden="true" ng-click="isLocationEntryOpen = !isLocationEntryOpen" style="float:right;"></span>-->
+          
+        </div>
+      </div>
+      <div class="main-content row">
+        <!-- this is for the content in the container -->
+        <!--Left Container-->
+         <div class="left-container col-md-4">
+           <img ng-show="showLoader" class="loader-gif" src="../images/ring-alt.svg"/>
+           <div class="ring-panel-group" ng-repeat="item in listItems track by $index">
+             <div class="ring-panel" ng-click="displayRingPanelOverlay(item)">
+               <div class="ring-panel-content" data-target="#ring-desc_[[::$id}}">
+                 <h4>
+                    <img ng-if="item.isRing" ng-src="../images/default_ring_0.png"/>
+                    <img ng-if="item.isGrubbery" ng-src="../images/default_ring_1.png"/>
+                      <div class="ring-panel-title-text">
+                        <b>{{ item.name }}</b>
+                    </div>
+                 </h4>
+               </div>
+             </div>
+           </div>
+        </div>
+        <!--Right Container-->
+        <div class="right-container col-md-4">
+          <div>TEST</div>
+        </div>
+      </div>
+      
+    </div>
+    
+  </div>
+  
+</header>

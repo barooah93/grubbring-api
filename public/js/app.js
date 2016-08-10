@@ -45,7 +45,11 @@ app.config(['$routeProvider', '$locationProvider', function($routeProvider, $loc
         })
          .when('/find_rings', {
             templateUrl: 'partials/find_rings.html',
-            controller: 'findRingsCtrl'
+            controller: 'FindRingsCtrl'
+        })
+        .when('/create_ring', {
+            templateUrl: 'partials/create_ring.html',
+            controller: 'CreateRingCtrl'
         })
         .when('/activities', {
             templateUrl: 'partials/activities.html',

@@ -1,4 +1,4 @@
-angular.module('grubbring.controllers').controller('findRingsCtrl', function findRingsCtrl($scope, $http, $location) {
+angular.module('grubbring.controllers').controller('FindRingsCtrl', function findRingsCtrl($scope, $http, $location) {
     
     var map;
     var markers = [];
