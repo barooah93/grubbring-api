@@ -89,6 +89,7 @@ angular.module('grubbring.controllers').controller('FindRingsCtrl', function fin
                 navigator.geolocation.getCurrentPosition(successFunction, errorFunction);
             }
             else {
+                // TODO: proceed to load map with default lat, long
                 alert('It seems like Geolocation, which is required for this page, is not enabled in your browser.');
             }
         }, function(err) {
@@ -455,7 +456,7 @@ angular.module('grubbring.controllers').controller('FindRingsCtrl', function fin
     }
 // ----------------------- Location Search End -----------------------------------------------------------------------------
 
-    // TODO: render something useful to user
+    // TODO: render something useful to user and proceed to load map with default lat, long
     function errorFunction(position) {
         console.log('Error!');
     }
