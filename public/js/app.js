@@ -5,8 +5,6 @@
 var app = angular.module('grubbring', [
     'grubbring.controllers',
     'grubbring.services',
-    'grubbring.RingServices',
-    'grubbring.LocationServices',
     'ngRoute',
     'ui.bootstrap'
 ]);

@@ -1,4 +1,4 @@
-var app = angular.module('grubbring.RingServices', []);
+var app = angular.module('grubbring.services');
 
 app.service('RingService', function($http) {
 

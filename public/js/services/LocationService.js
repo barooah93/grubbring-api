@@ -1,9 +1,10 @@
-var app = angular.module('grubbring.LocationServices', []);
+var app = angular.module('grubbring.services');
 
 app.service('LocationService', function(){
     
     return {
         
+        // Takes in a string of an address
         // Returns promise with object containing lat, lng
         ConvertAddressToLatLong : function(address){
             
