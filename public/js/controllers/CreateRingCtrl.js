@@ -21,14 +21,12 @@ angular.module('grubbring.controllers').controller('CreateRingCtrl', function cr
         var convertToLocationPromise = LocationService.ConvertAddressToLatLong(fullAddress);
         
         convertToLocationPromise.then(function(locationResponse){
-
             var createRingPromise = RingService.CreateRing(name, addr, city, state, zipcode, locationResponse.lat(), locationResponse.lng());
             
             createRingPromise.then(function(ringResponse){
                 
                 if(ringResponse.data.status == StatusCodes.CREATE_RING_SUCCESS) {
                     // TODO: Handle response
-                    console.log(ringResponse.data);
                     alert("Woohoo! You have just created a ring!");
                 } else if (ringResponse.data.status == StatusCodes.NUMBER_OF_CREATED_RINGS_EXCEEDED_LIMIT) {
                     // User has reached ring creation limit

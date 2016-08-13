@@ -24,7 +24,7 @@ app.get('/', function(req,res){
         */
         var userLat = req.query.latitude;
         var userLong = req.query.longitude;
-        locationUtils.getRingsNearLocation(userLat, userLong, 3, res, function(result){
+        locationUtils.getRingsNearLocation(userLat, userLong, Constants.FIND_RINGS_DEFAULT_RADIUS, res, function(result){
             var sortedRings = locationUtils.getSortedObjectsByAddress(result.data, userLat, userLong);
             result.data = sortedRings;
             res.send(result);

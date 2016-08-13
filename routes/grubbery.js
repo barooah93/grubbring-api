@@ -9,6 +9,7 @@ var locationUtils = require('../Utilities/locationUtils');
 var mysql = require('mysql');
 var authenticate = require('../servicesAuthenticate')
 var statusCodes = require('../Utilities/StatusCodesBackend');
+var Constants = require('../Utilities/Constants');
 
 
 //-------------------------START-----------------------------------------------------
@@ -23,7 +24,7 @@ app.get('/', function(req,res){
         */
         var userLat = req.query.latitude;
         var userLong = req.query.longitude;
-        locationUtils.getGrubberiesNearLocation(userLat, userLong, 3, res, function(result){
+        locationUtils.getGrubberiesNearLocation(userLat, userLong, Constants.FIND_RINGS_DEFAULT_RADIUS, res, function(result){
             var sortedGrubberies = locationUtils.getSortedObjectsByAddress(result.data, userLat, userLong);
             result.data = sortedGrubberies;
             res.send(result);

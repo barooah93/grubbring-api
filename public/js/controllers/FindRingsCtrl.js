@@ -195,7 +195,7 @@ angular.module('grubbring.controllers').controller('FindRingsCtrl', function fin
         });
         // Set marker icon color
         marker.setIcon('http://maps.google.com/mapfiles/ms/icons/green-dot.png');
-        // add tooltip giving info about the ring
+        // add tooltip giving info about the grubbery
         marker.setTitle(grubbery.name + "\n" + grubbery.addr + "\n" + grubbery.city + " " + grubbery.state);
         
         markers.push(marker);
@@ -254,7 +254,6 @@ angular.module('grubbring.controllers').controller('FindRingsCtrl', function fin
             url: '/api/ring?latitude='+lat +'&longitude=' + long
         }).then(function(response) {
             if(response.data.status == StatusCodes.RETURNED_RINGS_NEAR_USER_SUCCESS){
-                console.log(StatusCodes.RETURNED_RINGS_NEAR_USER_SUCCESS);
                 for (var i = 0; i < response.data.data.length; i++) {
                     placeRingMarkerOnMap(response.data.data[i]);
                     response.data.data[i].isRing = true;
