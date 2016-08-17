@@ -72,7 +72,6 @@ app.get('/', function(req,res){
 							var activity = result.data[i];
 							for (var j = 0; j < orders.data.length; j++) {
 								var order = orders.data[j];
-								console.log(order);
 								if (activity.activityId === order.activityId) {
 									activity.remainingOrders = activity.maxNumOrders - order.numOrders;
 								} else {

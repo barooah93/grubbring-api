@@ -97,17 +97,20 @@ app.get('/numOpenOrders/:activityId', function(req,res) {
 
         var activityId = req.params.activityId;
 
-        sql = "SELECT (SELECT A.maxNumOrders FROM tblActivity A WHERE A.activityId = ?) - (SELECT COUNT(OU.activityId) FROM tblOrderUser OU WHERE OU.activityId = ?);";
+        sql = "SELECT (SELECT A.maxNumOrders FROM tblActivity A WHERE A.activityId = ?) - (SELECT COUNT(OU.activityId) FROM tblOrderUser OU WHERE OU.activityId = ?) as numOpenOrders;";
         var inserts = [activityId, activityId];
 
 		sql = mysql.format(sql, inserts);
-		console.log("the num orders sql " + sql);
 
 		db.dbExecuteQuery(sql, res, function(result) {
             result.description = '';
-            
-            res.json({
-                data: result
+
+            sql = "SELECT lastOrderDateTime from tblActivity WHERE activityId = ?";
+            inserts = [activityId];
+            sql = mysql.format(sql, inserts);
+            db.dbExecuteQuery(sql, res, function(lastOrderInfo) {
+                result.data[0].lastOrderDateTime = lastOrderInfo.data[0].lastOrderDateTime;
+                res.json(result);
             })
 		});
 	});

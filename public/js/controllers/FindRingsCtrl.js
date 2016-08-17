@@ -1,4 +1,4 @@
-angular.module('grubbring.controllers').controller('findRingsCtrl', function findRingsCtrl($scope, $http, $location) {
+angular.module('grubbring.controllers').controller('FindRingsCtrl', function findRingsCtrl($scope, $http, $location) {
     
     var map;
     var markers = [];
@@ -89,6 +89,7 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
                 navigator.geolocation.getCurrentPosition(successFunction, errorFunction);
             }
             else {
+                // TODO: proceed to load map with default lat, long
                 alert('It seems like Geolocation, which is required for this page, is not enabled in your browser.');
             }
         }, function(err) {
@@ -194,7 +195,7 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
         });
         // Set marker icon color
         marker.setIcon('http://maps.google.com/mapfiles/ms/icons/green-dot.png');
-        // add tooltip giving info about the ring
+        // add tooltip giving info about the grubbery
         marker.setTitle(grubbery.name + "\n" + grubbery.addr + "\n" + grubbery.city + " " + grubbery.state);
         
         markers.push(marker);
@@ -253,7 +254,6 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
             url: '/api/ring?latitude='+lat +'&longitude=' + long
         }).then(function(response) {
             if(response.data.status == StatusCodes.RETURNED_RINGS_NEAR_USER_SUCCESS){
-                console.log(StatusCodes.RETURNED_RINGS_NEAR_USER_SUCCESS);
                 for (var i = 0; i < response.data.data.length; i++) {
                     placeRingMarkerOnMap(response.data.data[i]);
                     response.data.data[i].isRing = true;
@@ -455,7 +455,7 @@ angular.module('grubbring.controllers').controller('findRingsCtrl', function fin
     }
 // ----------------------- Location Search End -----------------------------------------------------------------------------
 
-    // TODO: render something useful to user
+    // TODO: render something useful to user and proceed to load map with default lat, long
     function errorFunction(position) {
         console.log('Error!');
     }
