@@ -104,7 +104,6 @@ app.get('/numOpenOrders/:activityId', function(req,res) {
 
 		db.dbExecuteQuery(sql, res, function(result) {
             result.description = '';
-
             sql = "SELECT lastOrderDateTime from tblActivity WHERE activityId = ?";
             inserts = [activityId];
             sql = mysql.format(sql, inserts);

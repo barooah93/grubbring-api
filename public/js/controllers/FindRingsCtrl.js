@@ -1,8 +1,12 @@
-angular.module('grubbring.controllers').controller('FindRingsCtrl', function findRingsCtrl($scope, $http, $location) {
+angular.module('grubbring.controllers').controller('FindRingsCtrl', ['$scope','$http','$location','MapService','LoaderService','ListService',function findRingsCtrl($scope, $http, $location,MapService,LoaderService,ListService) {
     
-    var map;
-    var markers = [];
+    LoaderService.subscribeShowLoader($scope, function showLoader() {
+        $scope.showLoader = true;
+    });
     
+    LoaderService.subscribeHideLoader($scope, function hideLoader() {
+        $scope.showLoader = false;
+    });
     
     $scope.rings = null;
     $scope.sortedCounts = null;
@@ -15,65 +19,6 @@ angular.module('grubbring.controllers').controller('FindRingsCtrl', function fin
     
     $scope.isClear = false;    // flag to help with async clearing of list
     $scope.isWaitingOnSearchAPI = false; // flag to help with async updating of the list
-    
-    // initialize map canvas
-    var mapCanvas = document.getElementById('map');
-    var defaultZoomLevel = 15; // TODO: hardcoded for now
-
-    function initLocationBox() {
-        // Create the search box and link it to the UI element.
-        var input = document.getElementById('pac-input');
-        var searchBox = new google.maps.places.SearchBox(input);
-        
-        map.controls[google.maps.ControlPosition.TOP_RIGHT].push(input);
-        
-        // Bias the SearchBox results towards current map's viewport.
-        map.addListener('bounds_changed', function() {
-          searchBox.setBounds(map.getBounds());
-        });
-        
-        // Listen for the event fired when the user selects a prediction and retrieve
-        // more details for that place.
-        searchBox.addListener('places_changed', function() {
-            var places = searchBox.getPlaces();
-            
-            if (places.length == 0) {
-                return;
-            }
-            
-            // For each place, get the icon, name and location.
-            var bounds = new google.maps.LatLngBounds();
-            places.forEach(function(place) {
-                var icon = {
-                    url: place.icon,
-                    size: new google.maps.Size(71, 71),
-                    origin: new google.maps.Point(0, 0),
-                    anchor: new google.maps.Point(17, 34),
-                    scaledSize: new google.maps.Size(25, 25)
-                };
-                
-                if (place.geometry.viewport) {
-                    // Only geocodes have viewport.
-                    bounds.union(place.geometry.viewport);
-                } else {
-                    bounds.extend(place.geometry.location);
-                }
-            });
-            
-            //http://stackoverflow.com/questions/2989858/google-maps-v3-enforcing-min-zoom-level-when-using-fitbounds (possible solution)
-            map.fitBounds(bounds); //TODO: set default max and min zoom level - async
-            
-            // Clear out the old markers.
-            clearMarkers();
-            
-            var latlong = map.getCenter();
-            $scope.lat = latlong.lat();
-            $scope.long = latlong.lng();
-            
-            placeMarkers();
-            
-        });
-    }
 
     // Retrieve user details
     function getUserDetails() {
@@ -86,7 +31,19 @@ angular.module('grubbring.controllers').controller('FindRingsCtrl', function fin
         }).then(function(response) {
             $scope.userId = response.data.userId;
             if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(successFunction, errorFunction);
+                
+                navigator.geolocation.getCurrentPosition(
+                    function success(position) {
+                        MapService.InitMap(position); //init map
+                        MapService.PlaceMarkers(); // initialize google markers
+                        ListService.GetListItems().then(function(listItems) {
+                            $scope.listItems = listItems;  
+                            $scope.$apply(); //TODO: see if there is a better way to do this - not sure if its good to have .$apply in ctrl
+                            //console.log("the scopppeee list items " + JSON.stringify($scope.listItems));
+                        });
+                    }, 
+                    errorFunction
+                );
             }
             else {
                 // TODO: proceed to load map with default lat, long
@@ -98,41 +55,15 @@ angular.module('grubbring.controllers').controller('FindRingsCtrl', function fin
         });
     }
     
-
-    // if successfully received long and lat, find rings and display markers on map
-    function successFunction(position) {
-         
-        // get client coordinates
-        $scope.lat = position.coords.latitude;
-        $scope.long = position.coords.longitude;
-        
-        // initialize options for map
-        var mapOptions = {
-            center: new google.maps.LatLng($scope.lat, $scope.long),
-            zoom: defaultZoomLevel,
-            mapTypeId: google.maps.MapTypeId.ROADMAP
-        }
-
-        // initialize google map object onto div mapCanvas with specified options
-        map = new google.maps.Map(mapCanvas, mapOptions);
-        
-        // initialize google search box
-        initLocationBox();
-        
-        // initialize google markers
-        placeMarkers();
-
-    }
-    
     // ---------------------- Google Map Markers ---------------------------------------------------------------------------
         
-    function placeMarkers(){
+    /*function placeMarkers(){
         
         // Show spinner
         $scope.showLoader = true;
         
         // Place user marker on map
-        placeUserMarkerOnMap($scope.lat, $scope.long);
+        FindRingsService.placeUserMarkerOnMap($scope.lat, $scope.long);
         
         // Get nearby rings and display markers
         getNearbyRings($scope.lat, $scope.long);
@@ -140,10 +71,10 @@ angular.module('grubbring.controllers').controller('FindRingsCtrl', function fin
          // Load grubberies to map and list
         getNearbyGrubberies($scope.lat, $scope.long);
         // ***NOTE*** getNearbyRings and getNearbyGrubberies will run simultaneously
-    }
+    }*/
         
     // decodes address into long and lat coordinates to add marker for user to the map
-    function placeUserMarkerOnMap(lat, long) {
+    /*function placeUserMarkerOnMap(lat, long) {
         var latlng =  {lat: lat, lng: long};
         var marker = new google.maps.Marker({
             map: map,
@@ -156,11 +87,11 @@ angular.module('grubbring.controllers').controller('FindRingsCtrl', function fin
         
         markers.push(marker);
 
-    }
+    }*/
     
     
     // decodes address into long and lat coordinates to add ring markers to the map
-    function placeRingMarkerOnMap(ring) {
+    /*function placeRingMarkerOnMap(ring) {
         
         var latLng = {lat : ring.latitude, lng : ring.longitude};
         
@@ -181,11 +112,11 @@ angular.module('grubbring.controllers').controller('FindRingsCtrl', function fin
             openOverlayOnMapMarkerClick(marker)
         });
 
-    }
+    }*/
     
     
     // decodes address into long and lat coordinates to add ring markers to the map
-    function placeGrubberyMarkerOnMap(grubbery) {
+    /*function placeGrubberyMarkerOnMap(grubbery) {
         
         var latLng = {lat : grubbery.latitude, lng : grubbery.longitude};
         
@@ -200,10 +131,10 @@ angular.module('grubbring.controllers').controller('FindRingsCtrl', function fin
         
         markers.push(marker);
         
-    }
+    }*/
     
     // opens detail popup overlay when clicking on map marker
-    function openOverlayOnMapMarkerClick(marker){
+    /*function openOverlayOnMapMarkerClick(marker){
         var marker = marker;
         var contentString = '<div id="content">'+
         '<div id="siteNotice">'+
@@ -232,13 +163,13 @@ angular.module('grubbring.controllers').controller('FindRingsCtrl', function fin
         
         infowindow.open(map, marker);
         
-    }
+    }*/
     
 // ---------------------- Google Map Markers End ---------------------------------------------------------------------------
     
     
     // Function to populate list with nearby rings and display markers on map
-    function getNearbyRings(lat, long){
+    /*function getNearbyRings(lat, long){
         
         // Clear list of items
         $scope.listItems = [];
@@ -286,10 +217,10 @@ angular.module('grubbring.controllers').controller('FindRingsCtrl', function fin
             console.log(err);
             $scope.showLoader=false;
         });
-    }
+    }*/
     
     // Gets the grubberies near user and place on the map
-    function getNearbyGrubberies(lat, long){
+    /*function getNearbyGrubberies(lat, long){
         // get nearby grubberies to display to user
         $http({
             method: 'GET',
@@ -309,9 +240,9 @@ angular.module('grubbring.controllers').controller('FindRingsCtrl', function fin
         }, function(err) {
             console.log(err);
         });
-    }
+    }*/
     
-    function populateGrubberiesInList(){
+    /*function populateGrubberiesInList(){
         if($scope.grubberyList != null) {
             for (var i = 0; i < $scope.grubberyList.length; i++) {
                 placeGrubberyMarkerOnMap($scope.grubberyList[i]);
@@ -326,7 +257,7 @@ angular.module('grubbring.controllers').controller('FindRingsCtrl', function fin
             }
             
         }
-    }
+    }*/
 
     
 // ----------------------- Search Algorithm ----------------------------------------------------------------------------
@@ -460,13 +391,6 @@ angular.module('grubbring.controllers').controller('FindRingsCtrl', function fin
         console.log('Error!');
     }
     
-    function clearMarkers() {
-        markers.forEach(function(marker) {
-                marker.setMap(null);
-        });
-        markers = [];
-    }
-
     function getRingsUserIsPartOf() { /*broken*/
         $http({
             method: 'GET',
@@ -568,4 +492,4 @@ angular.module('grubbring.controllers').controller('FindRingsCtrl', function fin
 
 // ------------------------------------------------------------------------------
 
-});
+}]);
