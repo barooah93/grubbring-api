@@ -45,15 +45,26 @@
         </div>
         <!--Right Container-->
         <div class="right-container col-md-4">
-          <div class="form-container">
-              <form>
-                Ring name: <input type="text" ng-model="ringName"><br>
-                Address: <input type="text" ng-model="ringAddress">
-                City: <input type="text" ng-model="ringCity"><br>
-                State: <input type="text" ng-model="ringState">
-                Zipcode: <input type="text" ng-model="ringZipcode"><br>
-                <button ng-click="CreateRingButton_Clicked()">Create Ring!</button>
-              </form>
+              <div class="form-container">
+                <div class="panel panel-default">
+                  <div class="panel-body">
+                    <div class="form-group col-md-10">
+                      <label for="ringName" class="control-label">Ring Name:</label>
+                      <input type="text" class="form-control" id="ringName" ng-model="ringName">
+                      <label for="ringAddr" class="control-label">Address:</label>
+                      <input type="text" class="form-control" id="ringAddr" ng-model="ringAddress">
+                        <label for="ringCity" class="control-label">City:</label>
+                        <input type="text" class="form-control" id="ringCity" ng-model="ringCity">
+                        <select ng-model="ringState" ng-options="state.name for state in states">
+                          <option value="">State</option>
+                        </select> <br>
+                        <label for="ringZip" class="control-label">Zipcode:</label>
+                        <input type="text" class="form-control" id="ringZip" ng-model="ringZipcode">
+                      <button type="submit" class="btn btn-primary" ng-click="CreateRingButton_Clicked()">Create Ring!</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
           </div>
         </div>
       </div>

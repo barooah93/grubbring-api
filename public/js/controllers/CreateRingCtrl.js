@@ -23,23 +23,8 @@ angular.module('grubbring.controllers').controller('CreateRingCtrl', function cr
         convertToLocationPromise.then(function(locationResponse){
             var createRingPromise = RingService.CreateRing(name, addr, city, state, zipcode, locationResponse.lat(), locationResponse.lng());
             
-            createRingPromise.then(function(ringResponse){
-                
-                if(ringResponse.data.status == StatusCodes.CREATE_RING_SUCCESS) {
-                    // TODO: Handle response
-                    alert("Woohoo! You have just created a ring!");
-                } else if (ringResponse.data.status == StatusCodes.NUMBER_OF_CREATED_RINGS_EXCEEDED_LIMIT) {
-                    // User has reached ring creation limit
-                    alert("You have reached the limit for how many rings you can create.  Please upgrade to our premium service if you would like to create more!");
-                
-                } else if(ringResponse.data.status == StatusCodes.EXECUTED_QUERY_FAIL){
-                    // Check if duplicate entry
-                    if(ringResponse.data.data.code == "ER_DUP_ENTRY"){
-                        alert("There is already a ring with that name.");
-                    } else {
-                        alert(ringResponse.data.data.code);
-                    }
-                }
+            createRingPromise.then(function(ring){
+                console.log(JSON.stringify(ring));
             
             }, function(err){
                 
@@ -51,9 +36,58 @@ angular.module('grubbring.controllers').controller('CreateRingCtrl', function cr
             // TODO: Handle error
             console.log(err);
         });
-        
-        
-        
-        
     }
+    
+$scope.states = [
+    { name: 'Alabama', abbreviation: 'AL'},
+    { name: 'Alaska', abbreviation: 'AK'},
+    { name: 'Arizona', abbreviation: 'AZ'},
+    { name: 'Arkansas', abbreviation: 'AR'},
+    { name: 'California', abbreviation: 'CA'},
+    { name: 'Colorado', abbreviation: 'CO'},
+    { name: 'Connecticut', abbreviation: 'CT'},
+    { name: 'Delaware', abbreviation: 'DE'},
+    { name: 'Florida', abbreviation: 'FL'},
+    { name: 'Georgia', abbreviation: 'GA'},
+    { name: 'Hawaii', abbreviation: 'HI'},
+    { name: 'Idaho', abbreviation: 'ID'},
+    { name: 'Illinois', abbreviation: 'IL'},
+    { name: 'Indiana', abbreviation: 'IN'},
+    { name: 'Iowa', abbreviation: 'IA'},
+    { name: 'Kansas', abbreviation: 'KS'},
+    { name: 'Kentucky', abbreviation: 'KY'},
+    { name: 'Louisiana', abbreviation: 'LA'},
+    { name: 'Maine', abbreviation: 'ME'},
+    { name: 'Maryland', abbreviation: 'MD'},
+    { name: 'Massachusetts', abbreviation: 'MA'},
+    { name: 'Michigan', abbreviation: 'MI'},
+    { name: 'Minnesota', abbreviation: 'MN'},
+    { name: 'Mississippi', abbreviation: 'MS'},
+    { name: 'Missouri', abbreviation: 'MO'},
+    { name: 'Montana', abbreviation: 'MT'},
+    { name: 'Nebraska', abbreviation: 'NE'},
+    { name: 'Nevada', abbreviation: 'NV'},
+    { name: 'New Hampshire', abbreviation: 'NH'},
+    { name: 'New Jersey', abbreviation: 'NJ'},
+    { name: 'New Mexico', abbreviation: 'NM'},
+    { name: 'New York', abbreviation: 'NY'},
+    { name: 'North Carolina', abbreviation: 'NC'},
+    { name: 'North Dakota', abbreviation: 'ND'},
+    { name: 'Ohio', abbreviation: 'OH'},
+    { name: 'Oklahoma', abbreviation: 'OK'},
+    { name: 'Oregon', abbreviation: 'OR'},
+    { name: 'Pennslyvania', abbreviation: 'PA'},
+    { name: 'Rhode Island', abbreviation: 'RI'},
+    { name: 'South Carolina', abbreviation: 'SC'},
+    { name: 'South Dakota', abbreviation: 'SD'},
+    { name: 'Tennessee', abbreviation: 'TN'},
+    { name: 'Texas', abbreviation: 'TX'},
+    { name: 'Utah', abbreviation: 'UT'},
+    { name: 'Vermont', abbreviation: 'VT'},
+    { name: 'Virginia', abbreviation: 'VA'},
+    { name: 'Washington', abbreviation: 'WA'},
+    { name: 'West Virginia', abbreviation: 'WV'},
+    { name: 'Wisconsin', abbreviation: 'WI'},
+    { name: 'Wyoming', abbreviation: 'WY' }
+];
 });

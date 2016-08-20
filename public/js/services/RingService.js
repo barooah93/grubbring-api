@@ -78,8 +78,25 @@ app.service('RingService', ['$http','MapCenterService', function($http,MapCenter
                     method: 'POST',
                     url: '/api/ring',
                     data: bodyData
-                }).then(function(response) {
-                    resolve(response);
+                }).then(function(ring) {
+                    if(ring.data.status == StatusCodes.CREATE_RING_SUCCESS) {
+                        // TODO: Handle response
+                        alert("Woohoo! You have just created a ring!");
+                        resolve(ring);
+                    } else if (ring.data.status == StatusCodes.NUMBER_OF_CREATED_RINGS_EXCEEDED_LIMIT) {
+                        // User has reached ring creation limit
+                        alert("You have reached the limit for how many rings you can create.  Please upgrade to our premium service if you would like to create more!");
+                        reject(ring.data.status);
+                    } else if(ring.data.status == StatusCodes.EXECUTED_QUERY_FAIL){
+                        // Check if duplicate entry
+                        if(ring.data.data.code == "ER_DUP_ENTRY"){
+                            alert("There is already a ring with that name.");
+                            reject(ring.data.data.code);
+                        } else {
+                            alert(ring.data.data.code);
+                            reject(ring.data.data.code);
+                        }
+                    }
                 }, function(err) {
                     reject(err);
                 });
