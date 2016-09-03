@@ -18,8 +18,6 @@ var statusCodes = require('../Utilities/StatusCodesBackend');
 //create new order for a specific activity
 app.post('/createOrder',function(req,res){
 	authenticate.checkAuthentication(req,res,function(data){
-	    var sql = null;
-
 		var activityId = req.body.activityId; //activity Id
 		var userId = req.user.userId;
 		var orderedOn = new Date();
@@ -45,7 +43,7 @@ app.post('/createOrder',function(req,res){
             })
         }
 
-		sql = "INSERT INTO tblOrderUser (activityId, userId, orderedOn, itemOrdered, quantity, addnComment, costOfItemOrdered, paymentMethod, paymentStatus) " +
+		var sql = "INSERT INTO tblOrderUser (activityId, userId, orderedOn, itemOrdered, quantity, addnComment, costOfItemOrdered, paymentMethod, paymentStatus) " +
             "VALUES (?,?,?,?,?,?,?,?,?)";
 
 		var inserts = [activityId, userId, orderedOn, itemOrdered, quantity, comment, cost, paymentMethod, paymentStatus];

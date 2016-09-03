@@ -7,7 +7,8 @@
     "debug": "DEBUG=grubbring* node server.js 1> std.log 2> err.log",
     "debug-nolog": "DEBUG=grubbring* node server.js",
     "postinstall": "./node_modules/bower/bin/bower install",
-    "nodemon": "./node_modules/nodemon/bin/nodemon.js --ignore public/"
+    "nodemon": "./node_modules/nodemon/bin/nodemon.js --ignore public/",
+    "nodemon-log": "DEBUG=grubbring* ./node_modules/nodemon/bin/nodemon.js --ignore public/"
   },
   "dependencies": {
     "async": "^1.4.2",
