@@ -161,6 +161,38 @@ app.post('/', function(req, res){
 });
 //-------------------------END-------------------------------------------------------
 
+app.delete('/', function(req, res) {
+    authenticate.checkAuthentication(req, res, function(data) {
+        var ringId = req.query.ringId;
+
+        if (!ringId) {
+            glog.error('Missing ring id');
+            return res.json({
+                status: statusCodes.DELETE_USER_REQUEST_FAIL,
+                description: 'The ringId field was missing.'
+            })
+        }
+
+        // Set status to 0 ?
+        // TODO what do i update tblRingUser status to? need clarification
+        var sql = 'UPDATE tblRing SET ringStatus = ? WHERE ringId = ? and createdBy = ?';
+        var values = [0, ringId, req.user.userId];
+        sql = mysql.format(sql, values);
+
+        db.dbExecuteQuery(sql, res, function(result) {
+            if (result.data.affectedRows === 1) {
+                result.status = statusCodes.DELETE_RING_SUCCESS;
+                result.description = 'Successfully delete ringId: ' + ringId;
+            } else {
+                // TODO - how to check if there is a ring for this user before updating/deleting?
+                glog.error('Could not delete ringId: ' + ringId);
+                result.status = statusCodes.DELETE_RING_FAIL;
+                result.description = 'Not authorized to delete this ring.'
+            }
+            res.json(result);
+        });
+    })
+});
 
 //-------------------------START-----------------------------------------------------
 // POST: request to join the ring
